@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import * as XLSX from 'xlsx';
+import * as XLSX from '@e965/xlsx';
 
 interface ChecklistItem {
   id: string;
