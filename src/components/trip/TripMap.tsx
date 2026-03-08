@@ -306,7 +306,37 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
             </Marker>
           ))}
 
-          {dayRoutes.map((route) => (
+          {filteredPoints.map((pt, idx) => (
+            <Marker
+              key={`point-${pt.type}-${pt.dayIndex}-${idx}`}
+              position={[pt.lat, pt.lng]}
+              icon={L.divIcon({
+                className: 'custom-map-marker',
+                html: `<div style="
+                  background: ${pt.type === 'start' ? '#22c55e' : '#ef4444'};
+                  width: 32px; height: 32px;
+                  border-radius: 50%;
+                  display: flex; align-items: center; justify-content: center;
+                  font-size: 16px;
+                  border: 2px solid white;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                ">${pt.type === 'start' ? '🟢' : '🔴'}</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+                popupAnchor: [0, -18],
+              })}
+            >
+              <Popup>
+                <div className="text-sm min-w-[150px]">
+                  <div className="font-bold text-base mb-1">{pt.label}</div>
+                  <div style={{ color: '#6b7280' }}>
+                    {pt.type === 'start' ? '📍 נקודת התחלה' : '🏁 נקודת סיום'} · יום {pt.dayIndex + 1}
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+
             <Polyline
               key={`route-${route.dayIndex}`}
               positions={route.positions}
