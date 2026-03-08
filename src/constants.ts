@@ -5,6 +5,17 @@ export const TRIP_STATUSES = Object.values(TripStatus);
 export const EVENT_CATEGORIES = Object.values(EventCategory);
 export const PAYMENT_METHODS = Object.values(PaymentMethod);
 
+export const PRESET_TAGS = [
+  { label: 'מומלץ', emoji: '👍', color: 'bg-green-100 text-green-700 border-green-200' },
+  { label: 'חובה', emoji: '⭐', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+  { label: 'טיפ', emoji: '💡', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+  { label: 'הזמנה מראש', emoji: '📅', color: 'bg-purple-100 text-purple-700 border-purple-200' },
+  { label: 'חינם', emoji: '🆓', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+  { label: 'רומנטי', emoji: '💕', color: 'bg-pink-100 text-pink-700 border-pink-200' },
+  { label: 'משפחתי', emoji: '👨‍👩‍👧‍👦', color: 'bg-orange-100 text-orange-700 border-orange-200' },
+  { label: 'נוף', emoji: '🏔️', color: 'bg-teal-100 text-teal-700 border-teal-200' },
+];
+
 export const CURRENCY_SYMBOLS: { [key: string]: string } = {
   ILS: '₪', USD: '$', EUR: '€', GBP: '£', JPY: '¥', THB: '฿', CHF: 'Fr',
 };

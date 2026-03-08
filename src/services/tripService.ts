@@ -30,6 +30,8 @@ const dbRowToEvent = (row: any): Event => ({
   details: row.details || {},
   notes: row.notes || undefined,
   rating: row.rating || undefined,
+  is_favorite: row.is_favorite || false,
+  tags: row.tags || [],
 });
 
 export const fetchTrips = async (userId: string): Promise<Trip[]> => {
@@ -123,8 +125,10 @@ export const upsertEvent = async (userId: string, tripId: string, event: Event, 
       details: event.details as any,
       notes: event.notes || null,
       rating: event.rating || null,
+      is_favorite: event.is_favorite || false,
+      tags: event.tags || [],
       sort_order: sortOrder,
-    }]);
+    }] as any);
 
   if (error) throw error;
 };

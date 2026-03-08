@@ -327,7 +327,17 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
             <SortableContext items={dailyEvents.map(e => e.id)} strategy={verticalListSortingStrategy}>
               <div className="space-y-2 pl-8">
                 {dailyEvents.map(event => (
-                  <EventCard key={event.id} event={event} onEdit={() => handleEditEvent(event)} onDelete={() => onDeleteEvent(event.id)} onShare={() => setSharingEvent(event)} />
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onEdit={() => handleEditEvent(event)}
+                    onDelete={() => onDeleteEvent(event.id)}
+                    onShare={() => setSharingEvent(event)}
+                    onToggleFavorite={() => {
+                      const updated = { ...event, is_favorite: !event.is_favorite };
+                      onUpdateEvent(updated);
+                    }}
+                  />
                 ))}
               </div>
             </SortableContext>

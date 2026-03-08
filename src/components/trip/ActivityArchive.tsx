@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Trip, Event, EventCategory } from '@/types';
-import { CATEGORY_DISPLAY_CONFIG, EVENT_CATEGORIES, CURRENCY_SYMBOLS } from '@/constants';
-import { Search, Filter, X, Star } from 'lucide-react';
+import { CATEGORY_DISPLAY_CONFIG, EVENT_CATEGORIES, CURRENCY_SYMBOLS, PRESET_TAGS } from '@/constants';
+import { Search, Filter, X, Star, Heart, Tag } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
@@ -9,15 +9,35 @@ interface ActivityArchiveProps {
   trips: Trip[];
 }
 
+const getTagStyle = (tag: string) => {
+  const preset = PRESET_TAGS.find(t => t.label === tag);
+  if (preset) return preset.color;
+  return 'bg-secondary text-muted-foreground border-border';
+};
+
+const getTagEmoji = (tag: string) => {
+  const preset = PRESET_TAGS.find(t => t.label === tag);
+  return preset?.emoji || '🏷️';
+};
+
 const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
   const [search, setSearch] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const allEvents = useMemo(() => {
     return trips.flatMap(trip =>
       trip.events.map(event => ({ ...event, tripName: trip.name, tripId: trip.id }))
     );
   }, [trips]);
+
+  // Collect all unique tags across events
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    allEvents.forEach(e => (e.tags || []).forEach(t => tagSet.add(t)));
+    return Array.from(tagSet);
+  }, [allEvents]);
 
   const filtered = useMemo(() => {
     return allEvents.filter(event => {
@@ -26,9 +46,11 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
         event.tripName.toLowerCase().includes(search.toLowerCase()) ||
         (event.notes && event.notes.toLowerCase().includes(search.toLowerCase()));
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(event.category);
-      return matchesSearch && matchesCategory;
+      const matchesFavorite = !showFavoritesOnly || event.is_favorite;
+      const matchesTags = selectedTags.length === 0 || selectedTags.every(t => (event.tags || []).includes(t));
+      return matchesSearch && matchesCategory && matchesFavorite && matchesTags;
     });
-  }, [allEvents, search, selectedCategories]);
+  }, [allEvents, search, selectedCategories, showFavoritesOnly, selectedTags]);
 
   const toggleCategory = (cat: EventCategory) => {
     setSelectedCategories(prev =>
@@ -36,12 +58,21 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
     );
   };
 
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
   const clearFilters = () => {
     setSearch('');
     setSelectedCategories([]);
+    setShowFavoritesOnly(false);
+    setSelectedTags([]);
   };
 
-  const hasFilters = search !== '' || selectedCategories.length > 0;
+  const hasFilters = search !== '' || selectedCategories.length > 0 || showFavoritesOnly || selectedTags.length > 0;
+  const favoriteCount = allEvents.filter(e => e.is_favorite).length;
 
   return (
     <div className="space-y-6">
@@ -55,6 +86,17 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
             className="pl-10"
           />
         </div>
+        <button
+          onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
+            showFavoritesOnly
+              ? 'bg-red-50 text-red-600 border-red-200 shadow-sm'
+              : 'bg-card border-border text-muted-foreground hover:border-primary/30'
+          }`}
+        >
+          <Heart className={`h-4 w-4 ${showFavoritesOnly ? 'fill-red-500' : ''}`} />
+          מועדפים {favoriteCount > 0 && `(${favoriteCount})`}
+        </button>
         {hasFilters && (
           <button onClick={clearFilters} className="btn-ghost flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" /> נקה פילטרים
@@ -82,6 +124,27 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
         })}
       </div>
 
+      {/* Tag filters */}
+      {allTags.length > 0 && (
+        <div className="flex flex-wrap gap-2 items-center">
+          <Tag className="h-4 w-4 text-muted-foreground" />
+          {allTags.map(tag => {
+            const isActive = selectedTags.includes(tag);
+            return (
+              <button
+                key={tag}
+                onClick={() => toggleTag(tag)}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+                  isActive ? getTagStyle(tag) + ' shadow-sm ring-1 ring-offset-1' : 'bg-card border-border text-muted-foreground hover:border-primary/30'
+                }`}
+              >
+                {getTagEmoji(tag)} {tag}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <p className="text-sm text-muted-foreground">
         {filtered.length} {filtered.length === 1 ? 'פעילות' : 'פעילויות'}
         {hasFilters && ` (מתוך ${allEvents.length})`}
@@ -89,8 +152,10 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
 
       {filtered.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-4xl mb-3">🔍</p>
-          <p className="text-muted-foreground">לא נמצאו פעילויות מתאימות</p>
+          <p className="text-4xl mb-3">{showFavoritesOnly ? '❤️' : '🔍'}</p>
+          <p className="text-muted-foreground">
+            {showFavoritesOnly ? 'אין פעילויות מועדפות עדיין' : 'לא נמצאו פעילויות מתאימות'}
+          </p>
         </div>
       ) : (
         <div className="grid gap-3">
@@ -108,9 +173,21 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
                         {config?.icon} {config?.name}
                       </span>
                       <span className="text-xs text-muted-foreground">{event.date}</span>
+                      {event.is_favorite && (
+                        <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500" />
+                      )}
                     </div>
                     <h3 className="font-semibold text-foreground truncate">{event.title}</h3>
                     <p className="text-sm text-muted-foreground mt-0.5">🗂️ {event.tripName}</p>
+                    {event.tags && event.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {event.tags.map(tag => (
+                          <span key={tag} className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${getTagStyle(tag)}`}>
+                            {getTagEmoji(tag)} {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     {event.notes && (
                       <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{event.notes}</p>
                     )}

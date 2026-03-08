@@ -70,6 +70,8 @@ export interface Event {
   details: EventDetails;
   notes?: string;
   rating?: number;
+  is_favorite?: boolean;
+  tags?: string[];
 }
 
 export interface DailyInfo {
