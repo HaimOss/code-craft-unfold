@@ -14,7 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          currency: string
+          date: string
+          details: Json | null
+          end_time: string | null
+          id: string
+          notes: string | null
+          payment_method: string
+          rating: number | null
+          sort_order: number
+          time: string
+          title: string
+          trip_id: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          date: string
+          details?: Json | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          rating?: number | null
+          sort_order?: number
+          time?: string
+          title: string
+          trip_id: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          date?: string
+          details?: Json | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          rating?: number | null
+          sort_order?: number
+          time?: string
+          title?: string
+          trip_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      trips: {
+        Row: {
+          album_link: string | null
+          base_currency: string
+          cover_image: string | null
+          created_at: string
+          daily_info: Json | null
+          destination: string | null
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          album_link?: string | null
+          base_currency?: string
+          cover_image?: string | null
+          created_at?: string
+          daily_info?: Json | null
+          destination?: string | null
+          end_date: string
+          id?: string
+          name: string
+          start_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          album_link?: string | null
+          base_currency?: string
+          cover_image?: string | null
+          created_at?: string
+          daily_info?: Json | null
+          destination?: string | null
+          end_date?: string
+          id?: string
+          name?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
