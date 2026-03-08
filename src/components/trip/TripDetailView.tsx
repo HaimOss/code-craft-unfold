@@ -142,6 +142,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
 
       <EditTripModal isOpen={isEditModalOpen} trip={trip} onClose={() => setIsEditModalOpen(false)} onUpdateTrip={onUpdateTrip} />
       <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} title={`שתף "${trip.name}"`} itemType="trip" itemData={trip} />
+      <CollaboratorManager isOpen={isCollabModalOpen} onClose={() => setIsCollabModalOpen(false)} tripId={trip.id} tripName={trip.name} />
     </div>
   );
 };
