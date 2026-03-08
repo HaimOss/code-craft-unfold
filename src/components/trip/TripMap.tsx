@@ -268,9 +268,9 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
               <Popup>
                 <div className="text-sm min-w-[180px]">
                   <div className="font-bold text-base mb-1">{ge.event.title}</div>
-                  <div className="text-gray-500 mb-1">
-                    יום {ge.dayIndex + 1} · {ge.event.time}
-                  </div>
+                   <div className="text-gray-500 mb-1">
+                     {t('map.dayLabel', { idx: String(ge.dayIndex + 1) })} · {ge.event.time}
+                   </div>
                   {ge.event.notes && (
                     <div className="text-gray-600 text-xs mt-1">{ge.event.notes}</div>
                   )}
