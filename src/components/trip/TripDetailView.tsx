@@ -132,14 +132,51 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
       </header>
 
       <main>
-        <h2 className="text-2xl font-bold font-display mb-6">Itinerary</h2>
-        <ItineraryView
-          trip={trip}
-          onAddEvent={handleAddEvent}
-          onUpdateEvent={handleUpdateEvent}
-          onDeleteEvent={handleDeleteEvent}
-          onUpdateTrip={onUpdateTrip}
-        />
+        <div className="flex items-center gap-4 mb-6">
+          <h2 className="text-2xl font-bold font-display">
+            {activeTab === 'itinerary' ? 'Itinerary' : 'Map'}
+          </h2>
+          <div className="flex bg-secondary rounded-lg p-1 gap-1">
+            <button
+              onClick={() => setActiveTab('itinerary')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'itinerary'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <List className="h-4 w-4" /> מסלול
+            </button>
+            <button
+              onClick={() => setActiveTab('map')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'map'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Map className="h-4 w-4" /> מפה
+            </button>
+          </div>
+        </div>
+
+        {activeTab === 'itinerary' ? (
+          <ItineraryView
+            trip={trip}
+            onAddEvent={handleAddEvent}
+            onUpdateEvent={handleUpdateEvent}
+            onDeleteEvent={handleDeleteEvent}
+            onUpdateTrip={onUpdateTrip}
+          />
+        ) : (
+          <Suspense fallback={
+            <div className="card-surface p-12 flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          }>
+            <TripMap trip={trip} />
+          </Suspense>
+        )}
       </main>
 
       <EditTripModal isOpen={isEditModalOpen} trip={trip} onClose={() => setIsEditModalOpen(false)} onUpdateTrip={onUpdateTrip} />
