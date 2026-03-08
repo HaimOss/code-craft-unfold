@@ -308,8 +308,8 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
                 <div className="text-sm min-w-[150px]">
                   <div className="font-bold text-base mb-1">{pt.label}</div>
                   <div style={{ color: '#6b7280' }}>
-                    {pt.type === 'start' ? '📍 נקודת התחלה' : '🏁 נקודת סיום'} · יום {pt.dayIndex + 1}
-                  </div>
+                     {pt.type === 'start' ? `📍 ${t('map.startPoint')}` : `🏁 ${t('map.endPoint')}`} · {t('map.dayLabel', { idx: String(pt.dayIndex + 1) })}
+                   </div>
                 </div>
               </Popup>
             </Marker>
