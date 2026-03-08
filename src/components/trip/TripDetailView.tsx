@@ -216,9 +216,12 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 min-h-screen animate-fade-in">
-      <button onClick={onBack} className="btn-ghost flex items-center text-sm mb-6">
-        <ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard
-      </button>
+      <div className="flex items-center justify-between mb-6">
+        <button onClick={onBack} className="flex items-center gap-3 cursor-pointer group">
+          <Compass className="h-7 w-7 text-accent" />
+          <span className="text-2xl font-bold font-display group-hover:text-primary transition-colors">WonderJourney</span>
+        </button>
+      </div>
 
       <header className="relative overflow-hidden rounded-2xl shadow-lg mb-8">
         {trip.cover_image && (
