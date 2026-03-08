@@ -89,7 +89,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
       const shopping = details as ShoppingDetails;
       return (
         <div className="space-y-0.5">
-          {shopping.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{shopping.address}</p>}
+          {shopping.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 ml-1 flex-shrink-0" />{shopping.address}</p>}
           {shopping.opening_hours && <p className="text-xs text-muted-foreground">🕐 {shopping.opening_hours}</p>}
           {shopping.customs_note && <p className="text-xs text-muted-foreground">📦 {shopping.customs_note}</p>}
           {shopping.website && (
