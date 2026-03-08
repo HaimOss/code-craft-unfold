@@ -17,6 +17,7 @@ interface DashboardHomeProps {
 
 const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAddTrip, displayName }) => {
   const { t, dir, isRTL } = useLanguage();
+  const [showWorldMap, setShowWorldMap] = useState(false);
   const firstName = displayName?.split(/[\s@]/)[0] || '';
 
   const upcomingTrips = useMemo(() => {
