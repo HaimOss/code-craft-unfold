@@ -447,9 +447,14 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
       {filtered.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-4xl mb-3">✅</p>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-3">
             {totalCount === 0 ? 'הרשימה ריקה — הוסף פריט ראשון!' : 'אין פריטים מתאימים לסינון'}
           </p>
+          {totalCount === 0 && (
+            <button onClick={importExcel} className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors">
+              <Upload className="h-3.5 w-3.5" /> או ייבא מקובץ Excel
+            </button>
+          )}
         </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
