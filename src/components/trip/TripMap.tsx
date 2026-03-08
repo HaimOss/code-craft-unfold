@@ -313,18 +313,6 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
             </Marker>
           ))}
 
-          {dayRoutes.map((route) => (
-            <Polyline
-              key={`route-${route.dayIndex}`}
-              positions={route.positions}
-              pathOptions={{
-                color: DAY_COLORS[route.dayIndex % DAY_COLORS.length],
-                weight: 3,
-                opacity: 0.7,
-                dashArray: '8, 8',
-              }}
-            />
-          ))}
         </MapContainer>
       </div>
 
