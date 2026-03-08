@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, lazy, Suspense } from 'react';
 import { Trip } from '@/types';
 import { CURRENCY_SYMBOLS } from '@/constants';
-import { Plus, MapPin, Calendar, ArrowLeft, ArrowRight, Clock, Plane, Hotel, UtensilsCrossed } from 'lucide-react';
+import { Plus, MapPin, Calendar, ArrowLeft, ArrowRight, Clock, Plane, Hotel, UtensilsCrossed, Map } from 'lucide-react';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+const WorldMap = lazy(() => import('./WorldMap'));
 
 interface DashboardHomeProps {
   trips: Trip[];
