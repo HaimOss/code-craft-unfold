@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
 import { Trip, Event, DailyInfo } from '@/types';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -12,6 +12,8 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Plus, ExternalLink, ChevronDown, ChevronUp, MapPin, Download, Map } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+
+const DayMap = lazy(() => import('./DayMap'));
 
 interface DayItineraryProps {
   trip: Trip;
@@ -32,6 +34,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   const [sharingEvent, setSharingEvent] = useState<Event | null>(null);
   const [dayTotal, setDayTotal] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showDayMap, setShowDayMap] = useState(false);
   const [editingStartPoint, setEditingStartPoint] = useState(false);
   const [editingEndPoint, setEditingEndPoint] = useState(false);
 
@@ -99,23 +102,6 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}${waypoints.length > 0 ? `&waypoints=${encodeURIComponent(waypoints.join('|'))}` : ''}`;
   };
 
-  const getShowMapUrl = () => {
-    const locations: string[] = [];
-    if (dailyInfo.startPoint) locations.push(dailyInfo.startPoint);
-    dailyEvents.forEach(e => {
-      const loc = getLocationFromEvent(e);
-      if (loc) locations.push(loc);
-    });
-    if (dailyInfo.endPoint) locations.push(dailyInfo.endPoint);
-
-    if (locations.length === 0 && trip.destination) {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.destination)}`;
-    }
-    if (locations.length > 0) {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locations[0])}`;
-    }
-    return null;
-  };
 
   const handleExportDay = async () => {
     const totalStr = dayTotal.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -213,7 +199,6 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   };
 
   const mapsUrl = getGoogleMapsUrl();
-  const showMapUrl = getShowMapUrl();
   const localDate = useMemo(() => new Date(date + 'T00:00:00'), [date]);
 
   if (isAddingEvent) {
@@ -236,15 +221,14 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           <div className="min-w-0">
             <h3 className="text-lg sm:text-xl font-bold font-display">Day {dayNumber}</h3>
             <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
-              {showMapUrl ? (
-                <a href={showMapUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
-                  <Map className="h-3 w-3 mr-1" /> Map
-                </a>
-              ) : (
-                <span className="text-[10px] sm:text-xs flex items-center text-muted-foreground/50">
-                  <Map className="h-3 w-3 mr-1" /> Map
-                </span>
-              )}
+              <button
+                onClick={() => setShowDayMap(!showDayMap)}
+                className={`text-[10px] sm:text-xs flex items-center font-medium transition-colors ${
+                  showDayMap ? 'text-primary bg-primary/10 px-2 py-0.5 rounded-full' : 'text-muted-foreground hover:text-primary'
+                }`}
+              >
+                <Map className="h-3 w-3 mr-1" /> Map
+              </button>
               {mapsUrl ? (
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
                   <ExternalLink className="h-3 w-3 mr-1" /> <span className="hidden sm:inline">Google Maps</span><span className="sm:hidden">GMaps</span>
@@ -272,6 +256,12 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           </button>
         </div>
       </div>
+
+      {showDayMap && (
+        <Suspense fallback={<div className="flex justify-center py-6 text-muted-foreground text-sm">טוען מפה...</div>}>
+          <DayMap events={dailyEvents} dailyInfo={dailyInfo} destination={trip.destination} />
+        </Suspense>
+      )}
 
       {!isCollapsed && (
         <div className="relative">
