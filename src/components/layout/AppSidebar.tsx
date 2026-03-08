@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Plane, BarChart3, Bell, Settings, Compass } from 'lucide-react';
+import { LayoutDashboard, Plane, BarChart3, Bell, Settings, Compass, Bookmark } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export type AppView = 'dashboard' | 'trips' | 'stats' | 'notifications' | 'settings';
+export type AppView = 'dashboard' | 'trips' | 'activityBank' | 'stats' | 'notifications' | 'settings';
 
 interface AppSidebarProps {
   activeView: AppView;
@@ -24,6 +24,7 @@ interface AppSidebarProps {
 const NAV_KEYS: { view: AppView; labelKey: string; icon: React.ElementType }[] = [
   { view: 'dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
   { view: 'trips', labelKey: 'nav.trips', icon: Plane },
+  { view: 'activityBank', labelKey: 'nav.activityBank', icon: Bookmark },
   { view: 'stats', labelKey: 'nav.stats', icon: BarChart3 },
   { view: 'notifications', labelKey: 'nav.notifications', icon: Bell },
   { view: 'settings', labelKey: 'nav.settings', icon: Settings },

@@ -4,6 +4,7 @@ import TripDetailView from '@/components/trip/TripDetailView';
 import DashboardHome from '@/components/dashboard/DashboardHome';
 import TripsGrid from '@/components/dashboard/TripsGrid';
 import ActivityArchive from '@/components/trip/ActivityArchive';
+import ActivityBank from '@/components/activitybank/ActivityBank';
 import StatsDashboard from '@/components/trip/StatsDashboard';
 import SettingsView from '@/components/dashboard/SettingsView';
 import NotificationBell from '@/components/NotificationBell';
@@ -179,6 +180,8 @@ const Index = () => {
             onAddTrip={handleAddTrip}
           />
         );
+      case 'activityBank':
+        return <ActivityBank trips={trips} onUpdateTrip={handleUpdateTrip} />;
       case 'stats':
         return (
           <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir={dir}>
