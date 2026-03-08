@@ -6,14 +6,17 @@ import EditTripModal from '../modals/EditTripModal';
 import ShareModal from '../modals/ShareModal';
 import CollaboratorManager from '../modals/CollaboratorManager';
 import BudgetBar from './BudgetBar';
-import { CURRENCY_SYMBOLS } from '@/constants';
-import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare } from 'lucide-react';
+import { CURRENCY_SYMBOLS, CATEGORY_DISPLAY_CONFIG } from '@/constants';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare, FileText } from 'lucide-react';
 
 const TripMap = lazy(() => import('./TripMap'));
 const TripChecklist = lazy(() => import('./TripChecklist'));
 import { exportTripToJSON, parseImportFile, importSharedEvent } from '@/services/shareService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { getLocationFromEvent } from '@/utils/helpers';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const statusStyles: { [key in TripStatus]: string } = {
   [TripStatus.Idea]: "bg-trip-idea text-primary-foreground",
