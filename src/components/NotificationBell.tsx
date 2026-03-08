@@ -36,7 +36,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onSelectTrip }) => 
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20);
-    setNotifications((data as Notification[]) || []);
+    setNotifications((data as AppNotification[]) || []);
     setLoading(false);
   };
 
