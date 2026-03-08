@@ -102,23 +102,6 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}${waypoints.length > 0 ? `&waypoints=${encodeURIComponent(waypoints.join('|'))}` : ''}`;
   };
 
-  const getShowMapUrl = () => {
-    const locations: string[] = [];
-    if (dailyInfo.startPoint) locations.push(dailyInfo.startPoint);
-    dailyEvents.forEach(e => {
-      const loc = getLocationFromEvent(e);
-      if (loc) locations.push(loc);
-    });
-    if (dailyInfo.endPoint) locations.push(dailyInfo.endPoint);
-
-    if (locations.length === 0 && trip.destination) {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.destination)}`;
-    }
-    if (locations.length > 0) {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locations[0])}`;
-    }
-    return null;
-  };
 
   const handleExportDay = async () => {
     const totalStr = dayTotal.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 });
