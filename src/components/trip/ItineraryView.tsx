@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Trip, Event } from '@/types';
 import DayItinerary from './DayItinerary';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ItineraryViewProps {
   trip: Trip;
@@ -11,6 +12,7 @@ interface ItineraryViewProps {
 }
 
 const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, onAddEvent, onUpdateEvent, onDeleteEvent, onUpdateTrip }) => {
+  const { t } = useLanguage();
   const tripDays = useMemo(() => {
     if (!trip.start_date || !trip.end_date) return [];
     const days: Date[] = [];
@@ -31,8 +33,8 @@ const ItineraryView: React.FC<ItineraryViewProps> = ({ trip, onAddEvent, onUpdat
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center card-surface border-dashed">
         <p className="text-4xl mb-4">📅</p>
-        <h3 className="text-xl font-bold font-display mb-2">No Itinerary Yet</h3>
-        <p className="text-muted-foreground">Set valid start and end dates to create your itinerary.</p>
+        <h3 className="text-xl font-bold font-display mb-2">{t('itinerary.noItinerary')}</h3>
+        <p className="text-muted-foreground">{t('itinerary.setDates')}</p>
       </div>
     );
   }

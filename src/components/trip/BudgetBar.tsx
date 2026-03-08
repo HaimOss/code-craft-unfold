@@ -2,6 +2,7 @@ import React from 'react';
 import { Trip } from '@/types';
 import { CURRENCY_SYMBOLS } from '@/constants';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BudgetBarProps {
   trip: Trip;
@@ -10,6 +11,7 @@ interface BudgetBarProps {
 }
 
 const BudgetBar: React.FC<BudgetBarProps> = ({ trip, totalCost, isCalculating }) => {
+  const { t } = useLanguage();
   if (!trip.budget || trip.budget <= 0) return null;
 
   const percentage = Math.min((totalCost / trip.budget) * 100, 100);
@@ -22,11 +24,11 @@ const BudgetBar: React.FC<BudgetBarProps> = ({ trip, totalCost, isCalculating })
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-xs text-primary-foreground/70 flex items-center gap-1">
           {isOver ? (
-            <><AlertTriangle className="h-3.5 w-3.5 text-red-400" /> חריגה מהתקציב!</>
+            <><AlertTriangle className="h-3.5 w-3.5 text-red-400" /> {t('budget.overBudget')}</>
           ) : isNear ? (
-            <><AlertTriangle className="h-3.5 w-3.5 text-yellow-400" /> מתקרבים לתקציב</>
+            <><AlertTriangle className="h-3.5 w-3.5 text-yellow-400" /> {t('budget.nearBudget')}</>
           ) : (
-            <><CheckCircle2 className="h-3.5 w-3.5 text-green-400" /> תקציב</>
+            <><CheckCircle2 className="h-3.5 w-3.5 text-green-400" /> {t('budget.budgetLabel')}</>
           )}
         </span>
         <span className="text-xs text-primary-foreground/70">
