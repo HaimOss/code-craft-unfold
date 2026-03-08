@@ -57,7 +57,10 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
         </div>
         <div className="flex items-center space-x-3 mt-4 sm:mt-0">
           <button onClick={() => setIsAddTripModalOpen(true)} className="btn-primary flex items-center gap-2">
-            <Plus className="h-4 w-4" /> New Trip
+            <Plus className="h-4 w-4" /> טיול חדש
+          </button>
+          <button onClick={handleImportJSON} className="btn-secondary flex items-center gap-2">
+            <Upload className="h-4 w-4" /> ייבוא טיול
           </button>
           <button onClick={onLogout} title="Reset Demo" className="btn-ghost p-2">
             <LogOut className="h-5 w-5" />
