@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
 import { Trip, Event, DailyInfo } from '@/types';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
