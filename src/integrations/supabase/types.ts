@@ -103,6 +103,36 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_items: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          item_data: Json
+          item_type: string
+          share_token: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          item_data: Json
+          item_type: string
+          share_token?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          item_data?: Json
+          item_type?: string
+          share_token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       trips: {
         Row: {
           album_link: string | null
