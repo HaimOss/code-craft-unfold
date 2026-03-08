@@ -171,7 +171,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     };
 
     geocodeAll();
-  }, [trip.events, tripDays, (trip as any).daily_info]);
+  }, [trip.events, tripDays, trip.dailyInfo]);
 
   const filteredEvents = selectedDay !== null
     ? geocodedEvents.filter(e => e.dayIndex === selectedDay)
