@@ -84,6 +84,7 @@ interface GeocodedItem {
 }
 
 const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
+  const { t } = useLanguage();
   const [items, setItems] = useState<GeocodedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
