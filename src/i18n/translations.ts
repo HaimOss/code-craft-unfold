@@ -331,6 +331,13 @@ const translations: Record<Language, TranslationTree> = {
       endPoint: 'נקודת סיום',
       legend: 'מקרא:',
     },
+    family: {
+      title: 'בני משפחה',
+      description: 'הוסף בני משפחה כדי לסמן מי היה בכל טיול',
+      noMembers: 'אין בני משפחה עדיין',
+      namePlaceholder: 'שם...',
+      participants: 'מי בטיול?',
+    },
   },
   en: {
     app: {
@@ -657,6 +664,13 @@ const translations: Record<Language, TranslationTree> = {
       startPoint: 'Start point',
       endPoint: 'End point',
       legend: 'Legend:',
+    },
+    family: {
+      title: 'Family Members',
+      description: 'Add family members to track who joined each trip',
+      noMembers: 'No family members yet',
+      namePlaceholder: 'Name...',
+      participants: "Who\u2019s on this trip?",
     },
   },
 };

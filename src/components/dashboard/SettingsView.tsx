@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { CURRENCIES } from '@/constants';
+import FamilyMembersManager from './FamilyMembersManager';
 
 const SettingsView: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -165,6 +166,9 @@ const SettingsView: React.FC = () => {
             </button>
           </div>
         </section>
+
+        {/* Family Members Section */}
+        <FamilyMembersManager />
 
         {/* Currency Section */}
         <section className="rounded-xl border border-border bg-card p-5 space-y-4">

@@ -4,12 +4,15 @@ import { TRIP_STATUSES } from '@/constants';
 import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { X } from 'lucide-react';
 import CoverImagePicker from './CoverImagePicker';
+import TripParticipantsPicker from './TripParticipantsPicker';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTripParticipants } from '@/hooks/useTripParticipants';
 
 interface EditTripModalProps { isOpen: boolean; trip: Trip; onClose: () => void; onUpdateTrip: (updatedTrip: Trip) => void; }
 
 const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, onUpdateTrip }) => {
   const { t } = useLanguage();
+  const { participantIds, setParticipantIds, saveParticipants } = useTripParticipants(trip.id);
   const [name, setName] = useState(trip.name); const [destination, setDestination] = useState(trip.destination || '');
   const [startDate, setStartDate] = useState(trip.start_date); const [endDate, setEndDate] = useState(trip.end_date);
   const [baseCurrency, setBaseCurrency] = useState(trip.base_currency); const [status, setStatus] = useState(trip.status);
@@ -17,9 +20,10 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
   const [budget, setBudget] = useState(trip.budget?.toString() || ''); const [error, setError] = useState('');
   useEffect(() => { if (isOpen) { setName(trip.name); setDestination(trip.destination || ''); setStartDate(trip.start_date); setEndDate(trip.end_date); setBaseCurrency(trip.base_currency); setStatus(trip.status); setCoverImage(trip.cover_image || ''); setAlbumLink(trip.album_link || ''); setBudget(trip.budget?.toString() || ''); setError(''); } }, [isOpen, trip]);
   if (!isOpen) return null;
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) { setError(t('modals.tripNameRequired')); return; }
+    await saveParticipants(trip.id, participantIds);
     onUpdateTrip({ ...trip, name: name.trim(), destination: destination.trim(), start_date: startDate, end_date: endDate, base_currency: baseCurrency, status, cover_image: coverImage || undefined, album_link: albumLink || undefined, budget: budget ? Number(budget) : undefined }); onClose();
   };
   return (
@@ -41,6 +45,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
             <div><label className="text-xs text-muted-foreground font-medium">{t('modals.currency')}</label><CurrencyPicker value={baseCurrency} onChange={setBaseCurrency} /></div>
             <div><label className="text-xs text-muted-foreground font-medium">{t('modals.statusLabel')}</label><select value={status} onChange={e => setStatus(e.target.value as TripStatus)} className="input-field">{TRIP_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
           </div>
+          <TripParticipantsPicker selectedIds={participantIds} onChange={setParticipantIds} />
           <CoverImagePicker value={coverImage} onChange={setCoverImage} />
           <input placeholder={t('modals.albumLink')} value={albumLink} onChange={e => setAlbumLink(e.target.value)} className="input-field" />
           <input type="number" placeholder={t('modals.budget')} value={budget} onChange={e => setBudget(e.target.value)} className="input-field" min="0" />

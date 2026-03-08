@@ -145,6 +145,30 @@ export type Database = {
           },
         ]
       }
+      family_members: {
+        Row: {
+          avatar_emoji: string | null
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          avatar_emoji?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          avatar_emoji?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -277,6 +301,42 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "trip_collaborators_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_participants: {
+        Row: {
+          created_at: string
+          family_member_id: string
+          id: string
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          family_member_id: string
+          id?: string
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          family_member_id?: string
+          id?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_participants_family_member_id_fkey"
+            columns: ["family_member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_participants_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
             referencedRelation: "trips"
