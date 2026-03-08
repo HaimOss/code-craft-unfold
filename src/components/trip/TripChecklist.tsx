@@ -448,13 +448,15 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
         'קטגוריה': cat.label,
         'עדיפות': item.priority === 'high' ? 'גבוהה' : 'רגילה',
         'הושלם': item.is_completed ? 'כן' : 'לא',
+        'תאריך יעד': item.due_date || '',
+        'אחראי': item.assignee || '',
         'משימת אב': parentItem?.text || '',
       };
     });
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'צ׳קליסט');
-    ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 8 }, { wch: 20 }];
+    ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 8 }, { wch: 12 }, { wch: 15 }, { wch: 20 }];
     XLSX.writeFile(wb, `checklist_${tripId.slice(0, 8)}.xlsx`);
     toast({ title: 'הצ\'קליסט יוצא בהצלחה! 📥' });
   };
