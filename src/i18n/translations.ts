@@ -331,6 +331,13 @@ const translations: Record<Language, TranslationTree> = {
       endPoint: 'נקודת סיום',
       legend: 'מקרא:',
     },
+    family: {
+      title: 'בני משפחה',
+      description: 'הוסף בני משפחה כדי לסמן מי היה בכל טיול',
+      noMembers: 'אין בני משפחה עדיין',
+      namePlaceholder: 'שם...',
+      participants: 'מי בטיול?',
+    },
   },
   en: {
     app: {
