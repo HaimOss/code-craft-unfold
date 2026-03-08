@@ -21,7 +21,29 @@ interface TripDashboardProps {
 const TripDashboard: React.FC<TripDashboardProps> = ({
   trips, onSelectTrip, onAddTrip, onLogout,
 }) => {
+  const { user } = useAuth();
   const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
+
+  const handleImportJSON = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file || !user) return;
+      try {
+        const payload = await parseImportFile(file);
+        if (payload.type !== 'trip') { toast({ title: 'הקובץ מכיל פעילות, לא טיול. ייבא מתוך טיול קיים.', variant: 'destructive' }); return; }
+        const newId = await importSharedTrip(user.id, payload.data);
+        // Reload by adding the trip locally
+        onAddTrip({ ...(payload.data as any), id: newId, name: (payload.data as any).name + ' (imported)', events: (payload.data as any).events || [] });
+        toast({ title: 'טיול יובא בהצלחה! 🎉' });
+      } catch (err: any) {
+        toast({ title: 'שגיאה בייבוא', description: err.message, variant: 'destructive' });
+      }
+    };
+    input.click();
+  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
