@@ -239,7 +239,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
               }`}
               style={selectedDay === idx ? { backgroundColor: DAY_COLORS[idx % DAY_COLORS.length] } : undefined}
             >
-              יום {idx + 1} · {dayDate.getDate()}/{dayDate.getMonth() + 1}
+              {t('map.dayLabel', { idx: String(idx + 1) })} · {dayDate.getDate()}/{dayDate.getMonth() + 1}
             </button>
           );
         })}
