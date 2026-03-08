@@ -212,6 +212,8 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
   const [newPriority, setNewPriority] = useState('normal');
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [hideCompleted, setHideCompleted] = useState(false);
+  const [filterDue, setFilterDue] = useState<'all' | 'overdue' | 'this_week'>('all');
+  const [filterAssignee, setFilterAssignee] = useState<string | null>(null);
   const [collapsedParents, setCollapsedParents] = useState<Set<string>>(new Set());
   const [addingSubtaskFor, setAddingSubtaskFor] = useState<string | null>(null);
   const [subtaskText, setSubtaskText] = useState('');
@@ -252,13 +254,35 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     return map;
   }, [items]);
 
+  // Unique assignees for filter
+  const uniqueAssignees = useMemo(() => {
+    const set = new Set<string>();
+    items.forEach(i => { if (i.assignee) set.add(i.assignee); });
+    return Array.from(set);
+  }, [items]);
+
   const filtered = useMemo(() => {
+    const now = new Date();
+    const weekFromNow = new Date();
+    weekFromNow.setDate(now.getDate() + 7);
+
     return parentItems.filter(item => {
       if (filterCategory && item.category !== filterCategory) return false;
       if (hideCompleted && item.is_completed) return false;
+      if (filterAssignee && item.assignee !== filterAssignee) return false;
+      if (filterDue === 'overdue' && !item.is_completed) {
+        if (!item.due_date) return false;
+        const d = new Date(item.due_date + 'T00:00:00');
+        if (!(isPast(d) && !isToday(d))) return false;
+      }
+      if (filterDue === 'this_week' && !item.is_completed) {
+        if (!item.due_date) return false;
+        const d = new Date(item.due_date + 'T00:00:00');
+        if (d > weekFromNow || (isPast(d) && !isToday(d))) return false;
+      }
       return true;
     });
-  }, [parentItems, filterCategory, hideCompleted]);
+  }, [parentItems, filterCategory, hideCompleted, filterDue, filterAssignee]);
 
   const sortedFiltered = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -640,6 +664,43 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
           >
             {hideCompleted ? '👁️ הצג הושלמו' : '🙈 הסתר הושלמו'}
           </button>
+
+          {/* Due date filters */}
+          <span className="text-muted-foreground/30">|</span>
+          <button
+            onClick={() => setFilterDue(filterDue === 'overdue' ? 'all' : 'overdue')}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+              filterDue === 'overdue' ? 'bg-destructive/10 text-destructive border-destructive/30' : 'bg-card border-border text-muted-foreground hover:border-destructive/30'
+            }`}
+          >
+            🔴 באיחור
+          </button>
+          <button
+            onClick={() => setFilterDue(filterDue === 'this_week' ? 'all' : 'this_week')}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+              filterDue === 'this_week' ? 'bg-accent/10 text-accent border-accent/30' : 'bg-card border-border text-muted-foreground hover:border-accent/30'
+            }`}
+          >
+            📅 השבוע
+          </button>
+
+          {/* Assignee filters */}
+          {uniqueAssignees.length > 0 && (
+            <>
+              <span className="text-muted-foreground/30">|</span>
+              {uniqueAssignees.map(name => (
+                <button
+                  key={name}
+                  onClick={() => setFilterAssignee(filterAssignee === name ? null : name)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+                    filterAssignee === name ? 'bg-primary/10 text-primary border-primary/30' : 'bg-card border-border text-muted-foreground hover:border-primary/30'
+                  }`}
+                >
+                  👤 {name}
+                </button>
+              ))}
+            </>
+          )}
         </div>
       )}
 
