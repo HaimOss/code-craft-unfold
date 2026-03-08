@@ -62,22 +62,22 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     }
   };
 
-  const handleGoogleMaps = () => {
+  const getGoogleMapsUrl = () => {
     const locations = dailyEvents.map(getLocationFromEvent).filter((loc): loc is string => !!loc);
     if (locations.length === 0) {
-      if (trip.destination) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.destination)}`, '_blank');
-      return;
+      if (trip.destination) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.destination)}`;
+      return null;
     }
     if (locations.length === 1) {
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locations[0])}`, '_blank');
-      return;
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locations[0])}`;
     }
     const origin = locations[0];
     const destination = locations[locations.length - 1];
     const waypoints = locations.slice(1, -1);
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}${waypoints.length > 0 ? `&waypoints=${encodeURIComponent(waypoints.join('|'))}` : ''}`;
-    window.open(url, '_blank');
+    return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}${waypoints.length > 0 ? `&waypoints=${encodeURIComponent(waypoints.join('|'))}` : ''}`;
   };
+
+  const mapsUrl = getGoogleMapsUrl();
 
   const localDate = useMemo(() => new Date(date + 'T00:00:00'), [date]);
 
@@ -100,9 +100,15 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           <div>
             <h3 className="text-xl font-bold font-display">Day {dayNumber}</h3>
             <div className="flex items-center gap-3 mt-1">
-              <button onClick={handleGoogleMaps} className="text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
-                <ExternalLink className="h-3 w-3 mr-1" /> Google Maps
-              </button>
+              {mapsUrl ? (
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
+                  <ExternalLink className="h-3 w-3 mr-1" /> Google Maps
+                </a>
+              ) : (
+                <span className="text-xs flex items-center text-muted-foreground/50">
+                  <ExternalLink className="h-3 w-3 mr-1" /> Google Maps
+                </span>
+              )}
             </div>
           </div>
         </div>
