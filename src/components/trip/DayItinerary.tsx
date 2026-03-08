@@ -199,7 +199,6 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   };
 
   const mapsUrl = getGoogleMapsUrl();
-  const showMapUrl = getShowMapUrl();
   const localDate = useMemo(() => new Date(date + 'T00:00:00'), [date]);
 
   if (isAddingEvent) {
