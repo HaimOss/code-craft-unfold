@@ -6,6 +6,7 @@ import { Event, EventCategory, DailyInfo } from '@/types';
 import { getLocationFromEvent } from '@/utils/helpers';
 import { CATEGORY_ICONS } from '@/constants';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const CATEGORY_COLORS: Record<string, string> = {
   [EventCategory.Flights]: '#0ea5e9',
