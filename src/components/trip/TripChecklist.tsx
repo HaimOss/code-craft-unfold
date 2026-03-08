@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Plus, X, CheckSquare, Square, Star, Trash2, ShoppingBag, ClipboardList, StickyNote, Plane, Filter, Download, Upload } from 'lucide-react';
+import { Plus, X, CheckSquare, Square, Star, Trash2, ShoppingBag, ClipboardList, StickyNote, Plane, Filter, Download, Upload, GripVertical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface ChecklistItem {
   id: string;
