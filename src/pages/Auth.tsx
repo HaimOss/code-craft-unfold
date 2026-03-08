@@ -144,7 +144,7 @@ const Auth = () => {
               className="btn-primary w-full flex items-center justify-center gap-2"
             >
               {loading ? 'טוען...' : isLogin ? 'התחבר' : 'הירשם'}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
           </form>
 
