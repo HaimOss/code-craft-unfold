@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trip, TripStatus } from '@/types';
-import { CURRENCIES, TRIP_STATUSES } from '@/constants';
+import { TRIP_STATUSES } from '@/constants';
+import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { X } from 'lucide-react';
 import CoverImagePicker from './CoverImagePicker';
 
