@@ -334,10 +334,10 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
               {completedCount}/{totalCount} הושלמו
             </span>
             <div className="flex items-center gap-2">
-              <button onClick={exportCSV} className="btn-ghost flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="ייצוא CSV">
+              <button onClick={exportExcel} className="btn-ghost flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="ייצוא Excel">
                 <Download className="h-3.5 w-3.5" /> ייצוא
               </button>
-              <button onClick={importCSV} className="btn-ghost flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="ייבוא CSV">
+              <button onClick={importExcel} className="btn-ghost flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="ייבוא Excel">
                 <Upload className="h-3.5 w-3.5" /> ייבוא
               </button>
               <span className="text-xs text-muted-foreground">
