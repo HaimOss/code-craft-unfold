@@ -301,6 +301,18 @@ const translations: Record<Language, TranslationTree> = {
       noItinerary: 'אין מסלול עדיין',
       setDates: 'הגדר תאריכי התחלה וסיום תקינים ליצירת מסלול.',
     },
+    map: {
+      loadingMap: 'טוען מפה...',
+      loadingMapLocations: 'טוען מפה ומאתר מיקומים...',
+      noLocations: 'אין מיקומים להציג',
+      noLocationsDesc: 'הוסף כתובות ומיקומים לפעילויות כדי לראות אותן על המפה.',
+      noLocationsDayDesc: 'אין מיקומים להציג ליום זה. הוסף מיקומים לפעילויות או הגדר נקודות התחלה/סיום.',
+      allDays: 'כל הימים',
+      dayLabel: 'יום {idx}',
+      startPoint: 'נקודת התחלה',
+      endPoint: 'נקודת סיום',
+      legend: 'מקרא:',
+    },
   },
   en: {
     app: {
