@@ -219,14 +219,18 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAd
             )}
           </div>
 
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div
+            className="bg-card border border-border rounded-2xl overflow-hidden cursor-pointer group hover:shadow-lg transition-all"
+            onClick={() => setShowWorldMap(true)}
+          >
             <div className="h-40 bg-secondary flex items-center justify-center relative">
-              <div className="absolute inset-0 opacity-30" style={{
+              <div className="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity" style={{
                 backgroundImage: `url("https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=600&q=60")`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }} />
               <div className="relative text-center">
+                <Map className="h-6 w-6 mx-auto mb-1 text-primary" />
                 <p className="font-bold text-foreground text-sm">{t('dashboard.whereTo')}</p>
                 <p className="text-xs text-muted-foreground mt-1">{t('dashboard.discoverNew')}</p>
               </div>
