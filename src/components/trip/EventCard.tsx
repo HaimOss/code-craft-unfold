@@ -1,5 +1,5 @@
 import React from 'react';
-import { Event, EventCategory, FlightDetails, AccommodationDetails, TransportDetails, GeneralDetails } from '@/types';
+import { Event, EventCategory, FlightDetails, AccommodationDetails, TransportDetails, ActivityDetails, ShoppingDetails, GeneralDetails } from '@/types';
 import { CATEGORY_ICONS, CURRENCY_SYMBOLS, PRESET_TAGS } from '@/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
