@@ -29,6 +29,13 @@ interface ChecklistItem {
   assignee: string | null;
 }
 
+const CATEGORIES = [
+  { value: 'before_trip', label: 'לפני הטיול', emoji: '✈️', icon: Plane },
+  { value: 'shopping', label: 'קניות', emoji: '🛍️', icon: ShoppingBag },
+  { value: 'task', label: 'משימה', emoji: '📌', icon: ClipboardList },
+  { value: 'note', label: 'הערה', emoji: '📝', icon: StickyNote },
+];
+
 const getCategoryConfig = (value: string) => CATEGORIES.find(c => c.value === value) || CATEGORIES[2];
 
 // Sortable item component
