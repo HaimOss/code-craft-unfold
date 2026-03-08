@@ -131,7 +131,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
       const pointResults: GeocodedPoint[] = [];
 
       // Geocode daily_info start/end points
-      const dailyInfo = (trip as any).daily_info || {};
+      const dailyInfo = trip.dailyInfo || {};
       for (const [date, info] of Object.entries(dailyInfo)) {
         const dayIndex = tripDays.indexOf(date);
         if (dayIndex === -1) continue;
