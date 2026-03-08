@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      checklist_items: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_completed: boolean
+          priority: string
+          sort_order: number
+          text: string
+          trip_id: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          priority?: string
+          sort_order?: number
+          text: string
+          trip_id: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          priority?: string
+          sort_order?: number
+          text?: string
+          trip_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           amount: number
