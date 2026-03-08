@@ -163,7 +163,7 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="relative"><DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="amount" type="number" step="0.01" placeholder="Amount" value={formData.amount} onChange={handleInputChange} className="input-field pl-10" /></div>
+          <div className="relative"><DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="amount" type="number" step="0.01" placeholder="Amount" value={formData.amount || ''} onChange={handleInputChange} onFocus={e => { if (e.target.value === '0') e.target.value = ''; }} className="input-field pl-10" /></div>
           <CurrencyPicker value={formData.currency} onChange={(c) => setFormData(p => ({...p, currency: c}))} />
           <select name="payment_method" value={formData.payment_method} onChange={handleInputChange} className="input-field">{PAYMENT_METHODS.map(pm => <option key={pm} value={pm}>{pm}</option>)}</select>
           <select name="rating" value={formData.rating || 0} onChange={(e) => setFormData(p => ({...p, rating: parseInt(e.target.value, 10)}))} className="input-field">
