@@ -47,6 +47,7 @@ interface SortableChecklistItemProps {
   onTogglePriority: (item: ChecklistItem) => void;
   onDelete: (id: string) => void;
   onAddSubtask: (parentId: string) => void;
+  onUpdateField: (id: string, field: string, value: any) => void;
   collapsedParents: Set<string>;
   onToggleCollapse: (id: string) => void;
 }
