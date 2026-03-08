@@ -6,6 +6,7 @@ import { Trip, Event, EventCategory } from '@/types';
 import { getLocationFromEvent } from '@/utils/helpers';
 import { CATEGORY_ICONS } from '@/constants';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Fix default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
