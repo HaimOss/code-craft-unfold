@@ -30,6 +30,8 @@ const dbRowToEvent = (row: any): Event => ({
   details: row.details || {},
   notes: row.notes || undefined,
   rating: row.rating || undefined,
+  is_favorite: row.is_favorite || false,
+  tags: row.tags || [],
 });
 
 export const fetchTrips = async (userId: string): Promise<Trip[]> => {
