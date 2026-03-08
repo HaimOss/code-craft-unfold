@@ -32,6 +32,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
   const [isCalculating, setIsCalculating] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
 
   const handleExportJSON = () => exportTripToJSON(trip);
 
