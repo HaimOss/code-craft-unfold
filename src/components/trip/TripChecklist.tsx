@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import * as XLSX from 'xlsx';
 
 interface ChecklistItem {
   id: string;
@@ -216,40 +217,32 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     }
   };
 
-  const exportCSV = () => {
-    const header = 'טקסט,קטגוריה,עדיפות,הושלם';
+  const exportExcel = () => {
     const rows = items.map(item => {
       const cat = getCategoryConfig(item.category);
-      return `"${item.text.replace(/"/g, '""')}","${cat.label}","${item.priority === 'high' ? 'גבוהה' : 'רגילה'}","${item.is_completed ? 'כן' : 'לא'}"`;
+      return {
+        'טקסט': item.text,
+        'קטגוריה': cat.label,
+        'עדיפות': item.priority === 'high' ? 'גבוהה' : 'רגילה',
+        'הושלם': item.is_completed ? 'כן' : 'לא',
+      };
     });
-    const csv = '\uFEFF' + [header, ...rows].join('\n'); // BOM for Hebrew Excel support
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `checklist_${tripId.slice(0, 8)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'צ׳קליסט');
+    // Auto-size columns
+    ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 8 }];
+    XLSX.writeFile(wb, `checklist_${tripId.slice(0, 8)}.xlsx`);
     toast({ title: 'הצ\'קליסט יוצא בהצלחה! 📥' });
   };
 
-  const importCSV = () => {
+  const importExcel = () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.csv,.xlsx,.xls';
+    input.accept = '.xlsx,.xls,.csv';
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file || !user) return;
-
-      const text = await file.text();
-      const lines = text.split('\n').filter(l => l.trim());
-      
-      // Skip header row
-      const dataLines = lines.slice(1);
-      if (dataLines.length === 0) {
-        toast({ title: 'הקובץ ריק', variant: 'destructive' });
-        return;
-      }
 
       const categoryMap: Record<string, string> = {
         'לפני הטיול': 'before_trip',
@@ -262,62 +255,61 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
         'note': 'note',
       };
 
-      const newItems: Array<{
-        trip_id: string;
-        user_id: string;
-        text: string;
-        category: string;
-        priority: string;
-        is_completed: boolean;
-        sort_order: number;
-      }> = [];
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json<Record<string, string>>(sheet);
 
-      dataLines.forEach((line, idx) => {
-        // Parse CSV line respecting quotes
-        const cols: string[] = [];
-        let current = '';
-        let inQuotes = false;
-        for (const char of line) {
-          if (char === '"') { inQuotes = !inQuotes; continue; }
-          if (char === ',' && !inQuotes) { cols.push(current.trim()); current = ''; continue; }
-          current += char;
+        if (rows.length === 0) {
+          toast({ title: 'הקובץ ריק', variant: 'destructive' });
+          return;
         }
-        cols.push(current.trim());
 
-        const itemText = cols[0];
-        if (!itemText) return;
+        const newItems = rows.map((row, idx) => {
+          const itemText = row['טקסט'] || row['text'] || Object.values(row)[0] || '';
+          if (!itemText) return null;
 
-        const catRaw = cols[1] || '';
-        const category = categoryMap[catRaw] || 'task';
-        const priority = (cols[2] || '').includes('גבוהה') || (cols[2] || '').toLowerCase() === 'high' ? 'high' : 'normal';
-        const isCompleted = (cols[3] || '').includes('כן') || (cols[3] || '').toLowerCase() === 'yes';
+          const catRaw = row['קטגוריה'] || row['category'] || '';
+          const category = categoryMap[catRaw] || 'task';
+          const priorityRaw = row['עדיפות'] || row['priority'] || '';
+          const priority = priorityRaw.includes('גבוהה') || priorityRaw.toLowerCase() === 'high' ? 'high' : 'normal';
+          const completedRaw = row['הושלם'] || row['completed'] || '';
+          const is_completed = completedRaw.includes('כן') || completedRaw.toLowerCase() === 'yes';
 
-        newItems.push({
-          trip_id: tripId,
-          user_id: user.id,
-          text: itemText,
-          category,
-          priority,
-          is_completed: isCompleted,
-          sort_order: items.length + idx,
-        });
-      });
+          return {
+            trip_id: tripId,
+            user_id: user.id,
+            text: String(itemText),
+            category,
+            priority,
+            is_completed,
+            sort_order: items.length + idx,
+          };
+        }).filter(Boolean) as Array<{
+          trip_id: string; user_id: string; text: string; category: string;
+          priority: string; is_completed: boolean; sort_order: number;
+        }>;
 
-      if (newItems.length === 0) {
-        toast({ title: 'לא נמצאו פריטים בקובץ', variant: 'destructive' });
-        return;
-      }
+        if (newItems.length === 0) {
+          toast({ title: 'לא נמצאו פריטים בקובץ', variant: 'destructive' });
+          return;
+        }
 
-      const { data, error } = await supabase
-        .from('checklist_items')
-        .insert(newItems)
-        .select();
+        const { data, error } = await supabase
+          .from('checklist_items')
+          .insert(newItems)
+          .select();
 
-      if (error) {
-        toast({ title: 'שגיאה בייבוא', description: error.message, variant: 'destructive' });
-      } else {
-        setItems(prev => [...prev, ...((data as any[]) || [])]);
-        toast({ title: `יובאו ${newItems.length} פריטים בהצלחה! 🎉` });
+        if (error) {
+          toast({ title: 'שגיאה בייבוא', description: error.message, variant: 'destructive' });
+        } else {
+          setItems(prev => [...prev, ...((data as any[]) || [])]);
+          toast({ title: `יובאו ${newItems.length} פריטים בהצלחה! 🎉` });
+        }
+      } catch (err) {
+        toast({ title: 'שגיאה בקריאת הקובץ', variant: 'destructive' });
       }
     };
     input.click();
@@ -342,10 +334,10 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
               {completedCount}/{totalCount} הושלמו
             </span>
             <div className="flex items-center gap-2">
-              <button onClick={exportCSV} className="btn-ghost flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="ייצוא CSV">
+              <button onClick={exportExcel} className="btn-ghost flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="ייצוא Excel">
                 <Download className="h-3.5 w-3.5" /> ייצוא
               </button>
-              <button onClick={importCSV} className="btn-ghost flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="ייבוא CSV">
+              <button onClick={importExcel} className="btn-ghost flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="ייבוא Excel">
                 <Upload className="h-3.5 w-3.5" /> ייבוא
               </button>
               <span className="text-xs text-muted-foreground">
@@ -455,9 +447,14 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
       {filtered.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-4xl mb-3">✅</p>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-3">
             {totalCount === 0 ? 'הרשימה ריקה — הוסף פריט ראשון!' : 'אין פריטים מתאימים לסינון'}
           </p>
+          {totalCount === 0 && (
+            <button onClick={importExcel} className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors">
+              <Upload className="h-3.5 w-3.5" /> או ייבא מקובץ Excel
+            </button>
+          )}
         </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
