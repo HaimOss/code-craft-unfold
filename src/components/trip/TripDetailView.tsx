@@ -10,6 +10,7 @@ import { CURRENCY_SYMBOLS } from '@/constants';
 import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare } from 'lucide-react';
 
 const TripMap = lazy(() => import('./TripMap'));
+const TripChecklist = lazy(() => import('./TripChecklist'));
 import { exportTripToJSON, parseImportFile, importSharedEvent } from '@/services/shareService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
