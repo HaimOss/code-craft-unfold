@@ -89,7 +89,7 @@ export const updateTrip = async (trip: Trip) => {
       status: trip.status,
       cover_image: trip.cover_image || null,
       album_link: trip.album_link || null,
-      daily_info: trip.dailyInfo || {},
+      daily_info: (trip.dailyInfo || {}) as any,
       updated_at: new Date().toISOString(),
     })
     .eq('id', trip.id);
