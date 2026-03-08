@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Trip, TripStatus } from '@/types';
 import { CURRENCIES, TRIP_STATUSES } from '@/constants';
 import { X } from 'lucide-react';
+import CoverImagePicker from './CoverImagePicker';
 
 interface EditTripModalProps {
   isOpen: boolean;
@@ -49,7 +50,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold font-display">Edit Trip</h2>
           <button onClick={onClose} className="btn-ghost p-1"><X className="h-5 w-5" /></button>
@@ -66,7 +67,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
             <div><label className="text-xs text-muted-foreground font-medium">Currency</label><select value={baseCurrency} onChange={e => setBaseCurrency(e.target.value)} className="input-field">{CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
             <div><label className="text-xs text-muted-foreground font-medium">Status</label><select value={status} onChange={e => setStatus(e.target.value as TripStatus)} className="input-field">{TRIP_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
           </div>
-          <input placeholder="Cover Image URL" value={coverImage} onChange={e => setCoverImage(e.target.value)} className="input-field" />
+          <CoverImagePicker value={coverImage} onChange={setCoverImage} />
           <input placeholder="Photo Album Link" value={albumLink} onChange={e => setAlbumLink(e.target.value)} className="input-field" />
           <input type="number" placeholder="תקציב (אופציונלי)" value={budget} onChange={e => setBudget(e.target.value)} className="input-field" min="0" />
           <div className="flex justify-end gap-3 pt-2">

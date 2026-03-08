@@ -3,6 +3,7 @@ import { Trip, TripStatus } from '@/types';
 import { CURRENCIES, TRIP_STATUSES } from '@/constants';
 import { generateId } from '@/utils/helpers';
 import { X } from 'lucide-react';
+import CoverImagePicker from './CoverImagePicker';
 
 interface AddTripModalProps {
   isOpen: boolean;
@@ -44,14 +45,13 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
 
     onAddTrip(newTrip);
     onClose();
-    // Reset
     setName(''); setDestination(''); setStartDate(today); setEndDate(today);
     setBaseCurrency(CURRENCIES[0]); setStatus(TripStatus.Idea); setCoverImage(''); setBudget(''); setError('');
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-content max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold font-display">New Trip ✈️</h2>
           <button onClick={onClose} className="btn-ghost p-1"><X className="h-5 w-5" /></button>
@@ -84,7 +84,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
               </select>
             </div>
           </div>
-          <input placeholder="Cover Image URL (optional)" value={coverImage} onChange={e => setCoverImage(e.target.value)} className="input-field" />
+          <CoverImagePicker value={coverImage} onChange={setCoverImage} />
           <input type="number" placeholder="תקציב (אופציונלי)" value={budget} onChange={e => setBudget(e.target.value)} className="input-field" min="0" />
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
