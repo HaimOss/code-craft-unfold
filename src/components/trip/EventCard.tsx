@@ -1,5 +1,5 @@
 import React from 'react';
-import { Event, EventCategory, FlightDetails, AccommodationDetails, TransportDetails, GeneralDetails } from '@/types';
+import { Event, EventCategory, FlightDetails, AccommodationDetails, TransportDetails, ActivityDetails, ShoppingDetails, GeneralDetails } from '@/types';
 import { CATEGORY_ICONS, CURRENCY_SYMBOLS, PRESET_TAGS } from '@/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -17,13 +17,32 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
   switch (category) {
     case EventCategory.Flights: {
       const flight = details as FlightDetails;
-      return <p className="text-xs text-muted-foreground">{flight.dept_airport} → {flight.arr_airport} {flight.flight_num && `(${flight.flight_num})`}</p>;
+      return (
+        <div className="space-y-0.5">
+          <p className="text-xs text-muted-foreground">
+            {flight.airline && `${flight.airline} · `}{flight.dept_airport} → {flight.arr_airport} {flight.flight_num && `(${flight.flight_num})`}
+          </p>
+          {(flight.terminal || flight.gate) && (
+            <p className="text-xs text-muted-foreground">
+              {flight.terminal && `Terminal ${flight.terminal}`}{flight.terminal && flight.gate && ' · '}{flight.gate && `Gate ${flight.gate}`}
+            </p>
+          )}
+          {flight.confirmation_num && <p className="text-xs text-muted-foreground">📋 {flight.confirmation_num}</p>}
+          {flight.checkin_link && (
+            <a href={flight.checkin_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
+              <ExternalLink className="h-3 w-3 mr-1" /> Check-in
+            </a>
+          )}
+        </div>
+      );
     }
     case EventCategory.Accommodation: {
       const accommodation = details as AccommodationDetails;
       return (
         <div className="space-y-0.5">
           {accommodation.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{accommodation.address}</p>}
+          {accommodation.room_type && <p className="text-xs text-muted-foreground">🛏️ {accommodation.room_type}</p>}
+          {accommodation.confirmation_num && <p className="text-xs text-muted-foreground">📋 {accommodation.confirmation_num}</p>}
           {accommodation.book_link && (
             <a href={accommodation.book_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
               <ExternalLink className="h-3 w-3 mr-1" /> View Booking
@@ -34,7 +53,52 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
     }
     case EventCategory.Transport: {
       const transport = details as TransportDetails;
-      return <p className="text-xs text-muted-foreground">{transport.pickup_point} → {transport.dropoff_point}</p>;
+      const typeLabels: Record<string, string> = { rental: '🚗 Rental', train: '🚆 Train', bus: '🚌 Bus', taxi: '🚕 Taxi', ferry: '⛴️ Ferry', other: '📦 Other' };
+      return (
+        <div className="space-y-0.5">
+          <p className="text-xs text-muted-foreground">
+            {transport.transport_type && `${typeLabels[transport.transport_type] || transport.transport_type} · `}
+            {transport.pickup_point} → {transport.dropoff_point}
+          </p>
+          {transport.company && <p className="text-xs text-muted-foreground">🏢 {transport.company}</p>}
+          {transport.confirmation_num && <p className="text-xs text-muted-foreground">📋 {transport.confirmation_num}</p>}
+          {transport.book_link && (
+            <a href={transport.book_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
+              <ExternalLink className="h-3 w-3 mr-1" /> Booking
+            </a>
+          )}
+        </div>
+      );
+    }
+    case EventCategory.Activity: {
+      const activity = details as ActivityDetails;
+      return (
+        <div className="space-y-0.5">
+          {(activity.address || activity.location) && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{activity.address || activity.location}</p>}
+          {activity.opening_hours && <p className="text-xs text-muted-foreground">🕐 {activity.opening_hours}</p>}
+          {activity.confirmation_num && <p className="text-xs text-muted-foreground">📋 {activity.confirmation_num}</p>}
+          {activity.book_link && (
+            <a href={activity.book_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
+              <ExternalLink className="h-3 w-3 mr-1" /> Booking
+            </a>
+          )}
+        </div>
+      );
+    }
+    case EventCategory.Shopping: {
+      const shopping = details as ShoppingDetails;
+      return (
+        <div className="space-y-0.5">
+          {shopping.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{shopping.address}</p>}
+          {shopping.opening_hours && <p className="text-xs text-muted-foreground">🕐 {shopping.opening_hours}</p>}
+          {shopping.customs_note && <p className="text-xs text-muted-foreground">📦 {shopping.customs_note}</p>}
+          {shopping.website && (
+            <a href={shopping.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
+              <ExternalLink className="h-3 w-3 mr-1" /> Website
+            </a>
+          )}
+        </div>
+      );
     }
     default: {
       const general = details as GeneralDetails;

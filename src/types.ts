@@ -31,6 +31,11 @@ export interface FlightDetails {
   flight_num?: string;
   dept_airport?: string;
   arr_airport?: string;
+  airline?: string;
+  confirmation_num?: string;
+  terminal?: string;
+  gate?: string;
+  checkin_link?: string;
 }
 
 export interface AccommodationDetails {
@@ -41,11 +46,34 @@ export interface AccommodationDetails {
   phone?: string;
   website?: string;
   opening_hours?: string;
+  confirmation_num?: string;
+  room_type?: string;
 }
 
 export interface TransportDetails {
   pickup_point?: string;
   dropoff_point?: string;
+  transport_type?: string;
+  confirmation_num?: string;
+  company?: string;
+  book_link?: string;
+}
+
+export interface ActivityDetails {
+  location?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  opening_hours?: string;
+  book_link?: string;
+  confirmation_num?: string;
+}
+
+export interface ShoppingDetails {
+  address?: string;
+  opening_hours?: string;
+  website?: string;
+  customs_note?: string;
 }
 
 export interface GeneralDetails {
@@ -55,7 +83,7 @@ export interface GeneralDetails {
   opening_hours?: string;
 }
 
-export type EventDetails = FlightDetails | AccommodationDetails | TransportDetails | GeneralDetails;
+export type EventDetails = FlightDetails | AccommodationDetails | TransportDetails | ActivityDetails | ShoppingDetails | GeneralDetails;
 
 export interface Event {
   id: string;
