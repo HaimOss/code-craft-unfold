@@ -19,6 +19,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
   const [status, setStatus] = useState(trip.status);
   const [coverImage, setCoverImage] = useState(trip.cover_image || '');
   const [albumLink, setAlbumLink] = useState(trip.album_link || '');
+  const [budget, setBudget] = useState(trip.budget?.toString() || '');
   const [error, setError] = useState('');
 
   useEffect(() => {
