@@ -30,7 +30,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
           {flight.confirmation_num && <p className="text-xs text-muted-foreground">📋 {flight.confirmation_num}</p>}
           {flight.checkin_link && (
             <a href={flight.checkin_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
-              <ExternalLink className="h-3 w-3 mr-1" /> Check-in
+              <ExternalLink className="h-3 w-3 ml-1" /> צ'ק-אין
             </a>
           )}
         </div>
@@ -40,12 +40,12 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
       const accommodation = details as AccommodationDetails;
       return (
         <div className="space-y-0.5">
-          {accommodation.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{accommodation.address}</p>}
+          {accommodation.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 ml-1 flex-shrink-0" />{accommodation.address}</p>}
           {accommodation.room_type && <p className="text-xs text-muted-foreground">🛏️ {accommodation.room_type}</p>}
           {accommodation.confirmation_num && <p className="text-xs text-muted-foreground">📋 {accommodation.confirmation_num}</p>}
           {accommodation.book_link && (
             <a href={accommodation.book_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
-              <ExternalLink className="h-3 w-3 mr-1" /> View Booking
+              <ExternalLink className="h-3 w-3 ml-1" /> צפה בהזמנה
             </a>
           )}
         </div>
@@ -64,7 +64,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
           {transport.confirmation_num && <p className="text-xs text-muted-foreground">📋 {transport.confirmation_num}</p>}
           {transport.book_link && (
             <a href={transport.book_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
-              <ExternalLink className="h-3 w-3 mr-1" /> Booking
+              <ExternalLink className="h-3 w-3 ml-1" /> הזמנה
             </a>
           )}
         </div>
@@ -74,12 +74,12 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
       const activity = details as ActivityDetails;
       return (
         <div className="space-y-0.5">
-          {(activity.address || activity.location) && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{activity.address || activity.location}</p>}
+          {(activity.address || activity.location) && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 ml-1 flex-shrink-0" />{activity.address || activity.location}</p>}
           {activity.opening_hours && <p className="text-xs text-muted-foreground">🕐 {activity.opening_hours}</p>}
           {activity.confirmation_num && <p className="text-xs text-muted-foreground">📋 {activity.confirmation_num}</p>}
           {activity.book_link && (
             <a href={activity.book_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
-              <ExternalLink className="h-3 w-3 mr-1" /> Booking
+              <ExternalLink className="h-3 w-3 ml-1" /> הזמנה
             </a>
           )}
         </div>
@@ -89,12 +89,12 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
       const shopping = details as ShoppingDetails;
       return (
         <div className="space-y-0.5">
-          {shopping.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{shopping.address}</p>}
+          {shopping.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 ml-1 flex-shrink-0" />{shopping.address}</p>}
           {shopping.opening_hours && <p className="text-xs text-muted-foreground">🕐 {shopping.opening_hours}</p>}
           {shopping.customs_note && <p className="text-xs text-muted-foreground">📦 {shopping.customs_note}</p>}
           {shopping.website && (
             <a href={shopping.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
-              <ExternalLink className="h-3 w-3 mr-1" /> Website
+              <ExternalLink className="h-3 w-3 ml-1" /> אתר
             </a>
           )}
         </div>
@@ -102,7 +102,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
     }
     default: {
       const general = details as GeneralDetails;
-      return general?.location ? <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{general.location}</p> : null;
+      return general?.location ? <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 ml-1 flex-shrink-0" />{general.location}</p> : null;
     }
   }
 };
@@ -137,12 +137,12 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare,
     >
       <div className="flex items-start justify-between">
         <div className="flex items-start flex-grow">
-          <div {...attributes} {...listeners} className="mr-2 mt-2 p-1 text-muted-foreground/40 cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors">
+          <div {...attributes} {...listeners} className="ml-2 mt-2 p-1 text-muted-foreground/40 cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors">
             <GripVertical className="h-4 w-4" />
           </div>
 
-          <div className="flex items-start cursor-pointer flex-grow" onClick={onEdit} role="button" tabIndex={0} aria-label={`Edit: ${event.title}`}>
-            <div className="text-lg mr-3 mt-0.5 flex-shrink-0 w-9 h-9 flex items-center justify-center bg-secondary rounded-lg">
+          <div className="flex items-start cursor-pointer flex-grow" onClick={onEdit} role="button" tabIndex={0} aria-label={`ערוך: ${event.title}`}>
+            <div className="text-lg ml-3 mt-0.5 flex-shrink-0 w-9 h-9 flex items-center justify-center bg-secondary rounded-lg">
               {categoryIcon.replace('️', '')}
             </div>
             <div className="flex-grow min-w-0">
@@ -177,7 +177,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare,
           </div>
         </div>
 
-        <div className="flex items-center space-x-0.5 flex-shrink-0 ml-2">
+        <div className="flex items-center gap-0.5 flex-shrink-0 mr-2">
           {onToggleFavorite && (
             <button
               onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
@@ -187,7 +187,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare,
               <Heart className={`h-3.5 w-3.5 ${event.is_favorite ? 'fill-red-500' : ''}`} />
             </button>
           )}
-          <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center space-x-0.5">
+          <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
             <button onClick={(e) => { e.stopPropagation(); onShare(); }} className="btn-ghost p-1.5" title="Share"><Share2 className="h-3.5 w-3.5" /></button>
             <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="btn-ghost p-1.5" title="Edit"><Pencil className="h-3.5 w-3.5" /></button>
             <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="btn-ghost p-1.5 hover:text-destructive" title="Delete"><Trash2 className="h-3.5 w-3.5" /></button>

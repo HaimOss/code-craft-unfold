@@ -102,7 +102,6 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}${waypoints.length > 0 ? `&waypoints=${encodeURIComponent(waypoints.join('|'))}` : ''}`;
   };
 
-
   const handleExportDay = async () => {
     const totalStr = dayTotal.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
@@ -175,7 +174,6 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
       const imgW = pageW;
       const imgH = (canvas.height * imgW) / canvas.width;
 
-      // Handle multi-page if content is taller than one page
       if (imgH <= pageH) {
         doc.addImage(imgData, 'PNG', 0, 0, imgW, imgH);
       } else {
@@ -210,16 +208,16 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   }
 
   return (
-    <div className="card-surface p-6 animate-fade-in">
+    <div className="card-surface p-6 animate-fade-in" dir="rtl">
       {/* Header */}
       <div className="flex justify-between items-start sm:items-center mb-4 gap-2">
         <div className="flex items-center min-w-0">
-          <div className="bg-secondary rounded-xl p-2 sm:p-3 text-center mr-2 sm:mr-4 min-w-[48px] sm:min-w-[60px]">
-            <span className="text-[9px] sm:text-[10px] uppercase text-muted-foreground font-semibold">{localDate.toLocaleDateString(undefined, { month: 'short' })}</span>
+          <div className="bg-secondary rounded-xl p-2 sm:p-3 text-center ml-2 sm:ml-4 min-w-[48px] sm:min-w-[60px]">
+            <span className="text-[9px] sm:text-[10px] uppercase text-muted-foreground font-semibold">{localDate.toLocaleDateString('he-IL', { month: 'short' })}</span>
             <span className="text-xl sm:text-2xl font-bold block text-card-foreground">{localDate.getDate()}</span>
           </div>
           <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold font-display">Day {dayNumber}</h3>
+            <h3 className="text-lg sm:text-xl font-bold font-display">יום {dayNumber}</h3>
             <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
               <button
                 onClick={() => setShowDayMap(!showDayMap)}
@@ -227,26 +225,26 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
                   showDayMap ? 'text-primary bg-primary/10 px-2 py-0.5 rounded-full' : 'text-muted-foreground hover:text-primary'
                 }`}
               >
-                <Map className="h-3 w-3 mr-1" /> Map
+                <Map className="h-3 w-3 ml-1" /> מפה
               </button>
               {mapsUrl ? (
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
-                  <ExternalLink className="h-3 w-3 mr-1" /> <span className="hidden sm:inline">Google Maps</span><span className="sm:hidden">GMaps</span>
+                  <ExternalLink className="h-3 w-3 ml-1" /> Google Maps
                 </a>
               ) : (
                 <span className="text-[10px] sm:text-xs flex items-center text-muted-foreground/50">
-                  <ExternalLink className="h-3 w-3 mr-1" /> <span className="hidden sm:inline">Google Maps</span><span className="sm:hidden">GMaps</span>
+                  <ExternalLink className="h-3 w-3 ml-1" /> Google Maps
                 </span>
               )}
               <button onClick={handleExportDay} className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
-                <Download className="h-3 w-3 mr-1" /> <span className="hidden sm:inline">Export Day</span><span className="sm:hidden">PDF</span>
+                <Download className="h-3 w-3 ml-1" /> <span className="hidden sm:inline">ייצוא יום</span><span className="sm:hidden">PDF</span>
               </button>
             </div>
           </div>
         </div>
-        <div className="text-right flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        <div className="text-left flex items-center gap-1 sm:gap-2 flex-shrink-0">
           <div>
-            <span className="text-[10px] sm:text-xs text-muted-foreground block">Day Total</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground block">סה״כ יומי</span>
             <p className="font-bold text-base sm:text-lg text-card-foreground">
               {dayTotal.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
@@ -266,17 +264,17 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
       {!isCollapsed && (
         <div className="relative">
           {/* Timeline line */}
-          <div className="absolute left-[11px] top-0 bottom-0 w-0.5 bg-border" />
+          <div className="absolute right-[11px] top-0 bottom-0 w-0.5 bg-border" />
 
           {/* Starting Point */}
-          <div className="relative flex items-center gap-3 mb-4 pl-0">
+          <div className="relative flex items-center gap-3 mb-4 pr-0">
             <div className="relative z-10 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0">
               <div className="w-2 h-2 bg-card rounded-full" />
             </div>
             {editingStartPoint ? (
               <Input
                 autoFocus
-                placeholder="Enter starting point..."
+                placeholder="נקודת התחלה..."
                 defaultValue={dailyInfo.startPoint || ''}
                 onBlur={(e) => { updateDailyInfo('startPoint', e.target.value); setEditingStartPoint(false); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') { updateDailyInfo('startPoint', (e.target as HTMLInputElement).value); setEditingStartPoint(false); } }}
@@ -288,7 +286,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg px-3 py-1.5 hover:border-primary/40"
               >
                 <MapPin className="h-3.5 w-3.5" />
-                {dailyInfo.startPoint || 'Set Starting Point'}
+                {dailyInfo.startPoint || 'הגדר נקודת התחלה'}
               </button>
             )}
           </div>
@@ -296,7 +294,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           {/* Events */}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={dailyEvents.map(e => e.id)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2 pl-8">
+              <div className="space-y-2 pr-8">
                 {dailyEvents.map(event => (
                   <EventCard
                     key={event.id}
@@ -315,21 +313,21 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           </DndContext>
 
           {/* Add Event button */}
-          <div className="pl-8">
+          <div className="pr-8">
             <button onClick={() => { setEditingEvent(null); setIsAddingEvent(true); }} className="mt-4 w-full p-3 border-2 border-dashed border-border rounded-xl text-muted-foreground hover:text-primary hover:border-primary transition-all flex items-center justify-center gap-2 text-sm font-medium">
-              <Plus className="h-4 w-4" /> Add Activity
+              <Plus className="h-4 w-4" /> הוסף פעילות
             </button>
           </div>
 
           {/* Ending Point */}
-          <div className="relative flex items-center gap-3 mt-4 pl-0">
+          <div className="relative flex items-center gap-3 mt-4 pr-0">
             <div className="relative z-10 w-6 h-6 rounded-full bg-destructive flex items-center justify-center shrink-0">
               <div className="w-2 h-2 bg-card rounded-full" />
             </div>
             {editingEndPoint ? (
               <Input
                 autoFocus
-                placeholder="Enter ending point..."
+                placeholder="נקודת סיום..."
                 defaultValue={dailyInfo.endPoint || ''}
                 onBlur={(e) => { updateDailyInfo('endPoint', e.target.value); setEditingEndPoint(false); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') { updateDailyInfo('endPoint', (e.target as HTMLInputElement).value); setEditingEndPoint(false); } }}
@@ -341,7 +339,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg px-3 py-1.5 hover:border-primary/40"
               >
                 <MapPin className="h-3.5 w-3.5" />
-                {dailyInfo.endPoint || 'Set Ending Point'}
+                {dailyInfo.endPoint || 'הגדר נקודת סיום'}
               </button>
             )}
           </div>
@@ -353,7 +351,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           isOpen={!!sharingEvent}
           onClose={() => setSharingEvent(null)}
           shareUrl={`${window.location.origin}${window.location.pathname}#share/event/${sharingEvent.id}`}
-          title={`Share "${sharingEvent.title}"`}
+          title={`שיתוף "${sharingEvent.title}"`}
         />
       )}
     </div>

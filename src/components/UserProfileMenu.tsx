@@ -71,7 +71,7 @@ const UserProfileMenu: React.FC<UserProfileMenuProps> = ({ onLogout }) => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive cursor-pointer">
-            <LogOut className="h-4 w-4 ml-2" />
+            <LogOut className="h-4 w-4 ml-2 mr-0" />
             התנתק
           </DropdownMenuItem>
         </DropdownMenuContent>

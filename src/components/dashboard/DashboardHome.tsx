@@ -105,12 +105,12 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAd
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 to-transparent" />
                         {daysUntil > 0 && (
-                          <span className="absolute top-3 left-3 bg-card/90 backdrop-blur-sm text-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+                          <span className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm text-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
                             בעוד {daysUntil} ימים
                           </span>
                         )}
                         {daysUntil <= 0 && (
-                          <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+                          <span className="absolute top-3 right-3 bg-accent text-accent-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
                             עכשיו!
                           </span>
                         )}
@@ -244,7 +244,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAd
       {/* FAB - Add Trip */}
       <button
         onClick={onAddTrip}
-        className="fixed bottom-6 left-6 z-40 bg-primary text-primary-foreground px-6 py-3.5 rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-2 font-bold text-sm"
+        className="fixed bottom-6 right-6 z-40 bg-primary text-primary-foreground px-6 py-3.5 rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-2 font-bold text-sm"
       >
         <Plus className="h-5 w-5" />
         תכנן טיול חדש
