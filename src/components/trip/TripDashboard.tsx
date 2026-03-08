@@ -104,6 +104,10 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
         <TabsContent value="archive">
           <ActivityArchive trips={trips} />
         </TabsContent>
+
+        <TabsContent value="stats">
+          <StatsDashboard trips={trips} />
+        </TabsContent>
       </Tabs>
 
       <AddTripModal isOpen={isAddTripModalOpen} onClose={() => setIsAddTripModalOpen(false)} onAddTrip={onAddTrip} />
