@@ -132,7 +132,7 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
   const handleAcceptShared = async (activity: SavedActivity) => {
     if (!user) return;
     try {
-      const { error } = await supabase.from('saved_activities').insert({
+      const { error } = await supabase.from('saved_activities').insert([{
         user_id: user.id,
         title: activity.title,
         category: activity.category,
@@ -143,7 +143,7 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
         estimated_cost: activity.estimated_cost,
         currency: activity.currency,
         source_url: activity.source_url,
-      });
+      }]);
       if (error) throw error;
       // Update share status
       await supabase.from('activity_shares').update({ status: 'accepted' }).eq('activity_id', activity.id).eq('shared_with_email', user.email!);

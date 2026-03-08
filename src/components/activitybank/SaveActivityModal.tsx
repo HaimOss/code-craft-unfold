@@ -19,7 +19,7 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
   const { t, dir } = useLanguage();
   const [form, setForm] = useState({
     title: '',
-    category: EVENT_CATEGORIES[3], // Activity 🎭
+    category: EVENT_CATEGORIES[3] as string,
     location: '',
     estimated_cost: '',
     currency: 'ILS',
