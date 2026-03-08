@@ -42,6 +42,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
       ...trip, name: name.trim(), destination: destination.trim(),
       start_date: startDate, end_date: endDate, base_currency: baseCurrency,
       status, cover_image: coverImage || undefined, album_link: albumLink || undefined,
+      budget: budget ? Number(budget) : undefined,
     });
     onClose();
   };
