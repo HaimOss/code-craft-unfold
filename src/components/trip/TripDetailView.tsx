@@ -25,10 +25,34 @@ interface TripDetailViewProps {
 }
 
 const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateTrip, onDeleteTrip }) => {
+  const { user } = useAuth();
   const [totalCost, setTotalCost] = useState(0);
   const [isCalculating, setIsCalculating] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const handleExportJSON = () => exportTripToJSON(trip);
+
+  const handleImportEventJSON = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file || !user) return;
+      try {
+        const payload = await parseImportFile(file);
+        if (payload.type !== 'event') { toast({ title: 'הקובץ מכיל טיול, לא פעילות', variant: 'destructive' }); return; }
+        await importSharedEvent(user.id, trip.id, payload.data, trip.events.length);
+        const newEvent = { ...payload.data as any, id: crypto.randomUUID() };
+        onUpdateTrip({ ...trip, events: [...trip.events, newEvent] });
+        toast({ title: 'פעילות יובאה בהצלחה! 🎉' });
+      } catch (err: any) {
+        toast({ title: 'שגיאה בייבוא', description: err.message, variant: 'destructive' });
+      }
+    };
+    input.click();
+  };
 
   useEffect(() => {
     const calc = async () => {
