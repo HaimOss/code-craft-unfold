@@ -1,14 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { Trip, Event } from '@/types';
+import React, { useState, useMemo, useRef } from 'react';
+import { Trip, Event, DailyInfo } from '@/types';
 import AddEventForm from './AddEventForm';
 import EventCard from './EventCard';
 import ShareModal from '../modals/ShareModal';
 import { normalizeCost } from '@/services/currencyService';
 import { getLocationFromEvent } from '@/utils/helpers';
-import { CURRENCY_SYMBOLS } from '@/constants';
+import { CURRENCY_SYMBOLS, CATEGORY_DISPLAY_CONFIG } from '@/constants';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { Plus, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, ExternalLink, ChevronDown, ChevronUp, MapPin, Download, Map } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface DayItineraryProps {
   trip: Trip;
@@ -29,6 +30,10 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   const [sharingEvent, setSharingEvent] = useState<Event | null>(null);
   const [dayTotal, setDayTotal] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [editingStartPoint, setEditingStartPoint] = useState(false);
+  const [editingEndPoint, setEditingEndPoint] = useState(false);
+
+  const dailyInfo = trip.dailyInfo?.[date] || {};
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -62,8 +67,23 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     }
   };
 
+  const updateDailyInfo = (field: keyof DailyInfo, value: string) => {
+    const updatedDailyInfo = {
+      ...trip.dailyInfo,
+      [date]: { ...dailyInfo, [field]: value },
+    };
+    onUpdateTrip({ ...trip, dailyInfo: updatedDailyInfo });
+  };
+
   const getGoogleMapsUrl = () => {
-    const locations = dailyEvents.map(getLocationFromEvent).filter((loc): loc is string => !!loc);
+    const locations: string[] = [];
+    if (dailyInfo.startPoint) locations.push(dailyInfo.startPoint);
+    dailyEvents.forEach(e => {
+      const loc = getLocationFromEvent(e);
+      if (loc) locations.push(loc);
+    });
+    if (dailyInfo.endPoint) locations.push(dailyInfo.endPoint);
+
     if (locations.length === 0) {
       if (trip.destination) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.destination)}`;
       return null;
@@ -77,8 +97,57 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}${waypoints.length > 0 ? `&waypoints=${encodeURIComponent(waypoints.join('|'))}` : ''}`;
   };
 
-  const mapsUrl = getGoogleMapsUrl();
+  const getShowMapUrl = () => {
+    const locations: string[] = [];
+    if (dailyInfo.startPoint) locations.push(dailyInfo.startPoint);
+    dailyEvents.forEach(e => {
+      const loc = getLocationFromEvent(e);
+      if (loc) locations.push(loc);
+    });
+    if (dailyInfo.endPoint) locations.push(dailyInfo.endPoint);
 
+    if (locations.length === 0 && trip.destination) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.destination)}`;
+    }
+    if (locations.length > 0) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locations[0])}`;
+    }
+    return null;
+  };
+
+  const handleExportDay = () => {
+    const lines: string[] = [];
+    lines.push(`${trip.name} — Day ${dayNumber} (${date})`);
+    lines.push('='.repeat(40));
+    if (dailyInfo.startPoint) lines.push(`📍 Start: ${dailyInfo.startPoint}`);
+    lines.push('');
+
+    dailyEvents.forEach(event => {
+      const config = CATEGORY_DISPLAY_CONFIG[event.category];
+      lines.push(`${event.time} ${config?.icon || ''} ${event.title}`);
+      lines.push(`   ${CURRENCY_SYMBOLS[event.currency] || ''}${event.amount.toLocaleString()} ${event.currency} (${event.payment_method})`);
+      const loc = getLocationFromEvent(event);
+      if (loc) lines.push(`   📍 ${loc}`);
+      if (event.notes) lines.push(`   💬 ${event.notes}`);
+      if (event.rating) lines.push(`   ⭐ ${event.rating}/5`);
+      lines.push('');
+    });
+
+    if (dailyInfo.endPoint) lines.push(`📍 End: ${dailyInfo.endPoint}`);
+    lines.push('');
+    lines.push(`Day Total: ${dayTotal.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 })}`);
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${trip.name}_Day${dayNumber}_${date}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const mapsUrl = getGoogleMapsUrl();
+  const showMapUrl = getShowMapUrl();
   const localDate = useMemo(() => new Date(date + 'T00:00:00'), [date]);
 
   if (isAddingEvent) {
@@ -91,6 +160,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
 
   return (
     <div className="card-surface p-6 animate-fade-in">
+      {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center">
           <div className="bg-secondary rounded-xl p-3 text-center mr-4 min-w-[60px]">
@@ -99,7 +169,16 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           </div>
           <div>
             <h3 className="text-xl font-bold font-display">Day {dayNumber}</h3>
-            <div className="flex items-center gap-3 mt-1">
+            <div className="flex items-center gap-3 mt-1 flex-wrap">
+              {showMapUrl ? (
+                <a href={showMapUrl} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
+                  <Map className="h-3 w-3 mr-1" /> Show Map
+                </a>
+              ) : (
+                <span className="text-xs flex items-center text-muted-foreground/50">
+                  <Map className="h-3 w-3 mr-1" /> Show Map
+                </span>
+              )}
               {mapsUrl ? (
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
                   <ExternalLink className="h-3 w-3 mr-1" /> Google Maps
@@ -109,6 +188,9 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
                   <ExternalLink className="h-3 w-3 mr-1" /> Google Maps
                 </span>
               )}
+              <button onClick={handleExportDay} className="text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
+                <Download className="h-3 w-3 mr-1" /> Export Day
+              </button>
             </div>
           </div>
         </div>
@@ -126,10 +208,39 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
       </div>
 
       {!isCollapsed && (
-        <>
+        <div className="relative">
+          {/* Timeline line */}
+          <div className="absolute left-[11px] top-0 bottom-0 w-0.5 bg-border" />
+
+          {/* Starting Point */}
+          <div className="relative flex items-center gap-3 mb-4 pl-0">
+            <div className="relative z-10 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+              <div className="w-2 h-2 bg-card rounded-full" />
+            </div>
+            {editingStartPoint ? (
+              <Input
+                autoFocus
+                placeholder="Enter starting point..."
+                defaultValue={dailyInfo.startPoint || ''}
+                onBlur={(e) => { updateDailyInfo('startPoint', e.target.value); setEditingStartPoint(false); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { updateDailyInfo('startPoint', (e.target as HTMLInputElement).value); setEditingStartPoint(false); } }}
+                className="h-9 text-sm"
+              />
+            ) : (
+              <button
+                onClick={() => setEditingStartPoint(true)}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg px-3 py-1.5 hover:border-primary/40"
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                {dailyInfo.startPoint || 'Set Starting Point'}
+              </button>
+            )}
+          </div>
+
+          {/* Events */}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={dailyEvents.map(e => e.id)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2">
+              <div className="space-y-2 pl-8">
                 {dailyEvents.map(event => (
                   <EventCard key={event.id} event={event} onEdit={() => handleEditEvent(event)} onDelete={() => onDeleteEvent(event.id)} onShare={() => setSharingEvent(event)} />
                 ))}
@@ -137,10 +248,38 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
             </SortableContext>
           </DndContext>
 
-          <button onClick={() => { setEditingEvent(null); setIsAddingEvent(true); }} className="mt-4 w-full p-3 border-2 border-dashed border-border rounded-xl text-muted-foreground hover:text-primary hover:border-primary transition-all flex items-center justify-center gap-2 text-sm font-medium">
-            <Plus className="h-4 w-4" /> Add Event
-          </button>
-        </>
+          {/* Add Event button */}
+          <div className="pl-8">
+            <button onClick={() => { setEditingEvent(null); setIsAddingEvent(true); }} className="mt-4 w-full p-3 border-2 border-dashed border-border rounded-xl text-muted-foreground hover:text-primary hover:border-primary transition-all flex items-center justify-center gap-2 text-sm font-medium">
+              <Plus className="h-4 w-4" /> Add Activity
+            </button>
+          </div>
+
+          {/* Ending Point */}
+          <div className="relative flex items-center gap-3 mt-4 pl-0">
+            <div className="relative z-10 w-6 h-6 rounded-full bg-destructive flex items-center justify-center shrink-0">
+              <div className="w-2 h-2 bg-card rounded-full" />
+            </div>
+            {editingEndPoint ? (
+              <Input
+                autoFocus
+                placeholder="Enter ending point..."
+                defaultValue={dailyInfo.endPoint || ''}
+                onBlur={(e) => { updateDailyInfo('endPoint', e.target.value); setEditingEndPoint(false); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { updateDailyInfo('endPoint', (e.target as HTMLInputElement).value); setEditingEndPoint(false); } }}
+                className="h-9 text-sm"
+              />
+            ) : (
+              <button
+                onClick={() => setEditingEndPoint(true)}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg px-3 py-1.5 hover:border-primary/40"
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                {dailyInfo.endPoint || 'Set Ending Point'}
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
       {sharingEvent && (
