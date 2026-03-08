@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import { he } from 'date-fns/locale';
 
-interface Notification {
+interface AppNotification {
   id: string;
   type: string;
   title: string;
@@ -14,6 +14,7 @@ interface Notification {
   trip_id: string | null;
   link: string | null;
   created_at: string;
+  user_id: string;
 }
 
 interface NotificationBellProps {
