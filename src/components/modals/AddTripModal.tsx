@@ -47,7 +47,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
     onAddTrip(newTrip);
     onClose();
     setName(''); setDestination(''); setStartDate(today); setEndDate(today);
-    setBaseCurrency(CURRENCIES[0]); setStatus(TripStatus.Idea); setCoverImage(''); setBudget(''); setError('');
+    setBaseCurrency('ILS'); setStatus(TripStatus.Idea); setCoverImage(''); setBudget(''); setError('');
   };
 
   return (
