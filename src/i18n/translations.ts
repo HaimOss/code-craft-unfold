@@ -34,6 +34,13 @@ const translations: Record<Language, TranslationTree> = {
       discoverNew: 'לחץ לפתיחת מפת העולם',
       planNewTrip: 'תכנן טיול חדש',
       viewWorldMap: 'צפה במפת העולם',
+      tripsLabel: 'טיולים',
+      activities: 'פעילויות',
+      destinations: 'יעדים',
+      nextTrip: 'הטיול הבא',
+      days: 'ימים',
+      recentActivity: 'פעילות אחרונה',
+      noActivityYet: 'אין פעילות עדיין',
     },
     trips: {
       myTrips: 'הטיולים שלי',
