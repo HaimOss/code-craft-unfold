@@ -3,7 +3,10 @@ import { Trip, Event, User } from '@/types';
 import TripCard from './TripCard';
 import AddTripModal from '../modals/AddTripModal';
 import ActivityArchive from './ActivityArchive';
-import { Plus, LogOut, Compass, Archive } from 'lucide-react';
+import { Plus, LogOut, Compass, Archive, Upload } from 'lucide-react';
+import { parseImportFile, importSharedTrip } from '@/services/shareService';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TripDashboardProps {
@@ -18,7 +21,29 @@ interface TripDashboardProps {
 const TripDashboard: React.FC<TripDashboardProps> = ({
   trips, onSelectTrip, onAddTrip, onLogout,
 }) => {
+  const { user } = useAuth();
   const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
+
+  const handleImportJSON = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file || !user) return;
+      try {
+        const payload = await parseImportFile(file);
+        if (payload.type !== 'trip') { toast({ title: 'הקובץ מכיל פעילות, לא טיול. ייבא מתוך טיול קיים.', variant: 'destructive' }); return; }
+        const newId = await importSharedTrip(user.id, payload.data);
+        // Reload by adding the trip locally
+        onAddTrip({ ...(payload.data as any), id: newId, name: (payload.data as any).name + ' (imported)', events: (payload.data as any).events || [] });
+        toast({ title: 'טיול יובא בהצלחה! 🎉' });
+      } catch (err: any) {
+        toast({ title: 'שגיאה בייבוא', description: err.message, variant: 'destructive' });
+      }
+    };
+    input.click();
+  };
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
@@ -32,7 +57,10 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
         </div>
         <div className="flex items-center space-x-3 mt-4 sm:mt-0">
           <button onClick={() => setIsAddTripModalOpen(true)} className="btn-primary flex items-center gap-2">
-            <Plus className="h-4 w-4" /> New Trip
+            <Plus className="h-4 w-4" /> טיול חדש
+          </button>
+          <button onClick={handleImportJSON} className="btn-secondary flex items-center gap-2">
+            <Upload className="h-4 w-4" /> ייבוא טיול
           </button>
           <button onClick={onLogout} title="Reset Demo" className="btn-ghost p-2">
             <LogOut className="h-5 w-5" />

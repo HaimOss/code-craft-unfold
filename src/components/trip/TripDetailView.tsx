@@ -5,7 +5,10 @@ import ItineraryView from './ItineraryView';
 import EditTripModal from '../modals/EditTripModal';
 import ShareModal from '../modals/ShareModal';
 import { CURRENCY_SYMBOLS } from '@/constants';
-import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload } from 'lucide-react';
+import { exportTripToJSON, parseImportFile, importSharedEvent } from '@/services/shareService';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 const statusStyles: { [key in TripStatus]: string } = {
   [TripStatus.Idea]: "bg-trip-idea/20 text-trip-idea",
@@ -22,10 +25,34 @@ interface TripDetailViewProps {
 }
 
 const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateTrip, onDeleteTrip }) => {
+  const { user } = useAuth();
   const [totalCost, setTotalCost] = useState(0);
   const [isCalculating, setIsCalculating] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  const handleExportJSON = () => exportTripToJSON(trip);
+
+  const handleImportEventJSON = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file || !user) return;
+      try {
+        const payload = await parseImportFile(file);
+        if (payload.type !== 'event') { toast({ title: 'הקובץ מכיל טיול, לא פעילות', variant: 'destructive' }); return; }
+        await importSharedEvent(user.id, trip.id, payload.data, trip.events.length);
+        const newEvent = { ...payload.data as any, id: crypto.randomUUID() };
+        onUpdateTrip({ ...trip, events: [...trip.events, newEvent] });
+        toast({ title: 'פעילות יובאה בהצלחה! 🎉' });
+      } catch (err: any) {
+        toast({ title: 'שגיאה בייבוא', description: err.message, variant: 'destructive' });
+      }
+    };
+    input.click();
+  };
 
   useEffect(() => {
     const calc = async () => {
@@ -86,9 +113,11 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
             <div className="flex items-center gap-2 mt-4 sm:mt-0">
               <span className={`status-badge ${statusStyles[trip.status]}`}>{trip.status.split(' ')[0]}</span>
               <div className="flex items-center bg-primary-foreground/10 rounded-full p-1">
-                <button onClick={() => setIsShareModalOpen(true)} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="Share"><Share2 className="h-4 w-4" /></button>
-                <button onClick={() => setIsEditModalOpen(true)} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="Edit"><Pencil className="h-4 w-4" /></button>
-                <button onClick={confirmDeleteTrip} className="p-2 text-destructive/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="Delete"><Trash2 className="h-4 w-4" /></button>
+                <button onClick={() => setIsShareModalOpen(true)} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="שתף"><Share2 className="h-4 w-4" /></button>
+                <button onClick={handleExportJSON} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ייצוא JSON"><Download className="h-4 w-4" /></button>
+                <button onClick={handleImportEventJSON} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ייבוא פעילות"><Upload className="h-4 w-4" /></button>
+                <button onClick={() => setIsEditModalOpen(true)} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ערוך"><Pencil className="h-4 w-4" /></button>
+                <button onClick={confirmDeleteTrip} className="p-2 text-destructive/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="מחק"><Trash2 className="h-4 w-4" /></button>
               </div>
             </div>
           </div>
@@ -107,7 +136,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
       </main>
 
       <EditTripModal isOpen={isEditModalOpen} trip={trip} onClose={() => setIsEditModalOpen(false)} onUpdateTrip={onUpdateTrip} />
-      <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} shareUrl={`${window.location.origin}${window.location.pathname}#share/trip/${trip.id}`} title={`Share "${trip.name}"`} />
+      <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} title={`שתף "${trip.name}"`} itemType="trip" itemData={trip} />
     </div>
   );
 };
