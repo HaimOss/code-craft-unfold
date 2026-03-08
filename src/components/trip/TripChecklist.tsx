@@ -670,6 +670,7 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
                       onTogglePriority={togglePriority}
                       onDelete={deleteItem}
                       onAddSubtask={handleAddSubtaskClick}
+                      onUpdateField={updateField}
                       collapsedParents={collapsedParents}
                       onToggleCollapse={toggleCollapse}
                     />
