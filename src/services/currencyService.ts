@@ -4,11 +4,15 @@ export const normalizeCost = async (amount: number | string, from: string, to: s
   const numericAmount = Number(amount) || 0;
   if (from === to) return numericAmount;
 
-  const cacheKey = `${date}-${from}-${to}`;
+  // Smart rate logic: future/today → latest rates, past → historical (locked)
+  const today = new Date().toISOString().split('T')[0];
+  const effectiveDate = (date === 'latest' || date >= today) ? 'latest' : date;
+
+  const cacheKey = `${effectiveDate}-${from}-${to}`;
   if (cache[cacheKey]) return numericAmount * cache[cacheKey];
 
   try {
-    const response = await fetch(`https://api.frankfurter.app/${date}?from=${from}&to=${to}`);
+    const response = await fetch(`https://api.frankfurter.app/${effectiveDate}?from=${from}&to=${to}`);
     if (!response.ok) {
       const fallbackResponse = await fetch(`https://api.frankfurter.app/latest?from=${from}&to=${to}`);
       if (!fallbackResponse.ok) return numericAmount;

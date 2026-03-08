@@ -24,6 +24,11 @@ export const PRESET_TAGS = [
 
 export const CURRENCY_SYMBOLS: { [key: string]: string } = {
   ILS: '₪', USD: '$', EUR: '€', GBP: '£', JPY: '¥', THB: '฿', CHF: 'Fr',
+  AUD: 'A$', CAD: 'C$', NZD: 'NZ$', SEK: 'kr', NOK: 'kr', DKK: 'kr',
+  PLN: 'zł', CZK: 'Kč', HUF: 'Ft', TRY: '₺', KRW: '₩', SGD: 'S$',
+  HKD: 'HK$', MXN: 'MX$', BRL: 'R$', ZAR: 'R', INR: '₹', IDR: 'Rp',
+  MYR: 'RM', PHP: '₱', TWD: 'NT$', RON: 'lei', BGN: 'лв', HRK: 'kn',
+  ISK: 'kr', CNY: '¥',
 };
 
 export const CATEGORY_ICONS: { [key in EventCategory]: string } = {
