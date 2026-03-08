@@ -147,6 +147,7 @@ const Index = () => {
           trips={trips}
           onSelectTrip={handleSelectTrip}
           onAddTrip={handleAddTrip}
+          onUpdateTrip={handleUpdateTrip}
           unscheduledEvents={[]}
           onAddUnscheduledEvent={() => {}}
           onLogout={handleLogout}

@@ -14,13 +14,14 @@ interface TripDashboardProps {
   trips: Trip[];
   onSelectTrip: (tripId: string) => void;
   onAddTrip: (newTrip: Trip) => void;
+  onUpdateTrip: (updatedTrip: Trip) => void;
   unscheduledEvents: Event[];
   onAddUnscheduledEvent: (newEvent: Event) => void;
   onLogout: () => void;
 }
 
 const TripDashboard: React.FC<TripDashboardProps> = ({
-  trips, onSelectTrip, onAddTrip, onLogout,
+  trips, onSelectTrip, onAddTrip, onUpdateTrip, onLogout,
 }) => {
   const { user } = useAuth();
   const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
@@ -102,7 +103,7 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
         </TabsContent>
 
         <TabsContent value="archive">
-          <ActivityArchive trips={trips} />
+          <ActivityArchive trips={trips} onUpdateTrip={onUpdateTrip} onSelectTrip={onSelectTrip} />
         </TabsContent>
 
         <TabsContent value="stats">
