@@ -275,6 +275,12 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
         </div>
       </div>
 
+      {showDayMap && (
+        <Suspense fallback={<div className="flex justify-center py-6 text-muted-foreground text-sm">טוען מפה...</div>}>
+          <DayMap events={dailyEvents} dailyInfo={dailyInfo} destination={trip.destination} />
+        </Suspense>
+      )}
+
       {!isCollapsed && (
         <div className="relative">
           {/* Timeline line */}
