@@ -64,7 +64,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
           {transport.confirmation_num && <p className="text-xs text-muted-foreground">📋 {transport.confirmation_num}</p>}
           {transport.book_link && (
             <a href={transport.book_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
-              <ExternalLink className="h-3 w-3 mr-1" /> Booking
+              <ExternalLink className="h-3 w-3 ml-1" /> הזמנה
             </a>
           )}
         </div>
