@@ -28,6 +28,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
       setStartDate(trip.start_date); setEndDate(trip.end_date);
       setBaseCurrency(trip.base_currency); setStatus(trip.status);
       setCoverImage(trip.cover_image || ''); setAlbumLink(trip.album_link || '');
+      setBudget(trip.budget?.toString() || '');
       setError('');
     }
   }, [isOpen, trip]);
