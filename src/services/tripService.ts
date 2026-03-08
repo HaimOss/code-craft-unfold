@@ -125,8 +125,10 @@ export const upsertEvent = async (userId: string, tripId: string, event: Event, 
       details: event.details as any,
       notes: event.notes || null,
       rating: event.rating || null,
+      is_favorite: event.is_favorite || false,
+      tags: event.tags || [],
       sort_order: sortOrder,
-    }]);
+    }] as any);
 
   if (error) throw error;
 };
