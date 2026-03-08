@@ -340,6 +340,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invite: {
+        Args: { _token: string; _user_id: string }
+        Returns: undefined
+      }
       get_collaborator_by_invite_token: {
         Args: { _token: string }
         Returns: {
