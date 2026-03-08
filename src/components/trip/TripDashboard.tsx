@@ -77,6 +77,9 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
           <TabsTrigger value="archive" className="flex items-center gap-2">
             <Archive className="h-4 w-4" /> ארכיון פעילויות
           </TabsTrigger>
+          <TabsTrigger value="stats" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" /> סטטיסטיקות
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="trips">
