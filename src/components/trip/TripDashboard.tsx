@@ -103,7 +103,7 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
         </TabsContent>
 
         <TabsContent value="archive">
-          <ActivityArchive trips={trips} />
+          <ActivityArchive trips={trips} onUpdateTrip={onUpdateTrip} onSelectTrip={onSelectTrip} />
         </TabsContent>
 
         <TabsContent value="stats">
