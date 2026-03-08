@@ -199,7 +199,7 @@ const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
                 <Popup>
                   <div className="text-sm">
                     <div className="font-bold">{item.label}</div>
-                    <div style={{ color: '#6b7280' }}>{item.type === 'start' ? '📍 נקודת התחלה' : '🏁 נקודת סיום'}</div>
+                    <div style={{ color: '#6b7280' }}>{item.type === 'start' ? `📍 ${t('map.startPoint')}` : `🏁 ${t('map.endPoint')}`}</div>
                   </div>
                 </Popup>
               </Marker>
