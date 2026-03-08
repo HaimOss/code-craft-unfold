@@ -88,12 +88,35 @@ const WorldMap: React.FC<WorldMapProps> = ({ trips, onSelectTrip, onClose }) => 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const getGeocodableLocation = (trip: Trip): string | null => {
+      // 1. Use destination if available
+      if (trip.destination) return trip.destination;
+      // 2. Try daily_info start/end points
+      const dailyInfo = trip.dailyInfo || {};
+      for (const info of Object.values(dailyInfo)) {
+        const di = info as any;
+        if (di?.startPoint) return di.startPoint;
+        if (di?.endPoint) return di.endPoint;
+      }
+      // 3. Try event locations
+      if (trip.events?.length) {
+        for (const event of trip.events) {
+          const details = event.details as any;
+          if (details?.location) return details.location;
+          if (details?.address) return details.address;
+        }
+      }
+      // 4. Try trip name as last resort
+      return trip.name;
+    };
+
     const geocodeAll = async () => {
       setLoading(true);
       const results: GeocodedTrip[] = [];
       for (const trip of trips) {
-        if (!trip.destination) continue;
-        const coords = await geocodeLocation(trip.destination);
+        const location = getGeocodableLocation(trip);
+        if (!location) continue;
+        const coords = await geocodeLocation(location);
         if (coords) results.push({ trip, ...coords });
         await new Promise(r => setTimeout(r, 250));
       }
