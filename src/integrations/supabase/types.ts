@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_shares: {
+        Row: {
+          activity_id: string
+          created_at: string | null
+          id: string
+          share_token: string | null
+          shared_by: string
+          shared_with_email: string
+          status: string | null
+        }
+        Insert: {
+          activity_id: string
+          created_at?: string | null
+          id?: string
+          share_token?: string | null
+          shared_by: string
+          shared_with_email: string
+          status?: string | null
+        }
+        Update: {
+          activity_id?: string
+          created_at?: string | null
+          id?: string
+          share_token?: string | null
+          shared_by?: string
+          shared_with_email?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_shares_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "saved_activities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checklist_items: {
         Row: {
           assignee: string | null
@@ -234,6 +272,54 @@ export type Database = {
           display_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      saved_activities: {
+        Row: {
+          category: string
+          created_at: string | null
+          currency: string | null
+          details: Json | null
+          estimated_cost: number | null
+          id: string
+          is_public: boolean | null
+          location: string | null
+          notes: string | null
+          source_url: string | null
+          tags: string[] | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          currency?: string | null
+          details?: Json | null
+          estimated_cost?: number | null
+          id?: string
+          is_public?: boolean | null
+          location?: string | null
+          notes?: string | null
+          source_url?: string | null
+          tags?: string[] | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          currency?: string | null
+          details?: Json | null
+          estimated_cost?: number | null
+          id?: string
+          is_public?: boolean | null
+          location?: string | null
+          notes?: string | null
+          source_url?: string | null
+          tags?: string[] | null
+          title?: string
+          user_id?: string
         }
         Relationships: []
       }
