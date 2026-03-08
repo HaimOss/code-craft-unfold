@@ -45,7 +45,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
           {accommodation.confirmation_num && <p className="text-xs text-muted-foreground">📋 {accommodation.confirmation_num}</p>}
           {accommodation.book_link && (
             <a href={accommodation.book_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
-              <ExternalLink className="h-3 w-3 mr-1" /> View Booking
+              <ExternalLink className="h-3 w-3 ml-1" /> צפה בהזמנה
             </a>
           )}
         </div>
