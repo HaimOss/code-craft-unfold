@@ -37,6 +37,14 @@ interface GeocodedEvent {
   dayIndex: number;
 }
 
+interface GeocodedPoint {
+  label: string;
+  type: 'start' | 'end';
+  lat: number;
+  lng: number;
+  dayIndex: number;
+}
+
 const geocodeCache = new Map<string, { lat: number; lng: number } | null>();
 
 async function geocodeLocation(location: string): Promise<{ lat: number; lng: number } | null> {
@@ -95,6 +103,7 @@ interface TripMapProps {
 
 const TripMap: React.FC<TripMapProps> = ({ trip }) => {
   const [geocodedEvents, setGeocodedEvents] = useState<GeocodedEvent[]>([]);
+  const [geocodedPoints, setGeocodedPoints] = useState<GeocodedPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
@@ -119,7 +128,31 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     const geocodeAll = async () => {
       setLoading(true);
       const results: GeocodedEvent[] = [];
+      const pointResults: GeocodedPoint[] = [];
 
+      // Geocode daily_info start/end points
+      const dailyInfo = (trip as any).daily_info || {};
+      for (const [date, info] of Object.entries(dailyInfo)) {
+        const dayIndex = tripDays.indexOf(date);
+        if (dayIndex === -1) continue;
+        const dayInfo = info as any;
+        if (dayInfo?.startPoint) {
+          const coords = await geocodeLocation(dayInfo.startPoint);
+          if (coords) {
+            pointResults.push({ label: dayInfo.startPoint, type: 'start', ...coords, dayIndex });
+          }
+          await new Promise(r => setTimeout(r, 300));
+        }
+        if (dayInfo?.endPoint) {
+          const coords = await geocodeLocation(dayInfo.endPoint);
+          if (coords) {
+            pointResults.push({ label: dayInfo.endPoint, type: 'end', ...coords, dayIndex });
+          }
+          await new Promise(r => setTimeout(r, 300));
+        }
+      }
+
+      // Geocode events
       for (const event of trip.events) {
         const location = getLocationFromEvent(event);
         if (!location) continue;
@@ -129,22 +162,29 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
           const dayIndex = tripDays.indexOf(event.date);
           results.push({ event, ...coords, dayIndex });
         }
-        // Small delay to respect Nominatim rate limits
         await new Promise(r => setTimeout(r, 300));
       }
 
       setGeocodedEvents(results);
+      setGeocodedPoints(pointResults);
       setLoading(false);
     };
 
     geocodeAll();
-  }, [trip.events, tripDays]);
+  }, [trip.events, tripDays, (trip as any).daily_info]);
 
   const filteredEvents = selectedDay !== null
     ? geocodedEvents.filter(e => e.dayIndex === selectedDay)
     : geocodedEvents;
 
-  const positions: [number, number][] = filteredEvents.map(e => [e.lat, e.lng]);
+  const filteredPoints = selectedDay !== null
+    ? geocodedPoints.filter(p => p.dayIndex === selectedDay)
+    : geocodedPoints;
+
+  const positions: [number, number][] = [
+    ...filteredEvents.map(e => [e.lat, e.lng] as [number, number]),
+    ...filteredPoints.map(p => [p.lat, p.lng] as [number, number]),
+  ];
 
   // Group events by day for polylines
   const dayRoutes = useMemo(() => {
@@ -182,7 +222,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     );
   }
 
-  if (geocodedEvents.length === 0) {
+  if (geocodedEvents.length === 0 && geocodedPoints.length === 0) {
     return (
       <div className="card-surface p-12 flex flex-col items-center justify-center text-center">
         <p className="text-4xl mb-4">🗺️</p>
@@ -207,7 +247,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
           כל הימים
         </button>
         {tripDays.map((day, idx) => {
-          const hasEvents = geocodedEvents.some(e => e.dayIndex === idx);
+          const hasEvents = geocodedEvents.some(e => e.dayIndex === idx) || geocodedPoints.some(p => p.dayIndex === idx);
           if (!hasEvents) return null;
           const dayDate = new Date(day + 'T00:00:00');
           return (
@@ -261,6 +301,37 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
                       {'★'.repeat(ge.event.rating)}{'☆'.repeat(5 - ge.event.rating)}
                     </div>
                   )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+
+          {filteredPoints.map((pt, idx) => (
+            <Marker
+              key={`point-${pt.type}-${pt.dayIndex}-${idx}`}
+              position={[pt.lat, pt.lng]}
+              icon={L.divIcon({
+                className: 'custom-map-marker',
+                html: `<div style="
+                  background: ${pt.type === 'start' ? '#22c55e' : '#ef4444'};
+                  width: 32px; height: 32px;
+                  border-radius: 50%;
+                  display: flex; align-items: center; justify-content: center;
+                  font-size: 16px;
+                  border: 2px solid white;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                ">${pt.type === 'start' ? '🟢' : '🔴'}</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+                popupAnchor: [0, -18],
+              })}
+            >
+              <Popup>
+                <div className="text-sm min-w-[150px]">
+                  <div className="font-bold text-base mb-1">{pt.label}</div>
+                  <div style={{ color: '#6b7280' }}>
+                    {pt.type === 'start' ? '📍 נקודת התחלה' : '🏁 נקודת סיום'} · יום {pt.dayIndex + 1}
+                  </div>
                 </div>
               </Popup>
             </Marker>
