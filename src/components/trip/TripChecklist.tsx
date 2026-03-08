@@ -212,6 +212,8 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
   const [newPriority, setNewPriority] = useState('normal');
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [hideCompleted, setHideCompleted] = useState(false);
+  const [filterDue, setFilterDue] = useState<'all' | 'overdue' | 'this_week'>('all');
+  const [filterAssignee, setFilterAssignee] = useState<string | null>(null);
   const [collapsedParents, setCollapsedParents] = useState<Set<string>>(new Set());
   const [addingSubtaskFor, setAddingSubtaskFor] = useState<string | null>(null);
   const [subtaskText, setSubtaskText] = useState('');
