@@ -670,7 +670,7 @@ const translations: Record<Language, TranslationTree> = {
       description: 'Add family members to track who joined each trip',
       noMembers: 'No family members yet',
       namePlaceholder: 'Name...',
-      participants: 'Who's on this trip?',
+      participants: "Who\u2019s on this trip?",
     },
   },
 };
