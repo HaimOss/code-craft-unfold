@@ -414,7 +414,17 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     }
   };
 
-  const toggleCollapse = (id: string) => {
+  const updateField = async (id: string, field: string, value: any) => {
+    setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
+    const { error } = await supabase
+      .from('checklist_items')
+      .update({ [field]: value })
+      .eq('id', id);
+    if (error) {
+      toast({ title: 'שגיאה בעדכון', variant: 'destructive' });
+    }
+  };
+
     setCollapsedParents(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
