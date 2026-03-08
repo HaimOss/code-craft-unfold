@@ -2,7 +2,12 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Plus, CheckSquare, Square, Star, Trash2, ShoppingBag, ClipboardList, StickyNote, Plane, Filter, Download, Upload, GripVertical, ChevronDown, ChevronLeft, CornerDownLeft } from 'lucide-react';
+import { Plus, CheckSquare, Square, Star, Trash2, ShoppingBag, ClipboardList, StickyNote, Plane, Filter, Download, Upload, GripVertical, ChevronDown, ChevronLeft, CornerDownLeft, CalendarDays, User } from 'lucide-react';
+import { format, isPast, isToday } from 'date-fns';
+import { he } from 'date-fns/locale';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -20,6 +25,8 @@ interface ChecklistItem {
   sort_order: number;
   created_at: string;
   parent_id: string | null;
+  due_date: string | null;
+  assignee: string | null;
 }
 
 const CATEGORIES = [
@@ -40,14 +47,17 @@ interface SortableChecklistItemProps {
   onTogglePriority: (item: ChecklistItem) => void;
   onDelete: (id: string) => void;
   onAddSubtask: (parentId: string) => void;
+  onUpdateField: (id: string, field: string, value: any) => void;
   collapsedParents: Set<string>;
   onToggleCollapse: (id: string) => void;
 }
 
 const SortableChecklistItem: React.FC<SortableChecklistItemProps> = ({
-  item, subtasks, isSubtask, onToggleComplete, onTogglePriority, onDelete, onAddSubtask, collapsedParents, onToggleCollapse
+  item, subtasks, isSubtask, onToggleComplete, onTogglePriority, onDelete, onAddSubtask, onUpdateField, collapsedParents, onToggleCollapse
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+  const [editingAssignee, setEditingAssignee] = useState(false);
+  const [assigneeVal, setAssigneeVal] = useState(item.assignee || '');
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -58,46 +68,116 @@ const SortableChecklistItem: React.FC<SortableChecklistItemProps> = ({
   const isCollapsed = collapsedParents.has(item.id);
   const completedSubtasks = subtasks.filter(s => s.is_completed).length;
 
+  const dueDateObj = item.due_date ? new Date(item.due_date + 'T00:00:00') : undefined;
+  const isOverdue = dueDateObj && !item.is_completed && isPast(dueDateObj) && !isToday(dueDateObj);
+  const isDueToday = dueDateObj && isToday(dueDateObj);
+
+  const handleAssigneeSave = () => {
+    onUpdateField(item.id, 'assignee', assigneeVal.trim() || null);
+    setEditingAssignee(false);
+  };
+
   return (
     <div>
       <div
         ref={setNodeRef}
         style={style}
-        className={`group p-3 flex items-center gap-3 transition-all border rounded-lg ${
+        className={`group p-3 flex items-start gap-3 transition-all border rounded-lg ${
           isSubtask ? 'mr-8 bg-muted/30 border-border/50' : 'card-surface'
         } ${item.is_completed ? 'opacity-60' : ''} ${
           item.priority === 'high' && !item.is_completed ? 'border-accent/30 bg-accent/5' : ''
         }`}
       >
-        <button {...attributes} {...listeners} className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground touch-none">
+        <button {...attributes} {...listeners} className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground touch-none mt-0.5">
           <GripVertical className="h-4 w-4" />
         </button>
 
-        {/* Collapse toggle for parents with subtasks */}
         {!isSubtask && subtasks.length > 0 && (
-          <button onClick={() => onToggleCollapse(item.id)} className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={() => onToggleCollapse(item.id)} className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors mt-0.5">
             {isCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>
         )}
 
-        <button onClick={() => onToggleComplete(item)} className="flex-shrink-0 text-primary hover:scale-110 transition-transform">
+        <button onClick={() => onToggleComplete(item)} className="flex-shrink-0 text-primary hover:scale-110 transition-transform mt-0.5">
           {item.is_completed ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5 text-muted-foreground" />}
         </button>
 
         {!isSubtask && (
-          <span className="text-xs px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground">{catConfig.emoji}</span>
+          <span className="text-xs px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground mt-0.5">{catConfig.emoji}</span>
         )}
 
-        <span className={`flex-1 text-sm ${item.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-          {item.text}
-          {!isSubtask && subtasks.length > 0 && (
-            <span className="text-xs text-muted-foreground mr-2">
-              ({completedSubtasks}/{subtasks.length})
-            </span>
-          )}
-        </span>
+        <div className="flex-1 min-w-0">
+          <span className={`text-sm ${item.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+            {item.text}
+            {!isSubtask && subtasks.length > 0 && (
+              <span className="text-xs text-muted-foreground mr-2">
+                ({completedSubtasks}/{subtasks.length})
+              </span>
+            )}
+          </span>
+          {/* Meta row: due date + assignee */}
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            {/* Due date */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className={cn(
+                  "inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md border transition-colors",
+                  isOverdue ? "text-destructive border-destructive/30 bg-destructive/5" :
+                  isDueToday ? "text-accent border-accent/30 bg-accent/5" :
+                  dueDateObj ? "text-muted-foreground border-border" :
+                  "text-muted-foreground/40 border-transparent hover:border-border opacity-0 group-hover:opacity-100"
+                )}>
+                  <CalendarDays className="h-3 w-3" />
+                  {dueDateObj ? format(dueDateObj, 'd/M', { locale: he }) : 'תאריך'}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dueDateObj}
+                  onSelect={(date) => onUpdateField(item.id, 'due_date', date ? format(date, 'yyyy-MM-dd') : null)}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+                {dueDateObj && (
+                  <button
+                    onClick={() => onUpdateField(item.id, 'due_date', null)}
+                    className="w-full text-xs text-destructive py-2 border-t border-border hover:bg-muted/50 transition-colors"
+                  >
+                    הסר תאריך
+                  </button>
+                )}
+              </PopoverContent>
+            </Popover>
 
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {/* Assignee */}
+            {editingAssignee ? (
+              <input
+                value={assigneeVal}
+                onChange={e => setAssigneeVal(e.target.value)}
+                onBlur={handleAssigneeSave}
+                onKeyDown={e => { if (e.key === 'Enter') handleAssigneeSave(); if (e.key === 'Escape') setEditingAssignee(false); }}
+                className="text-xs px-1.5 py-0.5 rounded-md border border-primary/30 bg-background outline-none w-24"
+                placeholder="שם אחראי..."
+                autoFocus
+              />
+            ) : (
+              <button
+                onClick={() => { setAssigneeVal(item.assignee || ''); setEditingAssignee(true); }}
+                className={cn(
+                  "inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-md border transition-colors",
+                  item.assignee ? "text-muted-foreground border-border" :
+                  "text-muted-foreground/40 border-transparent hover:border-border opacity-0 group-hover:opacity-100"
+                )}
+              >
+                <User className="h-3 w-3" />
+                {item.assignee || 'אחראי'}
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">
           {!isSubtask && (
             <button
               onClick={() => onAddSubtask(item.id)}
@@ -334,6 +414,17 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     }
   };
 
+  const updateField = async (id: string, field: string, value: any) => {
+    setItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
+    const { error } = await supabase
+      .from('checklist_items')
+      .update({ [field]: value })
+      .eq('id', id);
+    if (error) {
+      toast({ title: 'שגיאה בעדכון', variant: 'destructive' });
+    }
+  };
+
   const toggleCollapse = (id: string) => {
     setCollapsedParents(prev => {
       const next = new Set(prev);
@@ -357,13 +448,15 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
         'קטגוריה': cat.label,
         'עדיפות': item.priority === 'high' ? 'גבוהה' : 'רגילה',
         'הושלם': item.is_completed ? 'כן' : 'לא',
+        'תאריך יעד': item.due_date || '',
+        'אחראי': item.assignee || '',
         'משימת אב': parentItem?.text || '',
       };
     });
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'צ׳קליסט');
-    ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 8 }, { wch: 20 }];
+    ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 8 }, { wch: 12 }, { wch: 15 }, { wch: 20 }];
     XLSX.writeFile(wb, `checklist_${tripId.slice(0, 8)}.xlsx`);
     toast({ title: 'הצ\'קליסט יוצא בהצלחה! 📥' });
   };
@@ -579,6 +672,7 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
                       onTogglePriority={togglePriority}
                       onDelete={deleteItem}
                       onAddSubtask={handleAddSubtaskClick}
+                      onUpdateField={updateField}
                       collapsedParents={collapsedParents}
                       onToggleCollapse={toggleCollapse}
                     />
@@ -593,6 +687,7 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
                         onTogglePriority={togglePriority}
                         onDelete={deleteItem}
                         onAddSubtask={handleAddSubtaskClick}
+                        onUpdateField={updateField}
                         collapsedParents={collapsedParents}
                         onToggleCollapse={toggleCollapse}
                       />

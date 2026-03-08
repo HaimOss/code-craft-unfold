@@ -16,8 +16,10 @@ export type Database = {
     Tables: {
       checklist_items: {
         Row: {
+          assignee: string | null
           category: string
           created_at: string
+          due_date: string | null
           id: string
           is_completed: boolean
           parent_id: string | null
@@ -28,8 +30,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          assignee?: string | null
           category?: string
           created_at?: string
+          due_date?: string | null
           id?: string
           is_completed?: boolean
           parent_id?: string | null
@@ -40,8 +44,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          assignee?: string | null
           category?: string
           created_at?: string
+          due_date?: string | null
           id?: string
           is_completed?: boolean
           parent_id?: string | null
