@@ -34,6 +34,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   const [sharingEvent, setSharingEvent] = useState<Event | null>(null);
   const [dayTotal, setDayTotal] = useState(0);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showDayMap, setShowDayMap] = useState(false);
   const [editingStartPoint, setEditingStartPoint] = useState(false);
   const [editingEndPoint, setEditingEndPoint] = useState(false);
 
