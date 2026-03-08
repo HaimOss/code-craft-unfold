@@ -66,6 +66,7 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
           <button onClick={handleImportJSON} className="btn-secondary flex items-center gap-2 text-sm sm:text-base">
             <Upload className="h-4 w-4" /> <span className="hidden sm:inline">ייבוא טיול</span><span className="sm:hidden">ייבוא</span>
           </button>
+          <NotificationBell onSelectTrip={onSelectTrip} />
           <UserProfileMenu onLogout={onLogout} />
         </div>
       </header>
