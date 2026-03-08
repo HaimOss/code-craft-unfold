@@ -239,15 +239,14 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           <div className="min-w-0">
             <h3 className="text-lg sm:text-xl font-bold font-display">Day {dayNumber}</h3>
             <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
-              {showMapUrl ? (
-                <a href={showMapUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
-                  <Map className="h-3 w-3 mr-1" /> Map
-                </a>
-              ) : (
-                <span className="text-[10px] sm:text-xs flex items-center text-muted-foreground/50">
-                  <Map className="h-3 w-3 mr-1" /> Map
-                </span>
-              )}
+              <button
+                onClick={() => setShowDayMap(!showDayMap)}
+                className={`text-[10px] sm:text-xs flex items-center font-medium transition-colors ${
+                  showDayMap ? 'text-primary bg-primary/10 px-2 py-0.5 rounded-full' : 'text-muted-foreground hover:text-primary'
+                }`}
+              >
+                <Map className="h-3 w-3 mr-1" /> Map
+              </button>
               {mapsUrl ? (
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
                   <ExternalLink className="h-3 w-3 mr-1" /> <span className="hidden sm:inline">Google Maps</span><span className="sm:hidden">GMaps</span>
