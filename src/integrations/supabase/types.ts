@@ -340,6 +340,47 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invite: {
+        Args: { _token: string; _user_id: string }
+        Returns: undefined
+      }
+      get_collaborator_by_invite_token: {
+        Args: { _token: string }
+        Returns: {
+          created_at: string
+          id: string
+          invite_token: string | null
+          invited_email: string | null
+          role: string
+          status: string
+          trip_id: string
+          user_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "trip_collaborators"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_shared_item_by_token: {
+        Args: { _token: string }
+        Returns: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          item_data: Json
+          item_type: string
+          share_token: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "shared_items"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       is_trip_collaborator: {
         Args: { _trip_id: string; _user_id: string }
         Returns: boolean
