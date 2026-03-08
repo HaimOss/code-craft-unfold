@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import Import from "./pages/Import";
 
 const queryClient = new QueryClient();
 
