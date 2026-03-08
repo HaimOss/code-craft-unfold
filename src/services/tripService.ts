@@ -105,7 +105,7 @@ export const deleteTrip = async (tripId: string) => {
 export const upsertEvent = async (userId: string, tripId: string, event: Event, sortOrder: number) => {
   const { error } = await supabase
     .from('events')
-    .upsert({
+    .upsert([{
       id: event.id,
       trip_id: tripId,
       user_id: userId,
@@ -117,11 +117,11 @@ export const upsertEvent = async (userId: string, tripId: string, event: Event, 
       amount: event.amount,
       currency: event.currency,
       payment_method: event.payment_method,
-      details: event.details,
+      details: event.details as any,
       notes: event.notes || null,
       rating: event.rating || null,
       sort_order: sortOrder,
-    });
+    }]);
 
   if (error) throw error;
 };
