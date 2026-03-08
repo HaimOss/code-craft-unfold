@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Plus, X, CheckSquare, Square, Star, Trash2, ShoppingBag, ClipboardList, StickyNote, Plane, Filter, Download, Upload } from 'lucide-react';
+import { Plus, X, CheckSquare, Square, Star, Trash2, ShoppingBag, ClipboardList, StickyNote, Plane, Filter, Download, Upload, GripVertical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface ChecklistItem {
   id: string;
@@ -26,6 +29,52 @@ const CATEGORIES = [
 
 const getCategoryConfig = (value: string) => CATEGORIES.find(c => c.value === value) || CATEGORIES[2];
 
+// Sortable item component
+interface SortableChecklistItemProps {
+  item: ChecklistItem;
+  onToggleComplete: (item: ChecklistItem) => void;
+  onTogglePriority: (item: ChecklistItem) => void;
+  onDelete: (id: string) => void;
+}
+
+const SortableChecklistItem: React.FC<SortableChecklistItemProps> = ({ item, onToggleComplete, onTogglePriority, onDelete }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+    opacity: isDragging ? 0.8 : undefined,
+  };
+  const catConfig = getCategoryConfig(item.category);
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group card-surface p-3 flex items-center gap-3 transition-all ${
+        item.is_completed ? 'opacity-60' : ''
+      } ${item.priority === 'high' && !item.is_completed ? 'border-accent/30 bg-accent/5' : ''}`}
+    >
+      <button {...attributes} {...listeners} className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground touch-none">
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <button onClick={() => onToggleComplete(item)} className="flex-shrink-0 text-primary hover:scale-110 transition-transform">
+        {item.is_completed ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5 text-muted-foreground" />}
+      </button>
+      <span className="text-xs px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground">{catConfig.emoji}</span>
+      <span className={`flex-1 text-sm ${item.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{item.text}</span>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onClick={() => onTogglePriority(item)} className={`p-1 rounded transition-colors ${item.priority === 'high' ? 'text-accent' : 'text-muted-foreground/40 hover:text-accent'}`} title="עדיפות">
+          <Star className={`h-3.5 w-3.5 ${item.priority === 'high' ? 'fill-accent' : ''}`} />
+        </button>
+        <button onClick={() => onDelete(item.id)} className="p-1 text-muted-foreground/40 hover:text-destructive rounded transition-colors" title="מחק">
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 interface TripChecklistProps {
   tripId: string;
 }
@@ -39,6 +88,11 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
   const [newPriority, setNewPriority] = useState('normal');
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [hideCompleted, setHideCompleted] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -66,6 +120,38 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
       return true;
     });
   }, [items, filterCategory, hideCompleted]);
+
+  const sortedFiltered = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      if (a.is_completed !== b.is_completed) return a.is_completed ? 1 : -1;
+      if (a.priority !== b.priority) return a.priority === 'high' ? -1 : 1;
+      return a.sort_order - b.sort_order;
+    });
+  }, [filtered]);
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = sortedFiltered.findIndex(i => i.id === active.id);
+    const newIndex = sortedFiltered.findIndex(i => i.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(sortedFiltered, oldIndex, newIndex);
+    // Update sort_order for all reordered items
+    const updates = reordered.map((item, idx) => ({ ...item, sort_order: idx }));
+    setItems(prev => {
+      const reorderedIds = new Set(updates.map(u => u.id));
+      const unchanged = prev.filter(i => !reorderedIds.has(i.id));
+      return [...unchanged, ...updates].sort((a, b) => a.sort_order - b.sort_order);
+    });
+
+    // Persist to DB
+    const promises = updates.map((item, idx) =>
+      supabase.from('checklist_items').update({ sort_order: idx }).eq('id', item.id)
+    );
+    await Promise.all(promises);
+  }, [sortedFiltered]);
 
   const completedCount = items.filter(i => i.is_completed).length;
   const totalCount = items.length;
@@ -374,64 +460,21 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
           </p>
         </div>
       ) : (
-        <div className="space-y-1.5">
-          {/* High priority first, then by sort_order */}
-          {filtered
-            .sort((a, b) => {
-              if (a.is_completed !== b.is_completed) return a.is_completed ? 1 : -1;
-              if (a.priority !== b.priority) return a.priority === 'high' ? -1 : 1;
-              return a.sort_order - b.sort_order;
-            })
-            .map(item => {
-              const catConfig = getCategoryConfig(item.category);
-              return (
-                <div
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={sortedFiltered.map(i => i.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-1.5">
+              {sortedFiltered.map(item => (
+                <SortableChecklistItem
                   key={item.id}
-                  className={`group card-surface p-3 flex items-center gap-3 transition-all ${
-                    item.is_completed ? 'opacity-60' : ''
-                  } ${item.priority === 'high' && !item.is_completed ? 'border-accent/30 bg-accent/5' : ''}`}
-                >
-                  <button
-                    onClick={() => toggleComplete(item)}
-                    className="flex-shrink-0 text-primary hover:scale-110 transition-transform"
-                  >
-                    {item.is_completed ? (
-                      <CheckSquare className="h-5 w-5" />
-                    ) : (
-                      <Square className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </button>
-
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground`}>
-                    {catConfig.emoji}
-                  </span>
-
-                  <span className={`flex-1 text-sm ${item.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                    {item.text}
-                  </span>
-
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => togglePriority(item)}
-                      className={`p-1 rounded transition-colors ${
-                        item.priority === 'high' ? 'text-accent' : 'text-muted-foreground/40 hover:text-accent'
-                      }`}
-                      title="עדיפות"
-                    >
-                      <Star className={`h-3.5 w-3.5 ${item.priority === 'high' ? 'fill-accent' : ''}`} />
-                    </button>
-                    <button
-                      onClick={() => deleteItem(item.id)}
-                      className="p-1 text-muted-foreground/40 hover:text-destructive rounded transition-colors"
-                      title="מחק"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
+                  item={item}
+                  onToggleComplete={toggleComplete}
+                  onTogglePriority={togglePriority}
+                  onDelete={deleteItem}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
