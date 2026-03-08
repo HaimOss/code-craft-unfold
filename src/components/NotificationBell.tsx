@@ -79,7 +79,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onSelectTrip }) => 
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  const handleNotificationClick = (notif: Notification) => {
+  const handleNotificationClick = (notif: AppNotification) => {
     markAsRead(notif.id);
     if (notif.trip_id && onSelectTrip) {
       onSelectTrip(notif.trip_id);
