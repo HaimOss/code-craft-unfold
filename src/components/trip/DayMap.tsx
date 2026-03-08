@@ -139,7 +139,7 @@ const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
   if (items.length === 0) {
     return (
       <div className="text-center py-6 text-muted-foreground text-sm">
-        🗺️ אין מיקומים להציג ליום זה. הוסף מיקומים לפעילויות או הגדר נקודות התחלה/סיום.
+        🗺️ {t('map.noLocationsDayDesc')}
       </div>
     );
   }
