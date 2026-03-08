@@ -5,7 +5,10 @@ import ItineraryView from './ItineraryView';
 import EditTripModal from '../modals/EditTripModal';
 import ShareModal from '../modals/ShareModal';
 import { CURRENCY_SYMBOLS } from '@/constants';
-import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload } from 'lucide-react';
+import { exportTripToJSON, parseImportFile, importSharedEvent } from '@/services/shareService';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 const statusStyles: { [key in TripStatus]: string } = {
   [TripStatus.Idea]: "bg-trip-idea/20 text-trip-idea",
