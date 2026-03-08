@@ -272,14 +272,14 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
       </header>
 
       <main>
-        <div className="flex items-center gap-4 mb-6">
-          <h2 className="text-2xl font-bold font-display">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold font-display">
             {activeTab === 'itinerary' ? 'Itinerary' : activeTab === 'map' ? 'Map' : 'Checklist'}
           </h2>
-          <div className="flex bg-secondary rounded-lg p-1 gap-1">
+          <div className="flex bg-secondary rounded-lg p-1 gap-1 w-full sm:w-auto">
             <button
               onClick={() => setActiveTab('itinerary')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'itinerary'
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -289,7 +289,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
             </button>
             <button
               onClick={() => setActiveTab('map')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'map'
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -299,7 +299,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
             </button>
             <button
               onClick={() => setActiveTab('checklist')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'checklist'
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
