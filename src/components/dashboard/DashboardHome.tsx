@@ -66,7 +66,7 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAd
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir={dir}>
       {/* Greeting */}
-      <div className={`mb-8 text-center sm:${isRTL ? 'text-right' : 'text-left'}`}>
+      <div className={`mb-8 ${isRTL ? 'text-right' : 'text-left'}`}>
         <h1 className="text-3xl sm:text-4xl font-bold font-display">
           {t('dashboard.hello')} {firstName} 👋
         </h1>
