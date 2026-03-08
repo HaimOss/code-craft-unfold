@@ -337,6 +337,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
             </Marker>
           ))}
 
+          {dayRoutes.map((route) => (
             <Polyline
               key={`route-${route.dayIndex}`}
               positions={route.positions}
