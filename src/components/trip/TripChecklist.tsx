@@ -94,7 +94,7 @@ const SortableChecklistItem: React.FC<SortableChecklistItemProps> = ({
 
         {!isSubtask && subtasks.length > 0 && (
           <button onClick={() => onToggleCollapse(item.id)} className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors mt-0.5">
-            {isCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {isCollapsed ? <ChevronDown className="h-4 w-4 -rotate-90" /> : <ChevronDown className="h-4 w-4" />}
           </button>
         )}
 

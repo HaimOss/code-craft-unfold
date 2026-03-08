@@ -7,7 +7,7 @@ import ShareModal from '../modals/ShareModal';
 import CollaboratorManager from '../modals/CollaboratorManager';
 import BudgetBar from './BudgetBar';
 import { CURRENCY_SYMBOLS, CATEGORY_DISPLAY_CONFIG } from '@/constants';
-import { ArrowRight, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare, FileText, Compass, Plus, ChevronRight } from 'lucide-react';
+import { ArrowRight, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare, FileText, Compass, Plus, ChevronLeft } from 'lucide-react';
 
 const TripMap = lazy(() => import('./TripMap'));
 const TripChecklist = lazy(() => import('./TripChecklist'));
@@ -229,11 +229,11 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
           {/* Breadcrumbs */}
           <div className="flex items-center gap-1.5 text-primary-foreground/60 text-xs mb-3">
             <button onClick={onBack} className="hover:text-primary-foreground transition-colors">ראשי</button>
-            <ChevronRight className="h-3 w-3" />
+            <ChevronLeft className="h-3 w-3" />
             <span className="hover:text-primary-foreground transition-colors cursor-default">הטיולים שלי</span>
             {trip.destination && (
               <>
-                <ChevronRight className="h-3 w-3" />
+                <ChevronLeft className="h-3 w-3" />
                 <span className="text-primary-foreground/80">{trip.destination}</span>
               </>
             )}

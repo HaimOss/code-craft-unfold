@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Input } from '@/components/ui/input';
-import { Compass, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Compass, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Auth = () => {
@@ -144,7 +144,7 @@ const Auth = () => {
               className="btn-primary w-full flex items-center justify-center gap-2"
             >
               {loading ? 'טוען...' : isLogin ? 'התחבר' : 'הירשם'}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowLeft className="h-4 w-4" />
             </button>
           </form>
 
