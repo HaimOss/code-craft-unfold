@@ -68,6 +68,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
           </div>
           <input placeholder="Cover Image URL" value={coverImage} onChange={e => setCoverImage(e.target.value)} className="input-field" />
           <input placeholder="Photo Album Link" value={albumLink} onChange={e => setAlbumLink(e.target.value)} className="input-field" />
+          <input type="number" placeholder="תקציב (אופציונלי)" value={budget} onChange={e => setBudget(e.target.value)} className="input-field" min="0" />
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
             <button type="submit" className="btn-primary">Save Changes</button>
