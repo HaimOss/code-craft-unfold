@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, lazy, Suspense } from 'react';
 import { Trip } from '@/types';
 import { CURRENCY_SYMBOLS } from '@/constants';
-import { Plus, MapPin, Calendar, ArrowLeft, ArrowRight, Clock, Plane, Hotel, UtensilsCrossed } from 'lucide-react';
+import { Plus, MapPin, Calendar, ArrowLeft, ArrowRight, Clock, Plane, Hotel, UtensilsCrossed, Map } from 'lucide-react';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { he, enUS } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
+
+const WorldMap = lazy(() => import('./WorldMap'));
 
 interface DashboardHomeProps {
   trips: Trip[];
@@ -15,6 +17,7 @@ interface DashboardHomeProps {
 
 const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAddTrip, displayName }) => {
   const { t, dir, isRTL } = useLanguage();
+  const [showWorldMap, setShowWorldMap] = useState(false);
   const firstName = displayName?.split(/[\s@]/)[0] || '';
 
   const upcomingTrips = useMemo(() => {
@@ -145,23 +148,23 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAd
           <section>
             <h2 className="text-xl font-bold font-display mb-4">{t('dashboard.expenseAnalytics')}</h2>
             <div className="bg-card border border-border rounded-2xl p-6">
-              <div className="text-center mb-4">
-                <p className="text-sm text-muted-foreground">{t('dashboard.totalBudgetUsed')}</p>
-                <p className="text-3xl font-bold text-foreground mt-1">₪{totalBudget.toLocaleString()}</p>
-              </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-3 gap-4 text-center mb-4">
                 <div className="bg-secondary/50 rounded-xl p-3">
                   <p className="text-2xl font-bold">{trips.length}</p>
                   <p className="text-xs text-muted-foreground">{t('dashboard.tripsLabel')}</p>
                 </div>
                 <div className="bg-secondary/50 rounded-xl p-3">
-                  <p className="text-2xl font-bold">{trips.reduce((s, t) => s + t.events.length, 0)}</p>
+                  <p className="text-2xl font-bold">{trips.reduce((s, tr) => s + tr.events.length, 0)}</p>
                   <p className="text-xs text-muted-foreground">{t('dashboard.activities')}</p>
                 </div>
                 <div className="bg-secondary/50 rounded-xl p-3">
-                  <p className="text-2xl font-bold">{new Set(trips.map(t => t.destination).filter(Boolean)).size}</p>
+                  <p className="text-2xl font-bold">{new Set(trips.map(tr => tr.destination).filter(Boolean)).size}</p>
                   <p className="text-xs text-muted-foreground">{t('dashboard.destinations')}</p>
                 </div>
+              </div>
+              <div className="text-center pt-3 border-t border-border">
+                <p className="text-sm text-muted-foreground">{t('dashboard.totalBudgetUsed')}</p>
+                <p className="text-3xl font-bold text-foreground mt-1">₪{totalBudget.toLocaleString()}</p>
               </div>
             </div>
           </section>
@@ -216,14 +219,18 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAd
             )}
           </div>
 
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div
+            className="bg-card border border-border rounded-2xl overflow-hidden cursor-pointer group hover:shadow-lg transition-all"
+            onClick={() => setShowWorldMap(true)}
+          >
             <div className="h-40 bg-secondary flex items-center justify-center relative">
-              <div className="absolute inset-0 opacity-30" style={{
+              <div className="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity" style={{
                 backgroundImage: `url("https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=600&q=60")`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }} />
               <div className="relative text-center">
+                <Map className="h-6 w-6 mx-auto mb-1 text-primary" />
                 <p className="font-bold text-foreground text-sm">{t('dashboard.whereTo')}</p>
                 <p className="text-xs text-muted-foreground mt-1">{t('dashboard.discoverNew')}</p>
               </div>
@@ -239,6 +246,12 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAd
         <Plus className="h-5 w-5" />
         {t('dashboard.planNewTrip')}
       </button>
+
+      {showWorldMap && (
+        <Suspense fallback={null}>
+          <WorldMap trips={trips} onSelectTrip={onSelectTrip} onClose={() => setShowWorldMap(false)} />
+        </Suspense>
+      )}
     </div>
   );
 };
