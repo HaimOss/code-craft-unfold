@@ -35,17 +35,16 @@ export const createShareLink = async (
 
 export const getSharedItem = async (token: string): Promise<{ itemType: string; itemData: any } | null> => {
   const { data, error } = await supabase
-    .from('shared_items')
-    .select('item_type, item_data, expires_at')
-    .eq('share_token', token)
-    .single();
+    .rpc('get_shared_item_by_token', { _token: token });
 
-  if (error || !data) return null;
+  if (error || !data || data.length === 0) return null;
+
+  const item = data[0];
 
   // Check expiry
-  if (data.expires_at && new Date(data.expires_at) < new Date()) return null;
+  if (item.expires_at && new Date(item.expires_at) < new Date()) return null;
 
-  return { itemType: data.item_type, itemData: data.item_data };
+  return { itemType: item.item_type, itemData: item.item_data };
 };
 
 export const importSharedTrip = async (userId: string, tripData: any): Promise<string> => {

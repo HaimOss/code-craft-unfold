@@ -33,13 +33,10 @@ export const inviteCollaborator = async (
 
 export const getInviteByToken = async (token: string): Promise<TripCollaborator | null> => {
   const { data, error } = await supabase
-    .from('trip_collaborators')
-    .select('*')
-    .eq('invite_token', token)
-    .single();
+    .rpc('get_collaborator_by_invite_token', { _token: token });
 
-  if (error || !data) return null;
-  return data as TripCollaborator;
+  if (error || !data || data.length === 0) return null;
+  return data[0] as TripCollaborator;
 };
 
 export const acceptInvite = async (token: string, userId: string): Promise<void> => {
