@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Input } from '@/components/ui/input';
-import { Compass, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Compass, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Auth = () => {
