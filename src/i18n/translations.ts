@@ -331,6 +331,13 @@ const translations: Record<Language, TranslationTree> = {
       discoverNew: 'Click to open the world map',
       planNewTrip: 'Plan New Trip',
       viewWorldMap: 'View World Map',
+      tripsLabel: 'Trips',
+      activities: 'Activities',
+      destinations: 'Destinations',
+      nextTrip: 'Next Trip',
+      days: 'days',
+      recentActivity: 'Recent Activity',
+      noActivityYet: 'No activity yet',
     },
     trips: {
       myTrips: 'My Trips',
