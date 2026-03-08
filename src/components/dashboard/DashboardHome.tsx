@@ -175,20 +175,27 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAd
             const next = upcomingTrips[0];
             const daysUntil = Math.max(0, differenceInDays(parseISO(next.start_date), new Date()));
             return (
-              <div className="bg-primary rounded-2xl p-5 text-primary-foreground">
-                <p className="text-sm opacity-80 mb-1">{t('dashboard.nextTrip')}</p>
-                <h3 className="font-bold font-display text-lg">{next.name}</h3>
-                {next.destination && (
-                  <p className="text-sm opacity-70 flex items-center gap-1 mt-1">
-                    <MapPin className="h-3 w-3" /> {next.destination}
-                  </p>
+              <div className="bg-primary rounded-2xl text-primary-foreground overflow-hidden relative">
+                {next.cover_image && (
+                  <div className="absolute inset-0 opacity-20">
+                    <img src={next.cover_image} alt="" className="w-full h-full object-cover" />
+                  </div>
                 )}
-                <div className="mt-4 flex items-end gap-2">
-                  <span className="text-4xl font-bold">{daysUntil}</span>
-                  <span className="text-sm opacity-80 pb-1">{t('dashboard.days')}</span>
-                </div>
-                <div className="mt-3 w-full h-1.5 bg-primary-foreground/20 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary-foreground/60 rounded-full" style={{ width: `${Math.min(100, (1 - daysUntil / 90) * 100)}%` }} />
+                <div className="relative p-5">
+                  <p className="text-sm opacity-80 mb-1">{t('dashboard.nextTrip')}</p>
+                  <h3 className="font-bold font-display text-lg">{next.name}</h3>
+                  {next.destination && (
+                    <p className="text-sm opacity-70 flex items-center gap-1 mt-1">
+                      <MapPin className="h-3 w-3" /> {next.destination}
+                    </p>
+                  )}
+                  <div className="mt-4 flex items-end gap-2">
+                    <span className="text-4xl font-bold">{daysUntil}</span>
+                    <span className="text-sm opacity-80 pb-1">{t('dashboard.days')}</span>
+                  </div>
+                  <div className="mt-3 w-full h-1.5 bg-primary-foreground/20 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary-foreground/60 rounded-full" style={{ width: `${Math.min(100, (1 - daysUntil / 90) * 100)}%` }} />
+                  </div>
                 </div>
               </div>
             );
