@@ -187,7 +187,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare,
               <Heart className={`h-3.5 w-3.5 ${event.is_favorite ? 'fill-red-500' : ''}`} />
             </button>
           )}
-          <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center space-x-0.5">
+          <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
             <button onClick={(e) => { e.stopPropagation(); onShare(); }} className="btn-ghost p-1.5" title="Share"><Share2 className="h-3.5 w-3.5" /></button>
             <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="btn-ghost p-1.5" title="Edit"><Pencil className="h-3.5 w-3.5" /></button>
             <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="btn-ghost p-1.5 hover:text-destructive" title="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
