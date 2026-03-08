@@ -4,7 +4,8 @@ import TripCard from './TripCard';
 import AddTripModal from '../modals/AddTripModal';
 import ActivityArchive from './ActivityArchive';
 import StatsDashboard from './StatsDashboard';
-import { Plus, LogOut, Compass, Archive, Upload, BarChart3 } from 'lucide-react';
+import UserProfileMenu from '../UserProfileMenu';
+import { Plus, Compass, Archive, Upload, BarChart3 } from 'lucide-react';
 import { parseImportFile, importSharedTrip } from '@/services/shareService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -64,9 +65,7 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
           <button onClick={handleImportJSON} className="btn-secondary flex items-center gap-2">
             <Upload className="h-4 w-4" /> ייבוא טיול
           </button>
-          <button onClick={onLogout} title="Reset Demo" className="btn-ghost p-2">
-            <LogOut className="h-5 w-5" />
-          </button>
+          <UserProfileMenu onLogout={onLogout} />
         </div>
       </header>
 
