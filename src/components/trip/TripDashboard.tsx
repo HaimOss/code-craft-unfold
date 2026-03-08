@@ -3,7 +3,10 @@ import { Trip, Event, User } from '@/types';
 import TripCard from './TripCard';
 import AddTripModal from '../modals/AddTripModal';
 import ActivityArchive from './ActivityArchive';
-import { Plus, LogOut, Compass, Archive } from 'lucide-react';
+import { Plus, LogOut, Compass, Archive, Upload } from 'lucide-react';
+import { parseImportFile, importSharedTrip } from '@/services/shareService';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TripDashboardProps {
