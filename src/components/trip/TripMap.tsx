@@ -103,6 +103,7 @@ interface TripMapProps {
 }
 
 const TripMap: React.FC<TripMapProps> = ({ trip }) => {
+  const { t } = useLanguage();
   const [geocodedEvents, setGeocodedEvents] = useState<GeocodedEvent[]>([]);
   const [geocodedPoints, setGeocodedPoints] = useState<GeocodedPoint[]>([]);
   const [loading, setLoading] = useState(true);
