@@ -665,6 +665,13 @@ const translations: Record<Language, TranslationTree> = {
       endPoint: 'End point',
       legend: 'Legend:',
     },
+    family: {
+      title: 'Family Members',
+      description: 'Add family members to track who joined each trip',
+      noMembers: 'No family members yet',
+      namePlaceholder: 'Name...',
+      participants: 'Who's on this trip?',
+    },
   },
 };
 

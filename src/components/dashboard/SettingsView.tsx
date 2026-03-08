@@ -167,6 +167,9 @@ const SettingsView: React.FC = () => {
           </div>
         </section>
 
+        {/* Family Members Section */}
+        <FamilyMembersManager />
+
         {/* Currency Section */}
         <section className="rounded-xl border border-border bg-card p-5 space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
