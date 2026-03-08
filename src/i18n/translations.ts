@@ -610,6 +610,18 @@ const translations: Record<Language, TranslationTree> = {
       noItinerary: 'No Itinerary Yet',
       setDates: 'Set valid start and end dates to create your itinerary.',
     },
+    map: {
+      loadingMap: 'Loading map...',
+      loadingMapLocations: 'Loading map and locating places...',
+      noLocations: 'No locations to display',
+      noLocationsDesc: 'Add addresses and locations to activities to see them on the map.',
+      noLocationsDayDesc: 'No locations to display for this day. Add locations to activities or set start/end points.',
+      allDays: 'All days',
+      dayLabel: 'Day {idx}',
+      startPoint: 'Start point',
+      endPoint: 'End point',
+      legend: 'Legend:',
+    },
   },
 };
 
