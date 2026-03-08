@@ -1,15 +1,16 @@
 import React from 'react';
 import { Event, EventCategory, FlightDetails, AccommodationDetails, TransportDetails, GeneralDetails } from '@/types';
-import { CATEGORY_ICONS, CURRENCY_SYMBOLS } from '@/constants';
+import { CATEGORY_ICONS, CURRENCY_SYMBOLS, PRESET_TAGS } from '@/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Pencil, Trash2, Share2, ExternalLink, MapPin, Star } from 'lucide-react';
+import { GripVertical, Pencil, Trash2, Share2, ExternalLink, MapPin, Star, Heart } from 'lucide-react';
 
 interface EventCardProps {
   event: Event;
   onEdit: () => void;
   onDelete: () => void;
   onShare: () => void;
+  onToggleFavorite?: () => void;
 }
 
 const renderDetails = (category: EventCategory, details: Event['details']) => {
@@ -42,7 +43,18 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
   }
 };
 
-const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare }) => {
+const getTagStyle = (tag: string) => {
+  const preset = PRESET_TAGS.find(t => t.label === tag);
+  if (preset) return preset.color;
+  return 'bg-secondary text-muted-foreground border-border';
+};
+
+const getTagEmoji = (tag: string) => {
+  const preset = PRESET_TAGS.find(t => t.label === tag);
+  return preset?.emoji || '🏷️';
+};
+
+const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare, onToggleFavorite }) => {
   const categoryIcon = CATEGORY_ICONS[event.category] || '📌';
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: event.id });
@@ -80,6 +92,15 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare 
               </div>
               <h3 className="font-semibold text-card-foreground leading-tight">{event.title}</h3>
               <div className="mt-0.5">{renderDetails(event.category, event.details)}</div>
+              {event.tags && event.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {event.tags.map(tag => (
+                    <span key={tag} className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${getTagStyle(tag)}`}>
+                      {getTagEmoji(tag)} {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
               {event.rating && event.rating > 0 && (
                 <div className="flex items-center mt-1">
                   {Array.from({ length: event.rating }).map((_, i) => (
@@ -92,10 +113,21 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare 
           </div>
         </div>
 
-        <div className="flex items-center space-x-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
-          <button onClick={(e) => { e.stopPropagation(); onShare(); }} className="btn-ghost p-1.5" title="Share"><Share2 className="h-3.5 w-3.5" /></button>
-          <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="btn-ghost p-1.5" title="Edit"><Pencil className="h-3.5 w-3.5" /></button>
-          <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="btn-ghost p-1.5 hover:text-destructive" title="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+        <div className="flex items-center space-x-0.5 flex-shrink-0 ml-2">
+          {onToggleFavorite && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+              className={`p-1.5 transition-colors ${event.is_favorite ? 'text-red-500' : 'opacity-0 group-hover:opacity-100 btn-ghost'}`}
+              title={event.is_favorite ? 'הסר מהמועדפים' : 'הוסף למועדפים'}
+            >
+              <Heart className={`h-3.5 w-3.5 ${event.is_favorite ? 'fill-red-500' : ''}`} />
+            </button>
+          )}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-0.5">
+            <button onClick={(e) => { e.stopPropagation(); onShare(); }} className="btn-ghost p-1.5" title="Share"><Share2 className="h-3.5 w-3.5" /></button>
+            <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="btn-ghost p-1.5" title="Edit"><Pencil className="h-3.5 w-3.5" /></button>
+            <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="btn-ghost p-1.5 hover:text-destructive" title="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Trip, Event, EventCategory, PaymentMethod } from '@/types';
-import { EVENT_CATEGORIES, CURRENCIES, PAYMENT_METHODS } from '@/constants';
+import { EVENT_CATEGORIES, CURRENCIES, PAYMENT_METHODS, PRESET_TAGS } from '@/constants';
 import { generateId } from '@/utils/helpers';
-import { Calendar, Clock, DollarSign, CreditCard, Star, FileText, MapPin, Phone, Globe, Plane, Building, Car } from 'lucide-react';
+import { Calendar, Clock, DollarSign, CreditCard, Star, FileText, MapPin, Phone, Globe, Plane, Building, Car, X, Plus, Tag } from 'lucide-react';
 
 interface AddEventFormProps {
   trip: Trip;
@@ -23,8 +23,12 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
     payment_method: PaymentMethod.Credit,
     details: {},
     rating: 0,
+    is_favorite: false,
+    tags: [],
     ...existingEvent,
   });
+
+  const [customTagInput, setCustomTagInput] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -35,6 +39,26 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
   const handleDetailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, details: { ...(prev.details || {}), [name]: value } }));
+  };
+
+  const toggleTag = (tag: string) => {
+    setFormData(prev => {
+      const currentTags = prev.tags || [];
+      return {
+        ...prev,
+        tags: currentTags.includes(tag)
+          ? currentTags.filter(t => t !== tag)
+          : [...currentTags, tag],
+      };
+    });
+  };
+
+  const addCustomTag = () => {
+    const tag = customTagInput.trim();
+    if (tag && !(formData.tags || []).includes(tag)) {
+      setFormData(prev => ({ ...prev, tags: [...(prev.tags || []), tag] }));
+      setCustomTagInput('');
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -106,6 +130,56 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
             {[1,2,3,4,5].map(r => <option key={r} value={r}>{'⭐'.repeat(r)}</option>)}
           </select>
         </div>
+
+        {/* Tags Section */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
+            <Tag className="h-4 w-4" /> תגיות
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {PRESET_TAGS.map(preset => {
+              const isActive = (formData.tags || []).includes(preset.label);
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => toggleTag(preset.label)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+                    isActive ? preset.color + ' shadow-sm ring-1 ring-offset-1' : 'bg-card border-border text-muted-foreground hover:border-primary/30'
+                  }`}
+                >
+                  {preset.emoji} {preset.label}
+                </button>
+              );
+            })}
+          </div>
+          {/* Custom tags display */}
+          {(formData.tags || []).filter(t => !PRESET_TAGS.find(p => p.label === t)).length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {(formData.tags || []).filter(t => !PRESET_TAGS.find(p => p.label === t)).map(tag => (
+                <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-secondary text-foreground border border-border">
+                  🏷️ {tag}
+                  <button type="button" onClick={() => toggleTag(tag)} className="hover:text-destructive"><X className="h-3 w-3" /></button>
+                </span>
+              ))}
+            </div>
+          )}
+          {/* Add custom tag */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={customTagInput}
+              onChange={e => setCustomTagInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomTag(); } }}
+              placeholder="תגית מותאמת אישית..."
+              className="input-field text-sm flex-1"
+            />
+            <button type="button" onClick={addCustomTag} disabled={!customTagInput.trim()} className="btn-secondary px-3 text-sm disabled:opacity-50">
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{renderCategoryFields()}</div>
         <textarea name="notes" placeholder="Notes / Review" value={formData.notes || ''} onChange={handleInputChange} className="input-field" rows={2} />
         <div className="flex justify-end space-x-3">
