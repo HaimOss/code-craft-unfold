@@ -254,13 +254,35 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     return map;
   }, [items]);
 
+  // Unique assignees for filter
+  const uniqueAssignees = useMemo(() => {
+    const set = new Set<string>();
+    items.forEach(i => { if (i.assignee) set.add(i.assignee); });
+    return Array.from(set);
+  }, [items]);
+
   const filtered = useMemo(() => {
+    const now = new Date();
+    const weekFromNow = new Date();
+    weekFromNow.setDate(now.getDate() + 7);
+
     return parentItems.filter(item => {
       if (filterCategory && item.category !== filterCategory) return false;
       if (hideCompleted && item.is_completed) return false;
+      if (filterAssignee && item.assignee !== filterAssignee) return false;
+      if (filterDue === 'overdue' && !item.is_completed) {
+        if (!item.due_date) return false;
+        const d = new Date(item.due_date + 'T00:00:00');
+        if (!(isPast(d) && !isToday(d))) return false;
+      }
+      if (filterDue === 'this_week' && !item.is_completed) {
+        if (!item.due_date) return false;
+        const d = new Date(item.due_date + 'T00:00:00');
+        if (d > weekFromNow || (isPast(d) && !isToday(d))) return false;
+      }
       return true;
     });
-  }, [parentItems, filterCategory, hideCompleted]);
+  }, [parentItems, filterCategory, hideCompleted, filterDue, filterAssignee]);
 
   const sortedFiltered = useMemo(() => {
     return [...filtered].sort((a, b) => {
