@@ -1,13 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trip, TripStatus } from '@/types';
 import { CURRENCY_SYMBOLS } from '@/constants';
 import { MapPin, ArrowLeft, ArrowRight } from 'lucide-react';
 import { differenceInDays, parseISO } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TripCardProps {
   trip: Trip;
   onSelectTrip: (tripId: string) => void;
+}
+
+interface ParticipantInfo {
+  id: string;
+  name: string;
+  avatar_emoji: string;
 }
 
 const statusStyles: { [key in TripStatus]: string } = {
@@ -24,6 +31,24 @@ const TripCard: React.FC<TripCardProps> = ({ trip, onSelectTrip }) => {
   const symbol = CURRENCY_SYMBOLS[trip.base_currency] || trip.base_currency;
   const tripDays = differenceInDays(parseISO(trip.end_date), parseISO(trip.start_date)) + 1;
   const DetailArrow = isRTL ? ArrowLeft : ArrowRight;
+
+  const [participants, setParticipants] = useState<ParticipantInfo[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('trip_participants')
+      .select('family_member_id')
+      .eq('trip_id', trip.id)
+      .then(async ({ data }) => {
+        if (!data || data.length === 0) return;
+        const ids = data.map(d => d.family_member_id);
+        const { data: members } = await supabase
+          .from('family_members')
+          .select('id, name, avatar_emoji')
+          .in('id', ids);
+        if (members) setParticipants(members.map(m => ({ id: m.id, name: m.name, avatar_emoji: m.avatar_emoji || '👤' })));
+      });
+  }, [trip.id]);
 
   return (
     <div
@@ -66,6 +91,17 @@ const TripCard: React.FC<TripCardProps> = ({ trip, onSelectTrip }) => {
             </span>
           )}
         </div>
+
+        {participants.length > 0 && (
+          <div className="flex items-center gap-1 mb-2 flex-wrap">
+            {participants.slice(0, 5).map(p => (
+              <span key={p.id} className="text-sm" title={p.name}>{p.avatar_emoji}</span>
+            ))}
+            {participants.length > 5 && (
+              <span className="text-xs text-muted-foreground">+{participants.length - 5}</span>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center justify-between mt-3">
           <span className={`status-badge text-[10px] ${statusStyles[trip.status]}`}>
