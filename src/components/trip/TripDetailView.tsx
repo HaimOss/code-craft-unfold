@@ -229,11 +229,11 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
           {/* Breadcrumbs */}
           <div className="flex items-center gap-1.5 text-primary-foreground/60 text-xs mb-3">
             <button onClick={onBack} className="hover:text-primary-foreground transition-colors">ראשי</button>
-            <ChevronRight className="h-3 w-3" />
+            <ChevronLeft className="h-3 w-3" />
             <span className="hover:text-primary-foreground transition-colors cursor-default">הטיולים שלי</span>
             {trip.destination && (
               <>
-                <ChevronRight className="h-3 w-3" />
+                <ChevronLeft className="h-3 w-3" />
                 <span className="text-primary-foreground/80">{trip.destination}</span>
               </>
             )}
