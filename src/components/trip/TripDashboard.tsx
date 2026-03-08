@@ -21,7 +21,7 @@ interface TripDashboardProps {
 }
 
 const TripDashboard: React.FC<TripDashboardProps> = ({
-  trips, onSelectTrip, onAddTrip, onLogout,
+  trips, onSelectTrip, onAddTrip, onUpdateTrip, onLogout,
 }) => {
   const { user } = useAuth();
   const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
