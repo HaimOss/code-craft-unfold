@@ -227,43 +227,43 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   return (
     <div className="card-surface p-6 animate-fade-in">
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center">
-          <div className="bg-secondary rounded-xl p-3 text-center mr-4 min-w-[60px]">
-            <span className="text-[10px] uppercase text-muted-foreground font-semibold">{localDate.toLocaleDateString(undefined, { month: 'short' })}</span>
-            <span className="text-2xl font-bold block text-card-foreground">{localDate.getDate()}</span>
+      <div className="flex justify-between items-start sm:items-center mb-4 gap-2">
+        <div className="flex items-center min-w-0">
+          <div className="bg-secondary rounded-xl p-2 sm:p-3 text-center mr-2 sm:mr-4 min-w-[48px] sm:min-w-[60px]">
+            <span className="text-[9px] sm:text-[10px] uppercase text-muted-foreground font-semibold">{localDate.toLocaleDateString(undefined, { month: 'short' })}</span>
+            <span className="text-xl sm:text-2xl font-bold block text-card-foreground">{localDate.getDate()}</span>
           </div>
-          <div>
-            <h3 className="text-xl font-bold font-display">Day {dayNumber}</h3>
-            <div className="flex items-center gap-3 mt-1 flex-wrap">
+          <div className="min-w-0">
+            <h3 className="text-lg sm:text-xl font-bold font-display">Day {dayNumber}</h3>
+            <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
               {showMapUrl ? (
-                <a href={showMapUrl} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
-                  <Map className="h-3 w-3 mr-1" /> Show Map
+                <a href={showMapUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
+                  <Map className="h-3 w-3 mr-1" /> Map
                 </a>
               ) : (
-                <span className="text-xs flex items-center text-muted-foreground/50">
-                  <Map className="h-3 w-3 mr-1" /> Show Map
+                <span className="text-[10px] sm:text-xs flex items-center text-muted-foreground/50">
+                  <Map className="h-3 w-3 mr-1" /> Map
                 </span>
               )}
               {mapsUrl ? (
-                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
-                  <ExternalLink className="h-3 w-3 mr-1" /> Google Maps
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
+                  <ExternalLink className="h-3 w-3 mr-1" /> <span className="hidden sm:inline">Google Maps</span><span className="sm:hidden">GMaps</span>
                 </a>
               ) : (
-                <span className="text-xs flex items-center text-muted-foreground/50">
-                  <ExternalLink className="h-3 w-3 mr-1" /> Google Maps
+                <span className="text-[10px] sm:text-xs flex items-center text-muted-foreground/50">
+                  <ExternalLink className="h-3 w-3 mr-1" /> <span className="hidden sm:inline">Google Maps</span><span className="sm:hidden">GMaps</span>
                 </span>
               )}
-              <button onClick={handleExportDay} className="text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
-                <Download className="h-3 w-3 mr-1" /> Export Day
+              <button onClick={handleExportDay} className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
+                <Download className="h-3 w-3 mr-1" /> <span className="hidden sm:inline">Export Day</span><span className="sm:hidden">PDF</span>
               </button>
             </div>
           </div>
         </div>
-        <div className="text-right flex items-center gap-2">
+        <div className="text-right flex items-center gap-1 sm:gap-2 flex-shrink-0">
           <div>
-            <span className="text-xs text-muted-foreground block">Day Total</span>
-            <p className="font-bold text-lg text-card-foreground">
+            <span className="text-[10px] sm:text-xs text-muted-foreground block">Day Total</span>
+            <p className="font-bold text-base sm:text-lg text-card-foreground">
               {dayTotal.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
           </div>

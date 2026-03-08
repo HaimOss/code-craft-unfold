@@ -199,7 +199,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ trips }) => {
             <TrendingUp className="h-5 w-5 text-primary" /> השוואת טיולים
           </h3>
           {tripComparisonData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={250}>
               <BarChart data={tripComparisonData}>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                 <XAxis dataKey="name" fontSize={12} />

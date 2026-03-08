@@ -50,20 +50,20 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-border mb-8">
+      <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 sm:pb-6 border-b border-border mb-6 sm:mb-8 gap-4">
         <div>
-          <h1 className="text-4xl font-bold font-display flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <Compass className="h-8 w-8 text-accent" />
+          <h1 className="text-2xl sm:text-4xl font-bold font-display flex items-center gap-2 sm:gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <Compass className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
             WonderJourney
           </h1>
-          <p className="mt-1 text-muted-foreground">Your personal travel journal and planner.</p>
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground">Your personal travel journal and planner.</p>
         </div>
-        <div className="flex items-center space-x-3 mt-4 sm:mt-0">
-          <button onClick={() => setIsAddTripModalOpen(true)} className="btn-primary flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:space-x-3 w-full sm:w-auto">
+          <button onClick={() => setIsAddTripModalOpen(true)} className="btn-primary flex items-center gap-2 flex-1 sm:flex-initial justify-center text-sm sm:text-base">
             <Plus className="h-4 w-4" /> טיול חדש
           </button>
-          <button onClick={handleImportJSON} className="btn-secondary flex items-center gap-2">
-            <Upload className="h-4 w-4" /> ייבוא טיול
+          <button onClick={handleImportJSON} className="btn-secondary flex items-center gap-2 text-sm sm:text-base">
+            <Upload className="h-4 w-4" /> <span className="hidden sm:inline">ייבוא טיול</span><span className="sm:hidden">ייבוא</span>
           </button>
           <UserProfileMenu onLogout={onLogout} />
         </div>
