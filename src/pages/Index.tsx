@@ -4,6 +4,8 @@ import TripDashboard from '@/components/trip/TripDashboard';
 import TripDetailView from '@/components/trip/TripDetailView';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchTrips, createTrip, updateTrip, deleteTrip, syncTripEvents } from '@/services/tripService';
+import { fetchSharedTrips } from '@/services/collaborationService';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -15,8 +17,42 @@ const Index = () => {
   const loadTrips = useCallback(async () => {
     if (!user) return;
     try {
-      const data = await fetchTrips(user.id);
-      setTrips(data);
+      const ownTrips = await fetchTrips(user.id);
+
+      // Also fetch shared trips
+      const sharedTripIds = await fetchSharedTrips(user.id);
+      let sharedTrips: Trip[] = [];
+      if (sharedTripIds.length > 0) {
+        // Fetch each shared trip's data
+        for (const tripId of sharedTripIds) {
+          const { data: tripData } = await supabase.from('trips').select('*').eq('id', tripId).single();
+          const { data: eventsData } = await supabase.from('events').select('*').eq('trip_id', tripId).order('sort_order', { ascending: true });
+          if (tripData) {
+            const trip: Trip = {
+              id: tripData.id,
+              name: tripData.name + ' (shared)',
+              destination: tripData.destination || undefined,
+              start_date: tripData.start_date,
+              end_date: tripData.end_date,
+              base_currency: tripData.base_currency,
+              status: tripData.status as any,
+              cover_image: tripData.cover_image || undefined,
+              album_link: tripData.album_link || undefined,
+              dailyInfo: (tripData.daily_info as any) || {},
+              budget: tripData.budget ? Number(tripData.budget) : undefined,
+              events: (eventsData || []).map((e: any) => ({
+                id: e.id, date: e.date, time: e.time, endTime: e.end_time || undefined,
+                category: e.category as any, title: e.title, amount: Number(e.amount),
+                currency: e.currency, payment_method: e.payment_method as any,
+                details: e.details || {}, notes: e.notes || undefined, rating: e.rating || undefined,
+              })),
+            };
+            sharedTrips.push(trip);
+          }
+        }
+      }
+
+      setTrips([...ownTrips, ...sharedTrips]);
     } catch (err: any) {
       toast({ title: 'שגיאה בטעינת טיולים', description: err.message, variant: 'destructive' });
     } finally {
@@ -27,6 +63,23 @@ const Index = () => {
   useEffect(() => {
     loadTrips();
   }, [loadTrips]);
+
+  // Realtime subscriptions
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('trip-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, () => {
+        loadTrips();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
+        loadTrips();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user, loadTrips]);
 
   const handleSelectTrip = (tripId: string) => setSelectedTripId(tripId);
   const handleBackToDashboard = () => setSelectedTripId(null);
@@ -49,7 +102,7 @@ const Index = () => {
       await syncTripEvents(user.id, updatedTrip);
     } catch (err: any) {
       toast({ title: 'שגיאה בעדכון', description: err.message, variant: 'destructive' });
-      loadTrips(); // reload on error
+      loadTrips();
     }
   };
 

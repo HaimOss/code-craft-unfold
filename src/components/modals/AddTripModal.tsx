@@ -19,6 +19,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
   const [baseCurrency, setBaseCurrency] = useState(CURRENCIES[0]);
   const [status, setStatus] = useState(TripStatus.Idea);
   const [coverImage, setCoverImage] = useState('');
+  const [budget, setBudget] = useState('');
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
@@ -38,13 +39,14 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
       status,
       events: [],
       cover_image: coverImage || undefined,
+      budget: budget ? Number(budget) : undefined,
     };
 
     onAddTrip(newTrip);
     onClose();
     // Reset
     setName(''); setDestination(''); setStartDate(today); setEndDate(today);
-    setBaseCurrency(CURRENCIES[0]); setStatus(TripStatus.Idea); setCoverImage(''); setError('');
+    setBaseCurrency(CURRENCIES[0]); setStatus(TripStatus.Idea); setCoverImage(''); setBudget(''); setError('');
   };
 
   return (
@@ -83,6 +85,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
             </div>
           </div>
           <input placeholder="Cover Image URL (optional)" value={coverImage} onChange={e => setCoverImage(e.target.value)} className="input-field" />
+          <input type="number" placeholder="תקציב (אופציונלי)" value={budget} onChange={e => setBudget(e.target.value)} className="input-field" min="0" />
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
             <button type="submit" className="btn-primary">Create Trip</button>

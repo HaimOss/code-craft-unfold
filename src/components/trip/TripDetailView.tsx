@@ -4,8 +4,10 @@ import { normalizeCost } from '@/services/currencyService';
 import ItineraryView from './ItineraryView';
 import EditTripModal from '../modals/EditTripModal';
 import ShareModal from '../modals/ShareModal';
+import CollaboratorManager from '../modals/CollaboratorManager';
+import BudgetBar from './BudgetBar';
 import { CURRENCY_SYMBOLS } from '@/constants';
-import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users } from 'lucide-react';
 import { exportTripToJSON, parseImportFile, importSharedEvent } from '@/services/shareService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -30,6 +32,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
   const [isCalculating, setIsCalculating] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
 
   const handleExportJSON = () => exportTripToJSON(trip);
 
@@ -113,6 +116,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
             <div className="flex items-center gap-2 mt-4 sm:mt-0">
               <span className={`status-badge ${statusStyles[trip.status]}`}>{trip.status.split(' ')[0]}</span>
               <div className="flex items-center bg-primary-foreground/10 rounded-full p-1">
+                <button onClick={() => setIsCollabModalOpen(true)} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="שיתוף פעולה"><Users className="h-4 w-4" /></button>
                 <button onClick={() => setIsShareModalOpen(true)} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="שתף"><Share2 className="h-4 w-4" /></button>
                 <button onClick={handleExportJSON} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ייצוא JSON"><Download className="h-4 w-4" /></button>
                 <button onClick={handleImportEventJSON} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ייבוא פעילות"><Upload className="h-4 w-4" /></button>
@@ -121,6 +125,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
               </div>
             </div>
           </div>
+          <BudgetBar trip={trip} totalCost={totalCost} isCalculating={isCalculating} />
         </div>
       </header>
 
@@ -137,6 +142,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
 
       <EditTripModal isOpen={isEditModalOpen} trip={trip} onClose={() => setIsEditModalOpen(false)} onUpdateTrip={onUpdateTrip} />
       <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} title={`שתף "${trip.name}"`} itemType="trip" itemData={trip} />
+      <CollaboratorManager isOpen={isCollabModalOpen} onClose={() => setIsCollabModalOpen(false)} tripId={trip.id} tripName={trip.name} />
     </div>
   );
 };

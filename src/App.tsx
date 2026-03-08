@@ -10,6 +10,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Import from "./pages/Import";
+import Invite from "./pages/Invite";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/import/:token" element={<Import />} />
+            <Route path="/invite/:token" element={<Invite />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

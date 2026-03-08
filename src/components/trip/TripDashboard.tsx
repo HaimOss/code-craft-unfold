@@ -3,7 +3,8 @@ import { Trip, Event, User } from '@/types';
 import TripCard from './TripCard';
 import AddTripModal from '../modals/AddTripModal';
 import ActivityArchive from './ActivityArchive';
-import { Plus, LogOut, Compass, Archive, Upload } from 'lucide-react';
+import StatsDashboard from './StatsDashboard';
+import { Plus, LogOut, Compass, Archive, Upload, BarChart3 } from 'lucide-react';
 import { parseImportFile, importSharedTrip } from '@/services/shareService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -76,6 +77,9 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
           <TabsTrigger value="archive" className="flex items-center gap-2">
             <Archive className="h-4 w-4" /> ארכיון פעילויות
           </TabsTrigger>
+          <TabsTrigger value="stats" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" /> סטטיסטיקות
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="trips">
@@ -99,6 +103,10 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
 
         <TabsContent value="archive">
           <ActivityArchive trips={trips} />
+        </TabsContent>
+
+        <TabsContent value="stats">
+          <StatsDashboard trips={trips} />
         </TabsContent>
       </Tabs>
 

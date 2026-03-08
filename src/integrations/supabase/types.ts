@@ -133,10 +133,52 @@ export type Database = {
         }
         Relationships: []
       }
+      trip_collaborators: {
+        Row: {
+          created_at: string
+          id: string
+          invite_token: string | null
+          invited_email: string | null
+          role: string
+          status: string
+          trip_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_token?: string | null
+          invited_email?: string | null
+          role?: string
+          status?: string
+          trip_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_token?: string | null
+          invited_email?: string | null
+          role?: string
+          status?: string
+          trip_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_collaborators_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trips: {
         Row: {
           album_link: string | null
           base_currency: string
+          budget: number | null
           cover_image: string | null
           created_at: string
           daily_info: Json | null
@@ -152,6 +194,7 @@ export type Database = {
         Insert: {
           album_link?: string | null
           base_currency?: string
+          budget?: number | null
           cover_image?: string | null
           created_at?: string
           daily_info?: Json | null
@@ -167,6 +210,7 @@ export type Database = {
         Update: {
           album_link?: string | null
           base_currency?: string
+          budget?: number | null
           cover_image?: string | null
           created_at?: string
           daily_info?: Json | null
@@ -186,7 +230,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_trip_collaborator: {
+        Args: { _trip_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_trip_owner: {
+        Args: { _trip_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

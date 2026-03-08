@@ -19,6 +19,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
   const [status, setStatus] = useState(trip.status);
   const [coverImage, setCoverImage] = useState(trip.cover_image || '');
   const [albumLink, setAlbumLink] = useState(trip.album_link || '');
+  const [budget, setBudget] = useState(trip.budget?.toString() || '');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -27,6 +28,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
       setStartDate(trip.start_date); setEndDate(trip.end_date);
       setBaseCurrency(trip.base_currency); setStatus(trip.status);
       setCoverImage(trip.cover_image || ''); setAlbumLink(trip.album_link || '');
+      setBudget(trip.budget?.toString() || '');
       setError('');
     }
   }, [isOpen, trip]);
@@ -40,6 +42,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
       ...trip, name: name.trim(), destination: destination.trim(),
       start_date: startDate, end_date: endDate, base_currency: baseCurrency,
       status, cover_image: coverImage || undefined, album_link: albumLink || undefined,
+      budget: budget ? Number(budget) : undefined,
     });
     onClose();
   };
@@ -65,6 +68,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
           </div>
           <input placeholder="Cover Image URL" value={coverImage} onChange={e => setCoverImage(e.target.value)} className="input-field" />
           <input placeholder="Photo Album Link" value={albumLink} onChange={e => setAlbumLink(e.target.value)} className="input-field" />
+          <input type="number" placeholder="תקציב (אופציונלי)" value={budget} onChange={e => setBudget(e.target.value)} className="input-field" min="0" />
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
             <button type="submit" className="btn-primary">Save Changes</button>
