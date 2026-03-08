@@ -247,7 +247,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
           כל הימים
         </button>
         {tripDays.map((day, idx) => {
-          const hasEvents = geocodedEvents.some(e => e.dayIndex === idx);
+          const hasEvents = geocodedEvents.some(e => e.dayIndex === idx) || geocodedPoints.some(p => p.dayIndex === idx);
           if (!hasEvents) return null;
           const dayDate = new Date(day + 'T00:00:00');
           return (
