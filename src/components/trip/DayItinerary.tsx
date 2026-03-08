@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Trip, Event, DailyInfo } from '@/types';
+import jsPDF from 'jspdf';
 import AddEventForm from './AddEventForm';
 import EventCard from './EventCard';
 import ShareModal from '../modals/ShareModal';
