@@ -13,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 const statusStyles: { [key in TripStatus]: string } = {
-  [TripStatus.Idea]: "bg-trip-idea/20 text-trip-idea",
+  [TripStatus.Idea]: "bg-trip-idea text-primary-foreground",
   [TripStatus.Planning]: "bg-trip-planning/20 text-trip-planning",
   [TripStatus.Booked]: "bg-trip-booked/20 text-trip-booked",
   [TripStatus.Completed]: "bg-muted text-muted-foreground",
