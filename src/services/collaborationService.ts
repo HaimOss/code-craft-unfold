@@ -41,9 +41,7 @@ export const getInviteByToken = async (token: string): Promise<TripCollaborator 
 
 export const acceptInvite = async (token: string, userId: string): Promise<void> => {
   const { error } = await supabase
-    .from('trip_collaborators')
-    .update({ user_id: userId, status: 'accepted' })
-    .eq('invite_token', token);
+    .rpc('accept_invite', { _token: token, _user_id: userId });
 
   if (error) throw error;
 };
