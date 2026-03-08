@@ -6,6 +6,7 @@ import ActivityArchive from './ActivityArchive';
 import StatsDashboard from './StatsDashboard';
 import UserProfileMenu from '../UserProfileMenu';
 import { Plus, Compass, Archive, Upload, BarChart3 } from 'lucide-react';
+import NotificationBell from '../NotificationBell';
 import { parseImportFile, importSharedTrip } from '@/services/shareService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
