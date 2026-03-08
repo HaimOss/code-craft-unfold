@@ -89,6 +89,11 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [hideCompleted, setHideCompleted] = useState(false);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
   useEffect(() => {
     if (!user) return;
     const fetchItems = async () => {
@@ -115,6 +120,38 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
       return true;
     });
   }, [items, filterCategory, hideCompleted]);
+
+  const sortedFiltered = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      if (a.is_completed !== b.is_completed) return a.is_completed ? 1 : -1;
+      if (a.priority !== b.priority) return a.priority === 'high' ? -1 : 1;
+      return a.sort_order - b.sort_order;
+    });
+  }, [filtered]);
+
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = sortedFiltered.findIndex(i => i.id === active.id);
+    const newIndex = sortedFiltered.findIndex(i => i.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(sortedFiltered, oldIndex, newIndex);
+    // Update sort_order for all reordered items
+    const updates = reordered.map((item, idx) => ({ ...item, sort_order: idx }));
+    setItems(prev => {
+      const reorderedIds = new Set(updates.map(u => u.id));
+      const unchanged = prev.filter(i => !reorderedIds.has(i.id));
+      return [...unchanged, ...updates].sort((a, b) => a.sort_order - b.sort_order);
+    });
+
+    // Persist to DB
+    const promises = updates.map((item, idx) =>
+      supabase.from('checklist_items').update({ sort_order: idx }).eq('id', item.id)
+    );
+    await Promise.all(promises);
+  }, [sortedFiltered]);
 
   const completedCount = items.filter(i => i.is_completed).length;
   const totalCount = items.length;
