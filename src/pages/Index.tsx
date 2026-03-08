@@ -180,6 +180,8 @@ const Index = () => {
             onAddTrip={handleAddTrip}
           />
         );
+      case 'activityBank':
+        return <ActivityBank trips={trips} onUpdateTrip={handleUpdateTrip} />;
       case 'stats':
         return (
           <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir={dir}>
