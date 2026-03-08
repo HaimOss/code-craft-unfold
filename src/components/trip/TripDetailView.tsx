@@ -7,7 +7,7 @@ import ShareModal from '../modals/ShareModal';
 import CollaboratorManager from '../modals/CollaboratorManager';
 import BudgetBar from './BudgetBar';
 import { CURRENCY_SYMBOLS, CATEGORY_DISPLAY_CONFIG } from '@/constants';
-import { ArrowRight, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare, FileText, Compass, Plus, ChevronRight } from 'lucide-react';
+import { ArrowRight, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare, FileText, Compass, Plus, ChevronLeft } from 'lucide-react';
 
 const TripMap = lazy(() => import('./TripMap'));
 const TripChecklist = lazy(() => import('./TripChecklist'));
