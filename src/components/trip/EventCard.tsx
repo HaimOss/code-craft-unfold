@@ -74,7 +74,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
       const activity = details as ActivityDetails;
       return (
         <div className="space-y-0.5">
-          {(activity.address || activity.location) && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{activity.address || activity.location}</p>}
+          {(activity.address || activity.location) && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 ml-1 flex-shrink-0" />{activity.address || activity.location}</p>}
           {activity.opening_hours && <p className="text-xs text-muted-foreground">🕐 {activity.opening_hours}</p>}
           {activity.confirmation_num && <p className="text-xs text-muted-foreground">📋 {activity.confirmation_num}</p>}
           {activity.book_link && (
