@@ -664,6 +664,43 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
           >
             {hideCompleted ? '👁️ הצג הושלמו' : '🙈 הסתר הושלמו'}
           </button>
+
+          {/* Due date filters */}
+          <span className="text-muted-foreground/30">|</span>
+          <button
+            onClick={() => setFilterDue(filterDue === 'overdue' ? 'all' : 'overdue')}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+              filterDue === 'overdue' ? 'bg-destructive/10 text-destructive border-destructive/30' : 'bg-card border-border text-muted-foreground hover:border-destructive/30'
+            }`}
+          >
+            🔴 באיחור
+          </button>
+          <button
+            onClick={() => setFilterDue(filterDue === 'this_week' ? 'all' : 'this_week')}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+              filterDue === 'this_week' ? 'bg-accent/10 text-accent border-accent/30' : 'bg-card border-border text-muted-foreground hover:border-accent/30'
+            }`}
+          >
+            📅 השבוע
+          </button>
+
+          {/* Assignee filters */}
+          {uniqueAssignees.length > 0 && (
+            <>
+              <span className="text-muted-foreground/30">|</span>
+              {uniqueAssignees.map(name => (
+                <button
+                  key={name}
+                  onClick={() => setFilterAssignee(filterAssignee === name ? null : name)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
+                    filterAssignee === name ? 'bg-primary/10 text-primary border-primary/30' : 'bg-card border-border text-muted-foreground hover:border-primary/30'
+                  }`}
+                >
+                  👤 {name}
+                </button>
+              ))}
+            </>
+          )}
         </div>
       )}
 
