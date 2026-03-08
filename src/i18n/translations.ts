@@ -15,6 +15,7 @@ const translations: Record<Language, TranslationTree> = {
     nav: {
       dashboard: 'לוח בקרה',
       trips: 'הטיולים שלי',
+      activityBank: 'בנק פעילויות',
       stats: 'סטטיסטיקה',
       notifications: 'הודעות',
       settings: 'הגדרות',
