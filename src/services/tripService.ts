@@ -69,6 +69,7 @@ export const createTrip = async (userId: string, trip: Omit<Trip, 'events'>): Pr
       cover_image: trip.cover_image || null,
       album_link: trip.album_link || null,
       daily_info: (trip.dailyInfo || {}) as any,
+      budget: trip.budget || null,
     }])
     .select('id')
     .single();
