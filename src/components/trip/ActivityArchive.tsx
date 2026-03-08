@@ -1,13 +1,16 @@
 import React, { useState, useMemo } from 'react';
-import { Trip, Event, EventCategory } from '@/types';
+import { Trip, Event, EventCategory, FlightDetails, AccommodationDetails, TransportDetails, GeneralDetails } from '@/types';
 import { CATEGORY_DISPLAY_CONFIG, EVENT_CATEGORIES, CURRENCY_SYMBOLS, PRESET_TAGS } from '@/constants';
-import { Search, Filter, X, Star, Heart, Tag } from 'lucide-react';
+import { Search, X, Star, Heart, Tag, MapPin, Clock, ChevronDown, ChevronUp, ExternalLink, CreditCard, Navigation } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 
 interface ActivityArchiveProps {
   trips: Trip[];
+  onUpdateTrip: (updatedTrip: Trip) => void;
+  onSelectTrip: (tripId: string) => void;
 }
+
+type ArchiveEvent = Event & { tripName: string; tripId: string; tripDestination?: string };
 
 const getTagStyle = (tag: string) => {
   const preset = PRESET_TAGS.find(t => t.label === tag);
@@ -20,19 +23,34 @@ const getTagEmoji = (tag: string) => {
   return preset?.emoji || '🏷️';
 };
 
-const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
+const getLocationFromDetails = (event: Event): string | null => {
+  const d = event.details as any;
+  if (!d) return null;
+  if (d.location) return d.location;
+  if (d.address) return d.address;
+  if (d.dept_airport && d.arr_airport) return `${d.dept_airport} → ${d.arr_airport}`;
+  if (d.pickup_point && d.dropoff_point) return `${d.pickup_point} → ${d.dropoff_point}`;
+  return null;
+};
+
+const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips, onUpdateTrip, onSelectTrip }) => {
   const [search, setSearch] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<EventCategory[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const allEvents = useMemo(() => {
+  const allEvents: ArchiveEvent[] = useMemo(() => {
     return trips.flatMap(trip =>
-      trip.events.map(event => ({ ...event, tripName: trip.name, tripId: trip.id }))
+      trip.events.map(event => ({
+        ...event,
+        tripName: trip.name,
+        tripId: trip.id,
+        tripDestination: trip.destination,
+      }))
     );
   }, [trips]);
 
-  // Collect all unique tags across events
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
     allEvents.forEach(e => (e.tags || []).forEach(t => tagSet.add(t)));
@@ -64,6 +82,15 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
     );
   };
 
+  const toggleFavorite = (event: ArchiveEvent) => {
+    const trip = trips.find(t => t.id === event.tripId);
+    if (!trip) return;
+    const updatedEvents = trip.events.map(e =>
+      e.id === event.id ? { ...e, is_favorite: !e.is_favorite } : e
+    );
+    onUpdateTrip({ ...trip, events: updatedEvents });
+  };
+
   const clearFilters = () => {
     setSearch('');
     setSelectedCategories([]);
@@ -76,6 +103,7 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
 
   return (
     <div className="space-y-6">
+      {/* Search & Favorites */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -104,6 +132,7 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
         )}
       </div>
 
+      {/* Category filters */}
       <div className="flex flex-wrap gap-2">
         {EVENT_CATEGORIES.map(cat => {
           const config = CATEGORY_DISPLAY_CONFIG[cat];
@@ -150,6 +179,7 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
         {hasFilters && ` (מתוך ${allEvents.length})`}
       </p>
 
+      {/* Event list */}
       {filtered.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-4xl mb-3">{showFavoritesOnly ? '❤️' : '🔍'}</p>
@@ -161,54 +191,160 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips }) => {
         <div className="grid gap-3">
           {filtered.map(event => {
             const config = CATEGORY_DISPLAY_CONFIG[event.category];
+            const isExpanded = expandedId === `${event.tripId}-${event.id}`;
+            const location = getLocationFromDetails(event);
+            const details = event.details as any;
+
             return (
               <div
                 key={`${event.tripId}-${event.id}`}
-                className={`rounded-xl border p-4 bg-card hover:shadow-md transition-shadow ${config?.borderColor}`}
+                className={`rounded-xl border bg-card transition-all ${config?.borderColor} ${isExpanded ? 'shadow-md ring-1 ring-primary/10' : 'hover:shadow-md'}`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${config?.bgColor} ${config?.color}`}>
-                        {config?.icon} {config?.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{event.date}</span>
-                      {event.is_favorite && (
-                        <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500" />
+                {/* Main row */}
+                <div
+                  className="p-4 cursor-pointer"
+                  onClick={() => setExpandedId(isExpanded ? null : `${event.tripId}-${event.id}`)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${config?.bgColor} ${config?.color}`}>
+                          {config?.icon} {config?.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{event.date}</span>
+                        {event.is_favorite && (
+                          <Heart className="h-3.5 w-3.5 text-red-500 fill-red-500" />
+                        )}
+                      </div>
+                      <h3 className="font-semibold text-foreground truncate">{event.title}</h3>
+                      <p className="text-sm text-muted-foreground mt-0.5">🗂️ {event.tripName}</p>
+                      {event.tags && event.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {event.tags.map(tag => (
+                            <span key={tag} className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${getTagStyle(tag)}`}>
+                              {getTagEmoji(tag)} {tag}
+                            </span>
+                          ))}
+                        </div>
                       )}
                     </div>
-                    <h3 className="font-semibold text-foreground truncate">{event.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-0.5">🗂️ {event.tripName}</p>
-                    {event.tags && event.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1.5">
-                        {event.tags.map(tag => (
-                          <span key={tag} className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${getTagStyle(tag)}`}>
-                            {getTagEmoji(tag)} {tag}
-                          </span>
-                        ))}
+                    <div className="flex items-start gap-2 shrink-0">
+                      <div className="text-right">
+                        <span className="font-semibold text-foreground">
+                          {CURRENCY_SYMBOLS[event.currency] || ''}{event.amount.toLocaleString()}
+                        </span>
+                        <p className="text-xs text-muted-foreground">{event.currency}</p>
+                      </div>
+                      {isExpanded ? (
+                        <ChevronUp className="h-4 w-4 text-muted-foreground mt-1" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground mt-1" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded details */}
+                {isExpanded && (
+                  <div className="px-4 pb-4 border-t border-border pt-3 space-y-3 animate-fade-in">
+                    {/* Details grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                      {location && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <MapPin className="h-4 w-4 shrink-0" />
+                          <span>{location}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="h-4 w-4 shrink-0" />
+                        <span>{event.time}{event.endTime ? ` - ${event.endTime}` : ''}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <CreditCard className="h-4 w-4 shrink-0" />
+                        <span>{event.payment_method}</span>
+                      </div>
+                      {event.tripDestination && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Navigation className="h-4 w-4 shrink-0" />
+                          <span>{event.tripDestination}</span>
+                        </div>
+                      )}
+                      {details?.flight_num && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <span>✈️ טיסה: {details.flight_num}</span>
+                        </div>
+                      )}
+                      {details?.book_link && (
+                        <a href={details.book_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                          <ExternalLink className="h-4 w-4 shrink-0" />
+                          <span>קישור הזמנה</span>
+                        </a>
+                      )}
+                      {details?.website && (
+                        <a href={details.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                          <ExternalLink className="h-4 w-4 shrink-0" />
+                          <span>אתר</span>
+                        </a>
+                      )}
+                      {details?.phone && (
+                        <a href={`tel:${details.phone}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                          <span>📞 {details.phone}</span>
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Notes */}
+                    {event.notes && (
+                      <div className="bg-secondary/50 rounded-lg p-3 text-sm text-foreground">
+                        📝 {event.notes}
                       </div>
                     )}
-                    {event.notes && (
-                      <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{event.notes}</p>
-                    )}
-                    {event.rating && (
-                      <div className="flex items-center gap-0.5 mt-1">
+
+                    {/* Rating */}
+                    {event.rating && event.rating > 0 && (
+                      <div className="flex items-center gap-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-3.5 w-3.5 ${i < event.rating! ? 'text-accent fill-accent' : 'text-muted-foreground/30'}`}
+                            className={`h-4 w-4 ${i < event.rating! ? 'text-accent fill-accent' : 'text-muted-foreground/30'}`}
                           />
                         ))}
                       </div>
                     )}
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleFavorite(event); }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
+                          event.is_favorite
+                            ? 'bg-red-50 text-red-600 border-red-200'
+                            : 'bg-card border-border text-muted-foreground hover:border-red-200 hover:text-red-500'
+                        }`}
+                      >
+                        <Heart className={`h-4 w-4 ${event.is_favorite ? 'fill-red-500' : ''}`} />
+                        {event.is_favorite ? 'מועדף' : 'הוסף למועדפים'}
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onSelectTrip(event.tripId); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border bg-card border-border text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all"
+                      >
+                        🗂️ עבור לטיול
+                      </button>
+                      {location && (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border bg-card border-border text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all"
+                        >
+                          🗺️ מפה
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <span className="font-semibold text-foreground">
-                      {CURRENCY_SYMBOLS[event.currency] || ''}{event.amount.toLocaleString()}
-                    </span>
-                    <p className="text-xs text-muted-foreground">{event.currency}</p>
-                  </div>
-                </div>
+                )}
               </div>
             );
           })}
