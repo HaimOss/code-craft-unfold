@@ -14,6 +14,7 @@ interface TripDashboardProps {
   trips: Trip[];
   onSelectTrip: (tripId: string) => void;
   onAddTrip: (newTrip: Trip) => void;
+  onUpdateTrip: (updatedTrip: Trip) => void;
   unscheduledEvents: Event[];
   onAddUnscheduledEvent: (newEvent: Event) => void;
   onLogout: () => void;
