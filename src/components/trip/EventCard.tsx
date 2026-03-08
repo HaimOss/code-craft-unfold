@@ -177,7 +177,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare,
           </div>
         </div>
 
-        <div className="flex items-center space-x-0.5 flex-shrink-0 ml-2">
+        <div className="flex items-center gap-0.5 flex-shrink-0 mr-2">
           {onToggleFavorite && (
             <button
               onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
