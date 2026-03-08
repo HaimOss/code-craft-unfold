@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           id: string
           is_completed: boolean
+          parent_id: string | null
           priority: string
           sort_order: number
           text: string
@@ -31,6 +32,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_completed?: boolean
+          parent_id?: string | null
           priority?: string
           sort_order?: number
           text: string
@@ -42,6 +44,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_completed?: boolean
+          parent_id?: string | null
           priority?: string
           sort_order?: number
           text?: string
@@ -49,6 +52,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "checklist_items_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "checklist_items"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "checklist_items_trip_id_fkey"
             columns: ["trip_id"]
