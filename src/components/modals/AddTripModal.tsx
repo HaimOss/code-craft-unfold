@@ -19,6 +19,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
   const [baseCurrency, setBaseCurrency] = useState(CURRENCIES[0]);
   const [status, setStatus] = useState(TripStatus.Idea);
   const [coverImage, setCoverImage] = useState('');
+  const [budget, setBudget] = useState('');
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
