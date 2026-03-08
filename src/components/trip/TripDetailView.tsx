@@ -7,7 +7,7 @@ import ShareModal from '../modals/ShareModal';
 import CollaboratorManager from '../modals/CollaboratorManager';
 import BudgetBar from './BudgetBar';
 import { CURRENCY_SYMBOLS } from '@/constants';
-import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare } from 'lucide-react';
 
 const TripMap = lazy(() => import('./TripMap'));
 import { exportTripToJSON, parseImportFile, importSharedEvent } from '@/services/shareService';
