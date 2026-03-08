@@ -57,8 +57,7 @@ export const fetchTrips = async (userId: string): Promise<Trip[]> => {
 export const createTrip = async (userId: string, trip: Omit<Trip, 'events'>): Promise<string> => {
   const { data, error } = await supabase
     .from('trips')
-    .insert({
-      id: trip.id,
+    .insert([{
       user_id: userId,
       name: trip.name,
       destination: trip.destination || null,
@@ -68,8 +67,8 @@ export const createTrip = async (userId: string, trip: Omit<Trip, 'events'>): Pr
       status: trip.status,
       cover_image: trip.cover_image || null,
       album_link: trip.album_link || null,
-      daily_info: trip.dailyInfo || {},
-    })
+      daily_info: (trip.dailyInfo || {}) as any,
+    }])
     .select('id')
     .single();
 
