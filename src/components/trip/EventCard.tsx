@@ -102,7 +102,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
     }
     default: {
       const general = details as GeneralDetails;
-      return general?.location ? <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{general.location}</p> : null;
+      return general?.location ? <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 ml-1 flex-shrink-0" />{general.location}</p> : null;
     }
   }
 };

@@ -59,21 +59,21 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ activeView, onViewChange, notif
                       onClick={() => onViewChange(view)}
                       isActive={isActive}
                       tooltip={label}
-                      className={`flex items-center gap-3 justify-end px-3 py-2.5 rounded-xl transition-all ${
+                      className={`flex flex-row-reverse items-center gap-3 justify-start px-3 py-2.5 rounded-xl transition-all ${
                         isActive
                           ? 'bg-primary text-primary-foreground font-semibold shadow-md'
                           : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                       }`}
                     >
-                      {!collapsed && <span className="text-sm">{label}</span>}
                       <div className="relative">
                         <Icon className="h-5 w-5" />
                         {view === 'notifications' && notificationCount > 0 && (
-                          <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                          <span className="absolute -top-1.5 -left-1.5 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
                             {notificationCount > 9 ? '9+' : notificationCount}
                           </span>
                         )}
                       </div>
+                      {!collapsed && <span className="text-sm">{label}</span>}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

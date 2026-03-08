@@ -31,7 +31,7 @@ const TopBar: React.FC<TopBarProps> = ({ onLogout, onSelectTrip }) => {
       </div>
 
       {/* Left: sidebar trigger */}
-      <div className="mr-auto">
+      <div className="ml-auto">
         <SidebarTrigger />
       </div>
     </header>

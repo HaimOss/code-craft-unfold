@@ -37,12 +37,12 @@ const TripCard: React.FC<TripCardProps> = ({ trip, onSelectTrip }) => {
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 to-transparent" />
 
         {daysUntil > 0 && (
-          <span className="absolute top-3 left-3 bg-card/90 backdrop-blur-sm text-foreground text-xs font-bold px-2.5 py-1 rounded-full">
+          <span className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm text-foreground text-xs font-bold px-2.5 py-1 rounded-full">
             בעוד {daysUntil} ימים
           </span>
         )}
         {daysUntil <= 0 && daysUntil > -tripDays && (
-          <span className="absolute top-3 left-3 bg-accent text-accent-foreground text-xs font-bold px-2.5 py-1 rounded-full">
+          <span className="absolute top-3 right-3 bg-accent text-accent-foreground text-xs font-bold px-2.5 py-1 rounded-full">
             עכשיו!
           </span>
         )}
