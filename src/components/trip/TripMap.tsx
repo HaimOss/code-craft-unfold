@@ -244,7 +244,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
       </div>
 
       {/* Map */}
-      <div className="h-[500px] relative z-0">
+      <div className="h-[350px] sm:h-[500px] relative z-0">
         <MapContainer
           center={positions[0] || [32.0, 34.8]}
           zoom={13}

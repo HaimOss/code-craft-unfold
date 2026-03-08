@@ -230,40 +230,40 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
             <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/50 to-foreground/20" />
           </div>
         )}
-        <div className={`relative p-6 sm:p-8 ${!trip.cover_image ? 'bg-primary' : ''}`}>
-          <div className="flex flex-col sm:flex-row justify-between items-start">
+        <div className={`relative p-4 sm:p-6 lg:p-8 ${!trip.cover_image ? 'bg-primary' : ''}`}>
+          <div className="flex flex-col gap-4">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-foreground">{trip.name}</h1>
-              <div className="flex flex-wrap gap-4 mt-4 text-primary-foreground/80 text-sm">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-display text-primary-foreground">{trip.name}</h1>
+              <div className="flex flex-wrap gap-2 sm:gap-4 mt-3 text-primary-foreground/80 text-xs sm:text-sm">
                 {trip.destination && (
-                  <span className="flex items-center"><MapPin className="h-4 w-4 mr-1.5 opacity-70" />{trip.destination}</span>
+                  <span className="flex items-center"><MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 opacity-70" />{trip.destination}</span>
                 )}
-                <span className="flex items-center"><Calendar className="h-4 w-4 mr-1.5 opacity-70" />{trip.start_date} → {trip.end_date}</span>
+                <span className="flex items-center"><Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 opacity-70" />{trip.start_date} → {trip.end_date}</span>
                 <span className="flex items-center">
-                  <DollarSign className="h-4 w-4 mr-1.5 opacity-70" />
+                  <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 opacity-70" />
                   {isCalculating ? (
-                    <div className="h-5 w-20 bg-primary-foreground/20 rounded animate-pulse" />
+                    <div className="h-4 w-16 bg-primary-foreground/20 rounded animate-pulse" />
                   ) : (
                     <span>{totalCost.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                   )}
                 </span>
                 {trip.album_link && (
                   <a href={trip.album_link} target="_blank" rel="noopener noreferrer" className="flex items-center text-primary-foreground/80 hover:text-primary-foreground transition-colors">
-                    <Image className="h-4 w-4 mr-1.5 opacity-70" /> Photo Album
+                    <Image className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 opacity-70" /> Photo Album
                   </a>
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2 mt-4 sm:mt-0">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className={`status-badge ${statusStyles[trip.status]}`}>{trip.status.split(' ')[0]}</span>
-              <div className="flex items-center bg-primary-foreground/10 rounded-full p-1">
-                <button onClick={() => setIsCollabModalOpen(true)} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="שיתוף פעולה"><Users className="h-4 w-4" /></button>
-                <button onClick={() => setIsShareModalOpen(true)} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="שתף"><Share2 className="h-4 w-4" /></button>
-                <button onClick={handleExportJSON} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ייצוא JSON"><Download className="h-4 w-4" /></button>
-                <button onClick={handleExportFullPDF} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ייצוא PDF מלא"><FileText className="h-4 w-4" /></button>
-                <button onClick={handleImportEventJSON} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ייבוא פעילות"><Upload className="h-4 w-4" /></button>
-                <button onClick={() => setIsEditModalOpen(true)} className="p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ערוך"><Pencil className="h-4 w-4" /></button>
-                <button onClick={confirmDeleteTrip} className="p-2 text-destructive/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="מחק"><Trash2 className="h-4 w-4" /></button>
+              <div className="flex items-center bg-primary-foreground/10 rounded-full p-1 flex-wrap">
+                <button onClick={() => setIsCollabModalOpen(true)} className="p-1.5 sm:p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="שיתוף פעולה"><Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
+                <button onClick={() => setIsShareModalOpen(true)} className="p-1.5 sm:p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="שתף"><Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
+                <button onClick={handleExportJSON} className="p-1.5 sm:p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ייצוא JSON"><Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
+                <button onClick={handleExportFullPDF} className="p-1.5 sm:p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ייצוא PDF מלא"><FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
+                <button onClick={handleImportEventJSON} className="hidden sm:block p-1.5 sm:p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ייבוא פעילות"><Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
+                <button onClick={() => setIsEditModalOpen(true)} className="p-1.5 sm:p-2 text-primary-foreground/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="ערוך"><Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
+                <button onClick={confirmDeleteTrip} className="p-1.5 sm:p-2 text-destructive/70 rounded-full hover:bg-primary-foreground/10 transition-colors" title="מחק"><Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" /></button>
               </div>
             </div>
           </div>
@@ -272,14 +272,14 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
       </header>
 
       <main>
-        <div className="flex items-center gap-4 mb-6">
-          <h2 className="text-2xl font-bold font-display">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold font-display">
             {activeTab === 'itinerary' ? 'Itinerary' : activeTab === 'map' ? 'Map' : 'Checklist'}
           </h2>
-          <div className="flex bg-secondary rounded-lg p-1 gap-1">
+          <div className="flex bg-secondary rounded-lg p-1 gap-1 w-full sm:w-auto">
             <button
               onClick={() => setActiveTab('itinerary')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'itinerary'
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -289,7 +289,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
             </button>
             <button
               onClick={() => setActiveTab('map')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'map'
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -299,7 +299,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
             </button>
             <button
               onClick={() => setActiveTab('checklist')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'checklist'
                   ? 'bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
