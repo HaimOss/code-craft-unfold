@@ -269,20 +269,37 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     return parentItems.filter(item => {
       if (filterCategory && item.category !== filterCategory) return false;
       if (hideCompleted && item.is_completed) return false;
-      if (filterAssignee && item.assignee !== filterAssignee) return false;
+      
+      // Assignee filter: match parent OR any of its subtasks
+      if (filterAssignee) {
+        const subs = subtaskMap.get(item.id) || [];
+        const parentMatch = item.assignee === filterAssignee;
+        const subMatch = subs.some(s => s.assignee === filterAssignee);
+        if (!parentMatch && !subMatch) return false;
+      }
+
+      // Due date filters: match parent OR any subtask
       if (filterDue === 'overdue' && !item.is_completed) {
-        if (!item.due_date) return false;
-        const d = new Date(item.due_date + 'T00:00:00');
-        if (!(isPast(d) && !isToday(d))) return false;
+        const checkOverdue = (i: ChecklistItem) => {
+          if (!i.due_date || i.is_completed) return false;
+          const d = new Date(i.due_date + 'T00:00:00');
+          return isPast(d) && !isToday(d);
+        };
+        const subs = subtaskMap.get(item.id) || [];
+        if (!checkOverdue(item) && !subs.some(checkOverdue)) return false;
       }
       if (filterDue === 'this_week' && !item.is_completed) {
-        if (!item.due_date) return false;
-        const d = new Date(item.due_date + 'T00:00:00');
-        if (d > weekFromNow || (isPast(d) && !isToday(d))) return false;
+        const checkThisWeek = (i: ChecklistItem) => {
+          if (!i.due_date || i.is_completed) return false;
+          const d = new Date(i.due_date + 'T00:00:00');
+          return d <= weekFromNow && !(isPast(d) && !isToday(d));
+        };
+        const subs = subtaskMap.get(item.id) || [];
+        if (!checkThisWeek(item) && !subs.some(checkThisWeek)) return false;
       }
       return true;
     });
-  }, [parentItems, filterCategory, hideCompleted, filterDue, filterAssignee]);
+  }, [parentItems, filterCategory, hideCompleted, filterDue, filterAssignee, subtaskMap]);
 
   const sortedFiltered = useMemo(() => {
     return [...filtered].sort((a, b) => {
