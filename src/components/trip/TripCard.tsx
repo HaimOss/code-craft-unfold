@@ -1,8 +1,9 @@
 import React from 'react';
 import { Trip, TripStatus } from '@/types';
 import { CURRENCY_SYMBOLS } from '@/constants';
-import { MapPin, ArrowLeft } from 'lucide-react';
+import { MapPin, ArrowLeft, ArrowRight } from 'lucide-react';
 import { differenceInDays, parseISO } from 'date-fns';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TripCardProps {
   trip: Trip;
@@ -17,17 +18,18 @@ const statusStyles: { [key in TripStatus]: string } = {
 };
 
 const TripCard: React.FC<TripCardProps> = ({ trip, onSelectTrip }) => {
+  const { t, dir, isRTL } = useLanguage();
   const daysUntil = differenceInDays(parseISO(trip.start_date), new Date());
   const totalCost = trip.events.reduce((s, e) => s + e.amount, 0);
   const symbol = CURRENCY_SYMBOLS[trip.base_currency] || trip.base_currency;
   const tripDays = differenceInDays(parseISO(trip.end_date), parseISO(trip.start_date)) + 1;
+  const DetailArrow = isRTL ? ArrowLeft : ArrowRight;
 
   return (
     <div
       onClick={() => onSelectTrip(trip.id)}
       className="group cursor-pointer bg-card rounded-2xl border border-border overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300 animate-fade-in"
     >
-      {/* Image */}
       <div className="relative h-44 overflow-hidden">
         <img
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -37,19 +39,18 @@ const TripCard: React.FC<TripCardProps> = ({ trip, onSelectTrip }) => {
         <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 to-transparent" />
 
         {daysUntil > 0 && (
-          <span className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm text-foreground text-xs font-bold px-2.5 py-1 rounded-full">
-            בעוד {daysUntil} ימים
+          <span className={`absolute top-3 ${isRTL ? 'right-3' : 'left-3'} bg-card/90 backdrop-blur-sm text-foreground text-xs font-bold px-2.5 py-1 rounded-full`}>
+            {t('dashboard.inDays', { count: daysUntil })}
           </span>
         )}
         {daysUntil <= 0 && daysUntil > -tripDays && (
-          <span className="absolute top-3 right-3 bg-accent text-accent-foreground text-xs font-bold px-2.5 py-1 rounded-full">
-            עכשיו!
+          <span className={`absolute top-3 ${isRTL ? 'right-3' : 'left-3'} bg-accent text-accent-foreground text-xs font-bold px-2.5 py-1 rounded-full`}>
+            {t('dashboard.now')}
           </span>
         )}
       </div>
 
-      {/* Content */}
-      <div className="p-4" dir="rtl">
+      <div className="p-4" dir={dir}>
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="min-w-0">
             <h3 className="font-bold text-base font-display text-foreground truncate">{trip.name}</h3>
@@ -71,7 +72,7 @@ const TripCard: React.FC<TripCardProps> = ({ trip, onSelectTrip }) => {
             {trip.status.split(' ')[0]}
           </span>
           <span className="text-primary text-xs font-medium flex items-center gap-1">
-            פרטי הטיול <ArrowLeft className="h-3 w-3" />
+            {t('dashboard.tripDetails')} <DetailArrow className="h-3 w-3" />
           </span>
         </div>
       </div>

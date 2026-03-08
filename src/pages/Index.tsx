@@ -11,6 +11,7 @@ import TopBar from '@/components/layout/TopBar';
 import AddTripModal from '@/components/modals/AddTripModal';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { fetchTrips, createTrip, updateTrip, deleteTrip, syncTripEvents } from '@/services/tripService';
 import { fetchSharedTrips } from '@/services/collaborationService';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +19,7 @@ import { toast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { user, signOut } = useAuth();
+  const { t, dir } = useLanguage();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,13 +64,12 @@ const Index = () => {
       }
       setTrips([...ownTrips, ...sharedTrips]);
     } catch (err: any) {
-      toast({ title: 'שגיאה בטעינת טיולים', description: err.message, variant: 'destructive' });
+      toast({ title: t('toast.loadError'), description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, t]);
 
-  // Load profile
   useEffect(() => {
     if (!user) return;
     supabase.from('profiles').select('display_name').eq('id', user.id).single().then(({ data }) => {
@@ -77,7 +78,6 @@ const Index = () => {
     });
   }, [user]);
 
-  // Load notification count
   useEffect(() => {
     if (!user) return;
     supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', false).then(({ count }) => {
@@ -107,7 +107,7 @@ const Index = () => {
       setTrips(prev => [{ ...newTrip, id, events: [] }, ...prev]);
       setSelectedTripId(id);
     } catch (err: any) {
-      toast({ title: 'שגיאה ביצירת טיול', description: err.message, variant: 'destructive' });
+      toast({ title: t('toast.createError'), description: err.message, variant: 'destructive' });
     }
   };
 
@@ -117,7 +117,7 @@ const Index = () => {
     try {
       await syncTripEvents(user.id, updatedTrip);
     } catch (err: any) {
-      toast({ title: 'שגיאה בעדכון', description: err.message, variant: 'destructive' });
+      toast({ title: t('toast.updateError'), description: err.message, variant: 'destructive' });
       loadTrips();
     }
   };
@@ -128,7 +128,7 @@ const Index = () => {
       setTrips(prev => prev.filter(t => t.id !== tripId));
       setSelectedTripId(null);
     } catch (err: any) {
-      toast({ title: 'שגיאה במחיקה', description: err.message, variant: 'destructive' });
+      toast({ title: t('toast.deleteError'), description: err.message, variant: 'destructive' });
     }
   };
 
@@ -140,13 +140,12 @@ const Index = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">טוען את הטיולים שלך...</p>
+          <p className="text-muted-foreground">{t('app.loadingTrips')}</p>
         </div>
       </div>
     );
   }
 
-  // Trip detail view - full screen, no sidebar
   if (selectedTrip) {
     return (
       <div className="min-h-screen bg-background text-foreground">
@@ -160,7 +159,6 @@ const Index = () => {
     );
   }
 
-  // Dashboard views with sidebar
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
@@ -182,23 +180,23 @@ const Index = () => {
         );
       case 'stats':
         return (
-          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir="rtl">
-            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">סטטיסטיקות</h1>
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir={dir}>
+            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">{t('stats.title')}</h1>
             <StatsDashboard trips={trips} />
           </div>
         );
       case 'notifications':
         return (
-          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir="rtl">
-            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">הודעות</h1>
-            <p className="text-muted-foreground">ההודעות שלך מוצגות בפעמון למעלה.</p>
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir={dir}>
+            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">{t('nav.notifications')}</h1>
+            <p className="text-muted-foreground">{t('notifications.notificationsPage')}</p>
           </div>
         );
       case 'settings':
         return (
-          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir="rtl">
-            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">הגדרות</h1>
-            <p className="text-muted-foreground">הגדרות נוספות יתווספו בקרוב.</p>
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir={dir}>
+            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">{t('settings.title')}</h1>
+            <p className="text-muted-foreground">{t('settings.comingSoon')}</p>
           </div>
         );
       default:

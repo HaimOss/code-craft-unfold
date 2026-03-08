@@ -12,6 +12,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Plus, ExternalLink, ChevronDown, ChevronUp, MapPin, Download, Map } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const DayMap = lazy(() => import('./DayMap'));
 
@@ -29,6 +30,7 @@ interface DayItineraryProps {
 const DayItinerary: React.FC<DayItineraryProps> = ({
   trip, date, dayNumber, dailyEvents, onAddEvent, onUpdateEvent, onDeleteEvent, onUpdateTrip,
 }) => {
+  const { t, dir, isRTL, language } = useLanguage();
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const [sharingEvent, setSharingEvent] = useState<Event | null>(null);
@@ -133,18 +135,18 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     });
 
     const html = `
-      <div style="font-family:'Segoe UI',Tahoma,Arial,sans-serif;direction:rtl;width:700px;padding:0;background:white;">
+      <div style="font-family:'Segoe UI',Tahoma,Arial,sans-serif;direction:${dir};width:700px;padding:0;background:white;">
         <div style="background:#375ab4;color:white;padding:16px 20px;">
           <div style="font-size:24px;font-weight:bold;margin-bottom:6px;">${trip.name}</div>
           <div style="display:flex;justify-content:space-between;font-size:13px;">
-            <span>יום ${dayNumber}  |  ${date}  |  ${trip.destination || ''}</span>
-            <span>סה"כ: ${totalStr}</span>
+            <span>${t('trip.day')} ${dayNumber}  |  ${date}  |  ${trip.destination || ''}</span>
+            <span>${t('trip.totalToPay')}: ${totalStr}</span>
           </div>
         </div>
         <div style="padding:16px 20px;">
-          ${dailyInfo.startPoint ? `<div style="color:#228b22;font-size:12px;font-weight:bold;margin-bottom:10px;">📍 התחלה: ${dailyInfo.startPoint}</div>` : ''}
+          ${dailyInfo.startPoint ? `<div style="color:#228b22;font-size:12px;font-weight:bold;margin-bottom:10px;">📍 ${dailyInfo.startPoint}</div>` : ''}
           ${eventsHtml}
-          ${dailyInfo.endPoint ? `<div style="color:#c83232;font-size:12px;font-weight:bold;margin-top:10px;">🏁 סיום: ${dailyInfo.endPoint}</div>` : ''}
+          ${dailyInfo.endPoint ? `<div style="color:#c83232;font-size:12px;font-weight:bold;margin-top:10px;">🏁 ${dailyInfo.endPoint}</div>` : ''}
         </div>
         <div style="padding:0 20px 16px;">
           <hr style="border:none;border-top:1px solid #c8c8d2;margin:10px 0;"/>
@@ -198,6 +200,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
 
   const mapsUrl = getGoogleMapsUrl();
   const localDate = useMemo(() => new Date(date + 'T00:00:00'), [date]);
+  const dateLocale = language === 'he' ? 'he-IL' : 'en-US';
 
   if (isAddingEvent) {
     return (
@@ -208,16 +211,16 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   }
 
   return (
-    <div className="card-surface p-6 animate-fade-in" dir="rtl">
+    <div className="card-surface p-6 animate-fade-in" dir={dir}>
       {/* Header */}
       <div className="flex justify-between items-start sm:items-center mb-4 gap-2">
         <div className="flex items-center min-w-0">
-          <div className="bg-secondary rounded-xl p-2 sm:p-3 text-center ml-2 sm:ml-4 min-w-[48px] sm:min-w-[60px]">
-            <span className="text-[9px] sm:text-[10px] uppercase text-muted-foreground font-semibold">{localDate.toLocaleDateString('he-IL', { month: 'short' })}</span>
+          <div className={`bg-secondary rounded-xl p-2 sm:p-3 text-center ${isRTL ? 'ml-2 sm:ml-4' : 'mr-2 sm:mr-4'} min-w-[48px] sm:min-w-[60px]`}>
+            <span className="text-[9px] sm:text-[10px] uppercase text-muted-foreground font-semibold">{localDate.toLocaleDateString(dateLocale, { month: 'short' })}</span>
             <span className="text-xl sm:text-2xl font-bold block text-card-foreground">{localDate.getDate()}</span>
           </div>
           <div className="min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold font-display">יום {dayNumber}</h3>
+            <h3 className="text-lg sm:text-xl font-bold font-display">{t('trip.day')} {dayNumber}</h3>
             <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
               <button
                 onClick={() => setShowDayMap(!showDayMap)}
@@ -225,26 +228,26 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
                   showDayMap ? 'text-primary bg-primary/10 px-2 py-0.5 rounded-full' : 'text-muted-foreground hover:text-primary'
                 }`}
               >
-                <Map className="h-3 w-3 ml-1" /> מפה
+                <Map className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} /> {t('trip.mapBtn')}
               </button>
               {mapsUrl ? (
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
-                  <ExternalLink className="h-3 w-3 ml-1" /> Google Maps
+                  <ExternalLink className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} /> Google Maps
                 </a>
               ) : (
                 <span className="text-[10px] sm:text-xs flex items-center text-muted-foreground/50">
-                  <ExternalLink className="h-3 w-3 ml-1" /> Google Maps
+                  <ExternalLink className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} /> Google Maps
                 </span>
               )}
               <button onClick={handleExportDay} className="text-[10px] sm:text-xs flex items-center text-muted-foreground hover:text-primary font-medium transition-colors">
-                <Download className="h-3 w-3 ml-1" /> <span className="hidden sm:inline">ייצוא יום</span><span className="sm:hidden">PDF</span>
+                <Download className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} /> <span className="hidden sm:inline">{t('trip.exportDay')}</span><span className="sm:hidden">{t('trip.pdf')}</span>
               </button>
             </div>
           </div>
         </div>
-        <div className="text-left flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        <div className={`${isRTL ? 'text-left' : 'text-right'} flex items-center gap-1 sm:gap-2 flex-shrink-0`}>
           <div>
-            <span className="text-[10px] sm:text-xs text-muted-foreground block">סה״כ יומי</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground block">{t('trip.dailyTotal')}</span>
             <p className="font-bold text-base sm:text-lg text-card-foreground">
               {dayTotal.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
@@ -256,25 +259,24 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
       </div>
 
       {showDayMap && (
-        <Suspense fallback={<div className="flex justify-center py-6 text-muted-foreground text-sm">טוען מפה...</div>}>
+        <Suspense fallback={<div className="flex justify-center py-6 text-muted-foreground text-sm">{t('trip.loadingMap')}</div>}>
           <DayMap events={dailyEvents} dailyInfo={dailyInfo} destination={trip.destination} />
         </Suspense>
       )}
 
       {!isCollapsed && (
         <div className="relative">
-          {/* Timeline line */}
-          <div className="absolute right-[11px] top-0 bottom-0 w-0.5 bg-border" />
+          <div className={`absolute ${isRTL ? 'right-[11px]' : 'left-[11px]'} top-0 bottom-0 w-0.5 bg-border`} />
 
           {/* Starting Point */}
-          <div className="relative flex items-center gap-3 mb-4 pr-0">
+          <div className={`relative flex items-center gap-3 mb-4 ${isRTL ? 'pr-0' : 'pl-0'}`}>
             <div className="relative z-10 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shrink-0">
               <div className="w-2 h-2 bg-card rounded-full" />
             </div>
             {editingStartPoint ? (
               <Input
                 autoFocus
-                placeholder="נקודת התחלה..."
+                placeholder={t('trip.startPointPlaceholder')}
                 defaultValue={dailyInfo.startPoint || ''}
                 onBlur={(e) => { updateDailyInfo('startPoint', e.target.value); setEditingStartPoint(false); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') { updateDailyInfo('startPoint', (e.target as HTMLInputElement).value); setEditingStartPoint(false); } }}
@@ -286,7 +288,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg px-3 py-1.5 hover:border-primary/40"
               >
                 <MapPin className="h-3.5 w-3.5" />
-                {dailyInfo.startPoint || 'הגדר נקודת התחלה'}
+                {dailyInfo.startPoint || t('trip.setStartPoint')}
               </button>
             )}
           </div>
@@ -294,7 +296,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           {/* Events */}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={dailyEvents.map(e => e.id)} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2 pr-8">
+              <div className={`space-y-2 ${isRTL ? 'pr-8' : 'pl-8'}`}>
                 {dailyEvents.map(event => (
                   <EventCard
                     key={event.id}
@@ -313,21 +315,21 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           </DndContext>
 
           {/* Add Event button */}
-          <div className="pr-8">
+          <div className={isRTL ? 'pr-8' : 'pl-8'}>
             <button onClick={() => { setEditingEvent(null); setIsAddingEvent(true); }} className="mt-4 w-full p-3 border-2 border-dashed border-border rounded-xl text-muted-foreground hover:text-primary hover:border-primary transition-all flex items-center justify-center gap-2 text-sm font-medium">
-              <Plus className="h-4 w-4" /> הוסף פעילות
+              <Plus className="h-4 w-4" /> {t('trip.addActivity')}
             </button>
           </div>
 
           {/* Ending Point */}
-          <div className="relative flex items-center gap-3 mt-4 pr-0">
+          <div className={`relative flex items-center gap-3 mt-4 ${isRTL ? 'pr-0' : 'pl-0'}`}>
             <div className="relative z-10 w-6 h-6 rounded-full bg-destructive flex items-center justify-center shrink-0">
               <div className="w-2 h-2 bg-card rounded-full" />
             </div>
             {editingEndPoint ? (
               <Input
                 autoFocus
-                placeholder="נקודת סיום..."
+                placeholder={t('trip.endPointPlaceholder')}
                 defaultValue={dailyInfo.endPoint || ''}
                 onBlur={(e) => { updateDailyInfo('endPoint', e.target.value); setEditingEndPoint(false); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') { updateDailyInfo('endPoint', (e.target as HTMLInputElement).value); setEditingEndPoint(false); } }}
@@ -339,7 +341,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
                 className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg px-3 py-1.5 hover:border-primary/40"
               >
                 <MapPin className="h-3.5 w-3.5" />
-                {dailyInfo.endPoint || 'הגדר נקודת סיום'}
+                {dailyInfo.endPoint || t('trip.setEndPoint')}
               </button>
             )}
           </div>
@@ -351,7 +353,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
           isOpen={!!sharingEvent}
           onClose={() => setSharingEvent(null)}
           shareUrl={`${window.location.origin}${window.location.pathname}#share/event/${sharingEvent.id}`}
-          title={`שיתוף "${sharingEvent.title}"`}
+          title={t('trip.shareEvent', { title: sharingEvent.title })}
         />
       )}
     </div>

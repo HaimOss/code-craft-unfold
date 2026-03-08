@@ -6,6 +6,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Input } from '@/components/ui/input';
 import { Trip } from '@/types';
 import { CATEGORY_DISPLAY_CONFIG } from '@/constants';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SearchResult {
   type: 'trip' | 'event' | 'destination';
@@ -25,8 +26,8 @@ const TopBar: React.FC<TopBarProps> = ({ onLogout, onSelectTrip, trips = [] }) =
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { t, dir, isRTL } = useLanguage();
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -44,7 +45,6 @@ const TopBar: React.FC<TopBarProps> = ({ onLogout, onSelectTrip, trips = [] }) =
     const seen = new Set<string>();
 
     for (const trip of trips) {
-      // Match trip name
       if (trip.name.toLowerCase().includes(q)) {
         items.push({
           type: 'trip',
@@ -55,7 +55,6 @@ const TopBar: React.FC<TopBarProps> = ({ onLogout, onSelectTrip, trips = [] }) =
         });
       }
 
-      // Match destination
       if (trip.destination && trip.destination.toLowerCase().includes(q) && !seen.has(`dest-${trip.destination}`)) {
         seen.add(`dest-${trip.destination}`);
         items.push({
@@ -67,7 +66,6 @@ const TopBar: React.FC<TopBarProps> = ({ onLogout, onSelectTrip, trips = [] }) =
         });
       }
 
-      // Match events
       for (const event of trip.events) {
         if (
           event.title.toLowerCase().includes(q) ||
@@ -99,8 +97,8 @@ const TopBar: React.FC<TopBarProps> = ({ onLogout, onSelectTrip, trips = [] }) =
   const showDropdown = isFocused && query.trim().length >= 2;
 
   return (
-    <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm flex items-center px-4 sm:px-6 gap-4 sticky top-0 z-30" dir="rtl">
-      {/* Right: user + notifications */}
+    <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm flex items-center px-4 sm:px-6 gap-4 sticky top-0 z-30" dir={dir}>
+      {/* User + notifications */}
       <div className="flex items-center gap-2">
         <UserProfileMenu onLogout={onLogout} />
         <NotificationBell onSelectTrip={onSelectTrip} />
@@ -109,30 +107,29 @@ const TopBar: React.FC<TopBarProps> = ({ onLogout, onSelectTrip, trips = [] }) =
       {/* Center: search */}
       <div className="flex-1 max-w-xl mx-auto hidden sm:block relative" ref={containerRef}>
         <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`} />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
-            placeholder="חפש יעדים, מלונות או טיסות..."
-            className="pr-10 bg-secondary/50 border-0 focus-visible:ring-1 rounded-full h-10"
+            placeholder={t('search.placeholder')}
+            className={`${isRTL ? 'pr-10' : 'pl-10'} bg-secondary/50 border-0 focus-visible:ring-1 rounded-full h-10`}
           />
           {query && (
             <button
               onClick={() => { setQuery(''); }}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              className={`absolute ${isRTL ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors`}
             >
               <X className="h-4 w-4" />
             </button>
           )}
         </div>
 
-        {/* Dropdown results */}
         {showDropdown && (
           <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50">
             {results.length === 0 ? (
               <div className="p-4 text-center text-sm text-muted-foreground">
-                לא נמצאו תוצאות עבור "{query}"
+                {t('search.noResults', { query })}
               </div>
             ) : (
               <div className="max-h-80 overflow-y-auto py-1">
@@ -140,7 +137,7 @@ const TopBar: React.FC<TopBarProps> = ({ onLogout, onSelectTrip, trips = [] }) =
                   <button
                     key={`${result.tripId}-${result.title}-${i}`}
                     onClick={() => handleSelect(result)}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors text-right"
+                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/60 transition-colors ${isRTL ? 'text-right' : 'text-left'}`}
                   >
                     <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0 text-muted-foreground">
                       {result.icon}
@@ -150,7 +147,7 @@ const TopBar: React.FC<TopBarProps> = ({ onLogout, onSelectTrip, trips = [] }) =
                       <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
                     </div>
                     <span className="text-[10px] text-muted-foreground/60 bg-secondary px-2 py-0.5 rounded-full shrink-0">
-                      {result.type === 'trip' ? 'טיול' : result.type === 'event' ? 'פעילות' : 'יעד'}
+                      {result.type === 'trip' ? t('search.tripType') : result.type === 'event' ? t('search.eventType') : t('search.destinationType')}
                     </span>
                   </button>
                 ))}
@@ -160,8 +157,8 @@ const TopBar: React.FC<TopBarProps> = ({ onLogout, onSelectTrip, trips = [] }) =
         )}
       </div>
 
-      {/* Left: sidebar trigger */}
-      <div className="ml-auto">
+      {/* Sidebar trigger */}
+      <div className={isRTL ? 'ml-auto' : 'mr-auto'}>
         <SidebarTrigger />
       </div>
     </header>

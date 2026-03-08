@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { LogOut, User, ChevronDown } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import LanguageToggle from './LanguageToggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UserProfileMenuProps {
   onLogout: () => void;
@@ -19,6 +21,7 @@ interface UserProfileMenuProps {
 
 const UserProfileMenu: React.FC<UserProfileMenuProps> = ({ onLogout }) => {
   const { user } = useAuth();
+  const { t, isRTL } = useLanguage();
   const [displayName, setDisplayName] = useState<string>('');
   const [avatarUrl, setAvatarUrl] = useState<string>('');
 
@@ -47,7 +50,8 @@ const UserProfileMenu: React.FC<UserProfileMenuProps> = ({ onLogout }) => {
     .join('');
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1">
+      <LanguageToggle />
       <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-2 btn-ghost px-2 py-1.5 rounded-lg">
@@ -71,8 +75,8 @@ const UserProfileMenu: React.FC<UserProfileMenuProps> = ({ onLogout }) => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive cursor-pointer">
-            <LogOut className="h-4 w-4 ml-2 mr-0" />
-            התנתק
+            <LogOut className={`h-4 w-4 ${isRTL ? 'ml-2 mr-0' : 'mr-2 ml-0'}`} />
+            {t('auth.signOut')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
