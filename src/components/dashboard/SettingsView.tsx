@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { CURRENCIES } from '@/constants';
+import FamilyMembersManager from './FamilyMembersManager';
 
 const SettingsView: React.FC = () => {
   const { user, signOut } = useAuth();
