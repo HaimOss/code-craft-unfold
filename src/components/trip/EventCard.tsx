@@ -30,7 +30,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
           {flight.confirmation_num && <p className="text-xs text-muted-foreground">📋 {flight.confirmation_num}</p>}
           {flight.checkin_link && (
             <a href={flight.checkin_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
-              <ExternalLink className="h-3 w-3 mr-1" /> Check-in
+              <ExternalLink className="h-3 w-3 ml-1" /> צ'ק-אין
             </a>
           )}
         </div>
