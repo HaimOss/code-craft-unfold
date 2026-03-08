@@ -50,7 +50,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ onSelectTrip }) => 
     const channel = supabase
       .channel('notifications-bell')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
-        const newNotif = payload.new as Notification;
+        const newNotif = payload.new as AppNotification;
         if (newNotif.user_id === user.id) {
           setNotifications(prev => [newNotif, ...prev]);
         }
