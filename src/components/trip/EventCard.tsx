@@ -1,0 +1,105 @@
+import React from 'react';
+import { Event, EventCategory, FlightDetails, AccommodationDetails, TransportDetails, GeneralDetails } from '@/types';
+import { CATEGORY_ICONS, CURRENCY_SYMBOLS } from '@/constants';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Pencil, Trash2, Share2, ExternalLink, MapPin, Star } from 'lucide-react';
+
+interface EventCardProps {
+  event: Event;
+  onEdit: () => void;
+  onDelete: () => void;
+  onShare: () => void;
+}
+
+const renderDetails = (category: EventCategory, details: Event['details']) => {
+  switch (category) {
+    case EventCategory.Flights: {
+      const flight = details as FlightDetails;
+      return <p className="text-xs text-muted-foreground">{flight.dept_airport} → {flight.arr_airport} {flight.flight_num && `(${flight.flight_num})`}</p>;
+    }
+    case EventCategory.Accommodation: {
+      const accommodation = details as AccommodationDetails;
+      return (
+        <div className="space-y-0.5">
+          {accommodation.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{accommodation.address}</p>}
+          {accommodation.book_link && (
+            <a href={accommodation.book_link} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
+              <ExternalLink className="h-3 w-3 mr-1" /> View Booking
+            </a>
+          )}
+        </div>
+      );
+    }
+    case EventCategory.Transport: {
+      const transport = details as TransportDetails;
+      return <p className="text-xs text-muted-foreground">{transport.pickup_point} → {transport.dropoff_point}</p>;
+    }
+    default: {
+      const general = details as GeneralDetails;
+      return general?.location ? <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{general.location}</p> : null;
+    }
+  }
+};
+
+const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare }) => {
+  const categoryIcon = CATEGORY_ICONS[event.category] || '📌';
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: event.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group relative card-surface p-3 transition-all ${isDragging ? 'opacity-50 scale-105 shadow-xl ring-2 ring-primary/20' : 'hover:shadow-md hover:border-primary/30'}`}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex items-start flex-grow">
+          <div {...attributes} {...listeners} className="mr-2 mt-2 p-1 text-muted-foreground/40 cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors">
+            <GripVertical className="h-4 w-4" />
+          </div>
+
+          <div className="flex items-start cursor-pointer flex-grow" onClick={onEdit} role="button" tabIndex={0} aria-label={`Edit: ${event.title}`}>
+            <div className="text-lg mr-3 mt-0.5 flex-shrink-0 w-9 h-9 flex items-center justify-center bg-secondary rounded-lg">
+              {categoryIcon.replace('️', '')}
+            </div>
+            <div className="flex-grow min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground">{event.time}{event.endTime ? ` - ${event.endTime}` : ''}</span>
+                {event.amount > 0 && (
+                  <span className="text-xs font-semibold text-accent">
+                    {event.amount.toLocaleString()} {CURRENCY_SYMBOLS[event.currency] || event.currency}
+                  </span>
+                )}
+              </div>
+              <h3 className="font-semibold text-card-foreground leading-tight">{event.title}</h3>
+              <div className="mt-0.5">{renderDetails(event.category, event.details)}</div>
+              {event.rating && event.rating > 0 && (
+                <div className="flex items-center mt-1">
+                  {Array.from({ length: event.rating }).map((_, i) => (
+                    <Star key={i} className="h-3 w-3 fill-accent text-accent" />
+                  ))}
+                </div>
+              )}
+              {event.notes && <p className="text-xs text-muted-foreground mt-1 italic line-clamp-1">📝 {event.notes}</p>}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
+          <button onClick={(e) => { e.stopPropagation(); onShare(); }} className="btn-ghost p-1.5" title="Share"><Share2 className="h-3.5 w-3.5" /></button>
+          <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="btn-ghost p-1.5" title="Edit"><Pencil className="h-3.5 w-3.5" /></button>
+          <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="btn-ghost p-1.5 hover:text-destructive" title="Delete"><Trash2 className="h-3.5 w-3.5" /></button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EventCard;
