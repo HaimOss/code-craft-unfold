@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Plus, X, CheckSquare, Square, Star, Trash2, ShoppingBag, ClipboardList, StickyNote, Plane, Filter, Download, Upload, GripVertical } from 'lucide-react';
+import { Plus, CheckSquare, Square, Star, Trash2, ShoppingBag, ClipboardList, StickyNote, Plane, Filter, Download, Upload, GripVertical, ChevronDown, ChevronLeft, CornerDownLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -19,6 +19,7 @@ interface ChecklistItem {
   priority: string;
   sort_order: number;
   created_at: string;
+  parent_id: string | null;
 }
 
 const CATEGORIES = [
@@ -33,12 +34,19 @@ const getCategoryConfig = (value: string) => CATEGORIES.find(c => c.value === va
 // Sortable item component
 interface SortableChecklistItemProps {
   item: ChecklistItem;
+  subtasks: ChecklistItem[];
+  isSubtask?: boolean;
   onToggleComplete: (item: ChecklistItem) => void;
   onTogglePriority: (item: ChecklistItem) => void;
   onDelete: (id: string) => void;
+  onAddSubtask: (parentId: string) => void;
+  collapsedParents: Set<string>;
+  onToggleCollapse: (id: string) => void;
 }
 
-const SortableChecklistItem: React.FC<SortableChecklistItemProps> = ({ item, onToggleComplete, onTogglePriority, onDelete }) => {
+const SortableChecklistItem: React.FC<SortableChecklistItemProps> = ({
+  item, subtasks, isSubtask, onToggleComplete, onTogglePriority, onDelete, onAddSubtask, collapsedParents, onToggleCollapse
+}) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -47,30 +55,65 @@ const SortableChecklistItem: React.FC<SortableChecklistItemProps> = ({ item, onT
     opacity: isDragging ? 0.8 : undefined,
   };
   const catConfig = getCategoryConfig(item.category);
+  const isCollapsed = collapsedParents.has(item.id);
+  const completedSubtasks = subtasks.filter(s => s.is_completed).length;
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`group card-surface p-3 flex items-center gap-3 transition-all ${
-        item.is_completed ? 'opacity-60' : ''
-      } ${item.priority === 'high' && !item.is_completed ? 'border-accent/30 bg-accent/5' : ''}`}
-    >
-      <button {...attributes} {...listeners} className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground touch-none">
-        <GripVertical className="h-4 w-4" />
-      </button>
-      <button onClick={() => onToggleComplete(item)} className="flex-shrink-0 text-primary hover:scale-110 transition-transform">
-        {item.is_completed ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5 text-muted-foreground" />}
-      </button>
-      <span className="text-xs px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground">{catConfig.emoji}</span>
-      <span className={`flex-1 text-sm ${item.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{item.text}</span>
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onClick={() => onTogglePriority(item)} className={`p-1 rounded transition-colors ${item.priority === 'high' ? 'text-accent' : 'text-muted-foreground/40 hover:text-accent'}`} title="עדיפות">
-          <Star className={`h-3.5 w-3.5 ${item.priority === 'high' ? 'fill-accent' : ''}`} />
+    <div>
+      <div
+        ref={setNodeRef}
+        style={style}
+        className={`group p-3 flex items-center gap-3 transition-all border rounded-lg ${
+          isSubtask ? 'mr-8 bg-muted/30 border-border/50' : 'card-surface'
+        } ${item.is_completed ? 'opacity-60' : ''} ${
+          item.priority === 'high' && !item.is_completed ? 'border-accent/30 bg-accent/5' : ''
+        }`}
+      >
+        <button {...attributes} {...listeners} className="flex-shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground touch-none">
+          <GripVertical className="h-4 w-4" />
         </button>
-        <button onClick={() => onDelete(item.id)} className="p-1 text-muted-foreground/40 hover:text-destructive rounded transition-colors" title="מחק">
-          <Trash2 className="h-3.5 w-3.5" />
+
+        {/* Collapse toggle for parents with subtasks */}
+        {!isSubtask && subtasks.length > 0 && (
+          <button onClick={() => onToggleCollapse(item.id)} className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+            {isCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+        )}
+
+        <button onClick={() => onToggleComplete(item)} className="flex-shrink-0 text-primary hover:scale-110 transition-transform">
+          {item.is_completed ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5 text-muted-foreground" />}
         </button>
+
+        {!isSubtask && (
+          <span className="text-xs px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground">{catConfig.emoji}</span>
+        )}
+
+        <span className={`flex-1 text-sm ${item.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+          {item.text}
+          {!isSubtask && subtasks.length > 0 && (
+            <span className="text-xs text-muted-foreground mr-2">
+              ({completedSubtasks}/{subtasks.length})
+            </span>
+          )}
+        </span>
+
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {!isSubtask && (
+            <button
+              onClick={() => onAddSubtask(item.id)}
+              className="p-1 text-muted-foreground/40 hover:text-primary rounded transition-colors"
+              title="הוסף תת-משימה"
+            >
+              <CornerDownLeft className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <button onClick={() => onTogglePriority(item)} className={`p-1 rounded transition-colors ${item.priority === 'high' ? 'text-accent' : 'text-muted-foreground/40 hover:text-accent'}`} title="עדיפות">
+            <Star className={`h-3.5 w-3.5 ${item.priority === 'high' ? 'fill-accent' : ''}`} />
+          </button>
+          <button onClick={() => onDelete(item.id)} className="p-1 text-muted-foreground/40 hover:text-destructive rounded transition-colors" title="מחק">
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -89,6 +132,9 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
   const [newPriority, setNewPriority] = useState('normal');
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
   const [hideCompleted, setHideCompleted] = useState(false);
+  const [collapsedParents, setCollapsedParents] = useState<Set<string>>(new Set());
+  const [addingSubtaskFor, setAddingSubtaskFor] = useState<string | null>(null);
+  const [subtaskText, setSubtaskText] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -114,13 +160,25 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     fetchItems();
   }, [tripId, user]);
 
+  // Separate parents and subtasks
+  const parentItems = useMemo(() => items.filter(i => !i.parent_id), [items]);
+  const subtaskMap = useMemo(() => {
+    const map = new Map<string, ChecklistItem[]>();
+    items.filter(i => i.parent_id).forEach(i => {
+      const arr = map.get(i.parent_id!) || [];
+      arr.push(i);
+      map.set(i.parent_id!, arr);
+    });
+    return map;
+  }, [items]);
+
   const filtered = useMemo(() => {
-    return items.filter(item => {
+    return parentItems.filter(item => {
       if (filterCategory && item.category !== filterCategory) return false;
       if (hideCompleted && item.is_completed) return false;
       return true;
     });
-  }, [items, filterCategory, hideCompleted]);
+  }, [parentItems, filterCategory, hideCompleted]);
 
   const sortedFiltered = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -130,16 +188,42 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     });
   }, [filtered]);
 
+  // Build flat list of ids for DnD (parents + visible subtasks)
+  const flatItemIds = useMemo(() => {
+    const ids: string[] = [];
+    sortedFiltered.forEach(parent => {
+      ids.push(parent.id);
+      if (!collapsedParents.has(parent.id)) {
+        const subs = subtaskMap.get(parent.id) || [];
+        subs.sort((a, b) => a.sort_order - b.sort_order).forEach(s => ids.push(s.id));
+      }
+    });
+    return ids;
+  }, [sortedFiltered, subtaskMap, collapsedParents]);
+
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const oldIndex = sortedFiltered.findIndex(i => i.id === active.id);
-    const newIndex = sortedFiltered.findIndex(i => i.id === over.id);
+    const oldIndex = flatItemIds.indexOf(active.id as string);
+    const newIndex = flatItemIds.indexOf(over.id as string);
     if (oldIndex === -1 || newIndex === -1) return;
 
-    const reordered = arrayMove(sortedFiltered, oldIndex, newIndex);
-    // Update sort_order for all reordered items
+    // Only allow reorder among same level (both parents or both subtasks of same parent)
+    const draggedItem = items.find(i => i.id === active.id);
+    const targetItem = items.find(i => i.id === over.id);
+    if (!draggedItem || !targetItem) return;
+    if (draggedItem.parent_id !== targetItem.parent_id) return;
+
+    const siblings = draggedItem.parent_id
+      ? (subtaskMap.get(draggedItem.parent_id) || []).sort((a, b) => a.sort_order - b.sort_order)
+      : sortedFiltered;
+
+    const oldSibIdx = siblings.findIndex(i => i.id === active.id);
+    const newSibIdx = siblings.findIndex(i => i.id === over.id);
+    if (oldSibIdx === -1 || newSibIdx === -1) return;
+
+    const reordered = arrayMove(siblings, oldSibIdx, newSibIdx);
     const updates = reordered.map((item, idx) => ({ ...item, sort_order: idx }));
     setItems(prev => {
       const reorderedIds = new Set(updates.map(u => u.id));
@@ -147,12 +231,11 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
       return [...unchanged, ...updates].sort((a, b) => a.sort_order - b.sort_order);
     });
 
-    // Persist to DB
     const promises = updates.map((item, idx) =>
       supabase.from('checklist_items').update({ sort_order: idx }).eq('id', item.id)
     );
     await Promise.all(promises);
-  }, [sortedFiltered]);
+  }, [flatItemIds, items, sortedFiltered, subtaskMap]);
 
   const completedCount = items.filter(i => i.is_completed).length;
   const totalCount = items.length;
@@ -165,7 +248,7 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
       text: newText.trim(),
       category: newCategory,
       priority: newPriority,
-      sort_order: items.length,
+      sort_order: parentItems.length,
     };
     const { data, error } = await supabase
       .from('checklist_items')
@@ -178,6 +261,39 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
       setItems(prev => [...prev, data as any]);
       setNewText('');
       setNewPriority('normal');
+    }
+  };
+
+  const addSubtask = async (parentId: string) => {
+    if (!subtaskText.trim() || !user) return;
+    const parentItem = items.find(i => i.id === parentId);
+    const existingSubs = subtaskMap.get(parentId) || [];
+    const newItem = {
+      trip_id: tripId,
+      user_id: user.id,
+      text: subtaskText.trim(),
+      category: parentItem?.category || 'task',
+      priority: 'normal',
+      sort_order: existingSubs.length,
+      parent_id: parentId,
+    };
+    const { data, error } = await supabase
+      .from('checklist_items')
+      .insert(newItem)
+      .select()
+      .single();
+    if (error) {
+      toast({ title: 'שגיאה בהוספת תת-משימה', variant: 'destructive' });
+    } else {
+      setItems(prev => [...prev, data as any]);
+      setSubtaskText('');
+      setAddingSubtaskFor(null);
+      // Ensure parent is expanded
+      setCollapsedParents(prev => {
+        const next = new Set(prev);
+        next.delete(parentId);
+        return next;
+      });
     }
   };
 
@@ -195,7 +311,8 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
   };
 
   const deleteItem = async (id: string) => {
-    setItems(prev => prev.filter(i => i.id !== id));
+    // Also remove subtasks from local state (DB cascade handles it)
+    setItems(prev => prev.filter(i => i.id !== id && i.parent_id !== id));
     const { error } = await supabase
       .from('checklist_items')
       .delete()
@@ -217,21 +334,36 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     }
   };
 
+  const toggleCollapse = (id: string) => {
+    setCollapsedParents(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleAddSubtaskClick = (parentId: string) => {
+    setAddingSubtaskFor(addingSubtaskFor === parentId ? null : parentId);
+    setSubtaskText('');
+  };
+
   const exportExcel = () => {
     const rows = items.map(item => {
       const cat = getCategoryConfig(item.category);
+      const parentItem = item.parent_id ? items.find(i => i.id === item.parent_id) : null;
       return {
-        'טקסט': item.text,
+        'טקסט': item.parent_id ? `  ↳ ${item.text}` : item.text,
         'קטגוריה': cat.label,
         'עדיפות': item.priority === 'high' ? 'גבוהה' : 'רגילה',
         'הושלם': item.is_completed ? 'כן' : 'לא',
+        'משימת אב': parentItem?.text || '',
       };
     });
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'צ׳קליסט');
-    // Auto-size columns
-    ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 8 }];
+    ws['!cols'] = [{ wch: 30 }, { wch: 15 }, { wch: 10 }, { wch: 8 }, { wch: 20 }];
     XLSX.writeFile(wb, `checklist_${tripId.slice(0, 8)}.xlsx`);
     toast({ title: 'הצ\'קליסט יוצא בהצלחה! 📥' });
   };
@@ -245,21 +377,14 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
       if (!file || !user) return;
 
       const categoryMap: Record<string, string> = {
-        'לפני הטיול': 'before_trip',
-        'קניות': 'shopping',
-        'משימה': 'task',
-        'הערה': 'note',
-        'before_trip': 'before_trip',
-        'shopping': 'shopping',
-        'task': 'task',
-        'note': 'note',
+        'לפני הטיול': 'before_trip', 'קניות': 'shopping', 'משימה': 'task', 'הערה': 'note',
+        'before_trip': 'before_trip', 'shopping': 'shopping', 'task': 'task', 'note': 'note',
       };
 
       try {
         const arrayBuffer = await file.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json<Record<string, string>>(sheet);
 
         if (rows.length === 0) {
@@ -268,7 +393,9 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
         }
 
         const newItems = rows.map((row, idx) => {
-          const itemText = row['טקסט'] || row['text'] || Object.values(row)[0] || '';
+          let itemText = row['טקסט'] || row['text'] || Object.values(row)[0] || '';
+          // Strip subtask prefix
+          itemText = String(itemText).replace(/^\s*↳\s*/, '').trim();
           if (!itemText) return null;
 
           const catRaw = row['קטגוריה'] || row['category'] || '';
@@ -279,12 +406,7 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
           const is_completed = completedRaw.includes('כן') || completedRaw.toLowerCase() === 'yes';
 
           return {
-            trip_id: tripId,
-            user_id: user.id,
-            text: String(itemText),
-            category,
-            priority,
-            is_completed,
+            trip_id: tripId, user_id: user.id, text: itemText, category, priority, is_completed,
             sort_order: items.length + idx,
           };
         }).filter(Boolean) as Array<{
@@ -297,18 +419,14 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
           return;
         }
 
-        const { data, error } = await supabase
-          .from('checklist_items')
-          .insert(newItems)
-          .select();
-
+        const { data, error } = await supabase.from('checklist_items').insert(newItems).select();
         if (error) {
           toast({ title: 'שגיאה בייבוא', description: error.message, variant: 'destructive' });
         } else {
           setItems(prev => [...prev, ...((data as any[]) || [])]);
           toast({ title: `יובאו ${newItems.length} פריטים בהצלחה! 🎉` });
         }
-      } catch (err) {
+      } catch {
         toast({ title: 'שגיאה בקריאת הקובץ', variant: 'destructive' });
       }
     };
@@ -322,7 +440,6 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
       </div>
     );
   }
-
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -364,11 +481,7 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
             onKeyDown={e => { if (e.key === 'Enter') addItem(); }}
             className="flex-1"
           />
-          <button
-            onClick={addItem}
-            disabled={!newText.trim()}
-            className="btn-primary px-4 disabled:opacity-50"
-          >
+          <button onClick={addItem} disabled={!newText.trim()} className="btn-primary px-4 disabled:opacity-50">
             <Plus className="h-4 w-4" />
           </button>
         </div>
@@ -406,24 +519,20 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
           <button
             onClick={() => setFilterCategory(null)}
             className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
-              filterCategory === null
-                ? 'bg-primary/10 text-primary border-primary/30'
-                : 'bg-card border-border text-muted-foreground hover:border-primary/30'
+              filterCategory === null ? 'bg-primary/10 text-primary border-primary/30' : 'bg-card border-border text-muted-foreground hover:border-primary/30'
             }`}
           >
-            הכל ({totalCount})
+            הכל ({parentItems.length})
           </button>
           {CATEGORIES.map(cat => {
-            const count = items.filter(i => i.category === cat.value).length;
+            const count = parentItems.filter(i => i.category === cat.value).length;
             if (count === 0) return null;
             return (
               <button
                 key={cat.value}
                 onClick={() => setFilterCategory(filterCategory === cat.value ? null : cat.value)}
                 className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
-                  filterCategory === cat.value
-                    ? 'bg-primary/10 text-primary border-primary/30'
-                    : 'bg-card border-border text-muted-foreground hover:border-primary/30'
+                  filterCategory === cat.value ? 'bg-primary/10 text-primary border-primary/30' : 'bg-card border-border text-muted-foreground hover:border-primary/30'
                 }`}
               >
                 {cat.emoji} {cat.label} ({count})
@@ -433,9 +542,7 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
           <button
             onClick={() => setHideCompleted(!hideCompleted)}
             className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
-              hideCompleted
-                ? 'bg-primary/10 text-primary border-primary/30'
-                : 'bg-card border-border text-muted-foreground hover:border-primary/30'
+              hideCompleted ? 'bg-primary/10 text-primary border-primary/30' : 'bg-card border-border text-muted-foreground hover:border-primary/30'
             }`}
           >
             {hideCompleted ? '👁️ הצג הושלמו' : '🙈 הסתר הושלמו'}
@@ -444,7 +551,7 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
       )}
 
       {/* Items list */}
-      {filtered.length === 0 ? (
+      {sortedFiltered.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-4xl mb-3">✅</p>
           <p className="text-muted-foreground mb-3">
@@ -458,17 +565,62 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
         </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={sortedFiltered.map(i => i.id)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={flatItemIds} strategy={verticalListSortingStrategy}>
             <div className="space-y-1.5">
-              {sortedFiltered.map(item => (
-                <SortableChecklistItem
-                  key={item.id}
-                  item={item}
-                  onToggleComplete={toggleComplete}
-                  onTogglePriority={togglePriority}
-                  onDelete={deleteItem}
-                />
-              ))}
+              {sortedFiltered.map(parent => {
+                const subs = (subtaskMap.get(parent.id) || []).sort((a, b) => a.sort_order - b.sort_order);
+                const isCollapsed = collapsedParents.has(parent.id);
+                return (
+                  <React.Fragment key={parent.id}>
+                    <SortableChecklistItem
+                      item={parent}
+                      subtasks={subs}
+                      onToggleComplete={toggleComplete}
+                      onTogglePriority={togglePriority}
+                      onDelete={deleteItem}
+                      onAddSubtask={handleAddSubtaskClick}
+                      collapsedParents={collapsedParents}
+                      onToggleCollapse={toggleCollapse}
+                    />
+                    {/* Subtasks */}
+                    {!isCollapsed && subs.map(sub => (
+                      <SortableChecklistItem
+                        key={sub.id}
+                        item={sub}
+                        subtasks={[]}
+                        isSubtask
+                        onToggleComplete={toggleComplete}
+                        onTogglePriority={togglePriority}
+                        onDelete={deleteItem}
+                        onAddSubtask={handleAddSubtaskClick}
+                        collapsedParents={collapsedParents}
+                        onToggleCollapse={toggleCollapse}
+                      />
+                    ))}
+                    {/* Inline add subtask */}
+                    {addingSubtaskFor === parent.id && (
+                      <div className="mr-8 flex gap-2 items-center">
+                        <CornerDownLeft className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                        <Input
+                          placeholder="הוסף תת-משימה..."
+                          value={subtaskText}
+                          onChange={e => setSubtaskText(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') addSubtask(parent.id); if (e.key === 'Escape') setAddingSubtaskFor(null); }}
+                          className="flex-1 h-8 text-sm"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => addSubtask(parent.id)}
+                          disabled={!subtaskText.trim()}
+                          className="btn-primary px-3 h-8 text-xs disabled:opacity-50"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </div>
           </SortableContext>
         </DndContext>
