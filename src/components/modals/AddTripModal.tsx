@@ -74,9 +74,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-muted-foreground font-medium">Currency</label>
-              <select value={baseCurrency} onChange={e => setBaseCurrency(e.target.value)} className="input-field">
-                {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+              <CurrencyPicker value={baseCurrency} onChange={setBaseCurrency} />
             </div>
             <div>
               <label className="text-xs text-muted-foreground font-medium">Status</label>
