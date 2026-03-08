@@ -194,12 +194,7 @@ const Index = () => {
           </div>
         );
       case 'settings':
-        return (
-          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir={dir}>
-            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">{t('settings.title')}</h1>
-            <p className="text-muted-foreground">{t('settings.comingSoon')}</p>
-          </div>
-        );
+        return <SettingsView />;
       default:
         return null;
     }
