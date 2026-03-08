@@ -40,7 +40,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
       const accommodation = details as AccommodationDetails;
       return (
         <div className="space-y-0.5">
-          {accommodation.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 mr-1 flex-shrink-0" />{accommodation.address}</p>}
+          {accommodation.address && <p className="text-xs text-muted-foreground flex items-center"><MapPin className="h-3 w-3 ml-1 flex-shrink-0" />{accommodation.address}</p>}
           {accommodation.room_type && <p className="text-xs text-muted-foreground">🛏️ {accommodation.room_type}</p>}
           {accommodation.confirmation_num && <p className="text-xs text-muted-foreground">📋 {accommodation.confirmation_num}</p>}
           {accommodation.book_link && (
