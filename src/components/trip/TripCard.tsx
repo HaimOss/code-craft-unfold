@@ -8,7 +8,7 @@ interface TripCardProps {
 }
 
 const statusStyles: { [key in TripStatus]: string } = {
-  [TripStatus.Idea]: "bg-trip-idea/10 text-trip-idea",
+  [TripStatus.Idea]: "bg-trip-idea text-primary-foreground",
   [TripStatus.Planning]: "bg-trip-planning/10 text-trip-planning",
   [TripStatus.Booked]: "bg-trip-booked/10 text-trip-booked",
   [TripStatus.Completed]: "bg-muted text-muted-foreground",
