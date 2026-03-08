@@ -320,7 +320,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
 
       {/* Legend */}
       <div className="p-3 border-t border-border flex flex-wrap gap-3 text-xs text-muted-foreground">
-        <span className="font-medium">מקרא:</span>
+        <span className="font-medium">{t('map.legend')}</span>
         {Object.entries(CATEGORY_COLORS).map(([cat, color]) => {
           const hasCategory = filteredEvents.some(e => e.event.category === cat);
           if (!hasCategory) return null;
