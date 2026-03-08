@@ -13,6 +13,7 @@ const dbRowToTrip = (row: any, events: any[]): Trip => ({
   cover_image: row.cover_image || undefined,
   album_link: row.album_link || undefined,
   dailyInfo: row.daily_info || {},
+  budget: row.budget ? Number(row.budget) : undefined,
   events: events.map(dbRowToEvent),
 });
 
