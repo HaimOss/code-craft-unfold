@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Trip, Event, DailyInfo } from '@/types';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import AddEventForm from './AddEventForm';
 import EventCard from './EventCard';
 import ShareModal from '../modals/ShareModal';
