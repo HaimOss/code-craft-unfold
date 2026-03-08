@@ -1,6 +1,12 @@
 import { Trip, TripStatus, EventCategory, PaymentMethod } from './types';
 
-export const CURRENCIES = ["ILS", "USD", "EUR", "GBP", "JPY", "THB", "CHF"];
+export const CURRENCIES = [
+  "ILS", "USD", "EUR", "GBP", "JPY", "THB", "CHF",
+  "AUD", "CAD", "NZD", "SEK", "NOK", "DKK", "PLN",
+  "CZK", "HUF", "TRY", "KRW", "SGD", "HKD", "MXN",
+  "BRL", "ZAR", "INR", "IDR", "MYR", "PHP", "TWD",
+  "RON", "BGN", "HRK", "ISK", "CNY",
+];
 export const TRIP_STATUSES = Object.values(TripStatus);
 export const EVENT_CATEGORIES = Object.values(EventCategory);
 export const PAYMENT_METHODS = Object.values(PaymentMethod);
@@ -18,6 +24,11 @@ export const PRESET_TAGS = [
 
 export const CURRENCY_SYMBOLS: { [key: string]: string } = {
   ILS: '₪', USD: '$', EUR: '€', GBP: '£', JPY: '¥', THB: '฿', CHF: 'Fr',
+  AUD: 'A$', CAD: 'C$', NZD: 'NZ$', SEK: 'kr', NOK: 'kr', DKK: 'kr',
+  PLN: 'zł', CZK: 'Kč', HUF: 'Ft', TRY: '₺', KRW: '₩', SGD: 'S$',
+  HKD: 'HK$', MXN: 'MX$', BRL: 'R$', ZAR: 'R', INR: '₹', IDR: 'Rp',
+  MYR: 'RM', PHP: '₱', TWD: 'NT$', RON: 'lei', BGN: 'лв', HRK: 'kn',
+  ISK: 'kr', CNY: '¥',
 };
 
 export const CATEGORY_ICONS: { [key in EventCategory]: string } = {
