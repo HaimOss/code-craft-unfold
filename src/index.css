@@ -102,7 +102,6 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
-    direction: rtl;
   }
   h1, h2, h3 {
     font-family: var(--font-display);
