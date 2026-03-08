@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Trip, Event, EventCategory, FlightDetails, AccommodationDetails, TransportDetails, GeneralDetails } from '@/types';
+import { Trip, Event, EventCategory, FlightDetails, AccommodationDetails, TransportDetails, ActivityDetails, ShoppingDetails, GeneralDetails } from '@/types';
 import { CATEGORY_DISPLAY_CONFIG, EVENT_CATEGORIES, CURRENCY_SYMBOLS, PRESET_TAGS } from '@/constants';
 import { Search, X, Star, Heart, Tag, MapPin, Clock, ChevronDown, ChevronUp, ExternalLink, CreditCard, Navigation } from 'lucide-react';
 import { Input } from '@/components/ui/input';
