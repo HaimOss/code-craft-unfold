@@ -393,6 +393,7 @@ const translations: Record<Language, TranslationTree> = {
     nav: {
       dashboard: 'Dashboard',
       trips: 'My Trips',
+      activityBank: 'Activity Bank',
       stats: 'Statistics',
       notifications: 'Notifications',
       settings: 'Settings',
