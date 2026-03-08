@@ -204,8 +204,8 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     return (
       <div className="card-surface p-12 flex flex-col items-center justify-center text-center">
         <p className="text-4xl mb-4">🗺️</p>
-        <h3 className="text-xl font-bold font-display mb-2">אין מיקומים להציג</h3>
-        <p className="text-muted-foreground text-sm">הוסף כתובות ומיקומים לפעילויות כדי לראות אותן על המפה.</p>
+        <h3 className="text-xl font-bold font-display mb-2">{t('map.noLocations')}</h3>
+        <p className="text-muted-foreground text-sm">{t('map.noLocationsDesc')}</p>
       </div>
     );
   }
