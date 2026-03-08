@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Trip, Event, User } from '@/types';
 import TripCard from './TripCard';
 import AddTripModal from '../modals/AddTripModal';
-import { Plus, LogOut, User as UserIcon, Compass, Archive, Briefcase } from 'lucide-react';
+import ActivityArchive from './ActivityArchive';
+import { Plus, LogOut, Compass, Archive } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TripDashboardProps {
   trips: Trip[];
