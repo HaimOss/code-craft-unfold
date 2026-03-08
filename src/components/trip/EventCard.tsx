@@ -137,12 +137,12 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare,
     >
       <div className="flex items-start justify-between">
         <div className="flex items-start flex-grow">
-          <div {...attributes} {...listeners} className="mr-2 mt-2 p-1 text-muted-foreground/40 cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors">
+          <div {...attributes} {...listeners} className="ml-2 mt-2 p-1 text-muted-foreground/40 cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors">
             <GripVertical className="h-4 w-4" />
           </div>
 
-          <div className="flex items-start cursor-pointer flex-grow" onClick={onEdit} role="button" tabIndex={0} aria-label={`Edit: ${event.title}`}>
-            <div className="text-lg mr-3 mt-0.5 flex-shrink-0 w-9 h-9 flex items-center justify-center bg-secondary rounded-lg">
+          <div className="flex items-start cursor-pointer flex-grow" onClick={onEdit} role="button" tabIndex={0} aria-label={`ערוך: ${event.title}`}>
+            <div className="text-lg ml-3 mt-0.5 flex-shrink-0 w-9 h-9 flex items-center justify-center bg-secondary rounded-lg">
               {categoryIcon.replace('️', '')}
             </div>
             <div className="flex-grow min-w-0">
