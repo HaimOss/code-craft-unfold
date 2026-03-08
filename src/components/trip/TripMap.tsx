@@ -103,6 +103,7 @@ interface TripMapProps {
 
 const TripMap: React.FC<TripMapProps> = ({ trip }) => {
   const [geocodedEvents, setGeocodedEvents] = useState<GeocodedEvent[]>([]);
+  const [geocodedPoints, setGeocodedPoints] = useState<GeocodedPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
@@ -127,7 +128,31 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     const geocodeAll = async () => {
       setLoading(true);
       const results: GeocodedEvent[] = [];
+      const pointResults: GeocodedPoint[] = [];
 
+      // Geocode daily_info start/end points
+      const dailyInfo = (trip as any).daily_info || {};
+      for (const [date, info] of Object.entries(dailyInfo)) {
+        const dayIndex = tripDays.indexOf(date);
+        if (dayIndex === -1) continue;
+        const dayInfo = info as any;
+        if (dayInfo?.startPoint) {
+          const coords = await geocodeLocation(dayInfo.startPoint);
+          if (coords) {
+            pointResults.push({ label: dayInfo.startPoint, type: 'start', ...coords, dayIndex });
+          }
+          await new Promise(r => setTimeout(r, 300));
+        }
+        if (dayInfo?.endPoint) {
+          const coords = await geocodeLocation(dayInfo.endPoint);
+          if (coords) {
+            pointResults.push({ label: dayInfo.endPoint, type: 'end', ...coords, dayIndex });
+          }
+          await new Promise(r => setTimeout(r, 300));
+        }
+      }
+
+      // Geocode events
       for (const event of trip.events) {
         const location = getLocationFromEvent(event);
         if (!location) continue;
@@ -137,16 +162,16 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
           const dayIndex = tripDays.indexOf(event.date);
           results.push({ event, ...coords, dayIndex });
         }
-        // Small delay to respect Nominatim rate limits
         await new Promise(r => setTimeout(r, 300));
       }
 
       setGeocodedEvents(results);
+      setGeocodedPoints(pointResults);
       setLoading(false);
     };
 
     geocodeAll();
-  }, [trip.events, tripDays]);
+  }, [trip.events, tripDays, (trip as any).daily_info]);
 
   const filteredEvents = selectedDay !== null
     ? geocodedEvents.filter(e => e.dayIndex === selectedDay)
