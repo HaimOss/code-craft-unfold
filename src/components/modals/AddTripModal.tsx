@@ -39,6 +39,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
       status,
       events: [],
       cover_image: coverImage || undefined,
+      budget: budget ? Number(budget) : undefined,
     };
 
     onAddTrip(newTrip);
