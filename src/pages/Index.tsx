@@ -5,6 +5,7 @@ import DashboardHome from '@/components/dashboard/DashboardHome';
 import TripsGrid from '@/components/dashboard/TripsGrid';
 import ActivityArchive from '@/components/trip/ActivityArchive';
 import StatsDashboard from '@/components/trip/StatsDashboard';
+import SettingsView from '@/components/dashboard/SettingsView';
 import NotificationBell from '@/components/NotificationBell';
 import AppSidebar, { AppView } from '@/components/layout/AppSidebar';
 import TopBar from '@/components/layout/TopBar';
