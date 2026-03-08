@@ -246,6 +246,12 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAd
         <Plus className="h-5 w-5" />
         {t('dashboard.planNewTrip')}
       </button>
+
+      {showWorldMap && (
+        <Suspense fallback={null}>
+          <WorldMap trips={trips} onSelectTrip={onSelectTrip} onClose={() => setShowWorldMap(false)} />
+        </Suspense>
+      )}
     </div>
   );
 };
