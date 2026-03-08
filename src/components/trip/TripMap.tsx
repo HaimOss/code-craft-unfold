@@ -222,7 +222,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
               : 'bg-secondary text-muted-foreground hover:text-foreground'
           }`}
         >
-          כל הימים
+          {t('map.allDays')}
         </button>
         {tripDays.map((day, idx) => {
           const hasEvents = geocodedEvents.some(e => e.dayIndex === idx) || geocodedPoints.some(p => p.dayIndex === idx);
