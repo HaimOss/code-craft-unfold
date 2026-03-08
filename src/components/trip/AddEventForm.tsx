@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trip, Event, EventCategory, PaymentMethod, FlightDetails, AccommodationDetails, TransportDetails, ActivityDetails, ShoppingDetails } from '@/types';
-import { EVENT_CATEGORIES, CURRENCIES, PAYMENT_METHODS, PRESET_TAGS } from '@/constants';
+import { EVENT_CATEGORIES, PAYMENT_METHODS, PRESET_TAGS } from '@/constants';
+import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { generateId } from '@/utils/helpers';
 import { Calendar, Clock, DollarSign, CreditCard, Star, FileText, MapPin, Phone, Globe, Plane, Building, Car, X, Plus, Tag, ShoppingBag, Ticket, ExternalLink } from 'lucide-react';
 
