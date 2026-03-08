@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Plane, BarChart3, Bell, Settings, Compass } from 'lucide-react';
+import { LayoutDashboard, Plane, BarChart3, Bell, Settings, Compass, Bookmark } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
