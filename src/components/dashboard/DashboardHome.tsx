@@ -148,23 +148,23 @@ const DashboardHome: React.FC<DashboardHomeProps> = ({ trips, onSelectTrip, onAd
           <section>
             <h2 className="text-xl font-bold font-display mb-4">{t('dashboard.expenseAnalytics')}</h2>
             <div className="bg-card border border-border rounded-2xl p-6">
-              <div className="text-center mb-4">
-                <p className="text-sm text-muted-foreground">{t('dashboard.totalBudgetUsed')}</p>
-                <p className="text-3xl font-bold text-foreground mt-1">₪{totalBudget.toLocaleString()}</p>
-              </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-3 gap-4 text-center mb-4">
                 <div className="bg-secondary/50 rounded-xl p-3">
                   <p className="text-2xl font-bold">{trips.length}</p>
                   <p className="text-xs text-muted-foreground">{t('dashboard.tripsLabel')}</p>
                 </div>
                 <div className="bg-secondary/50 rounded-xl p-3">
-                  <p className="text-2xl font-bold">{trips.reduce((s, t) => s + t.events.length, 0)}</p>
+                  <p className="text-2xl font-bold">{trips.reduce((s, tr) => s + tr.events.length, 0)}</p>
                   <p className="text-xs text-muted-foreground">{t('dashboard.activities')}</p>
                 </div>
                 <div className="bg-secondary/50 rounded-xl p-3">
-                  <p className="text-2xl font-bold">{new Set(trips.map(t => t.destination).filter(Boolean)).size}</p>
+                  <p className="text-2xl font-bold">{new Set(trips.map(tr => tr.destination).filter(Boolean)).size}</p>
                   <p className="text-xs text-muted-foreground">{t('dashboard.destinations')}</p>
                 </div>
+              </div>
+              <div className="text-center pt-3 border-t border-border">
+                <p className="text-sm text-muted-foreground">{t('dashboard.totalBudgetUsed')}</p>
+                <p className="text-3xl font-bold text-foreground mt-1">₪{totalBudget.toLocaleString()}</p>
               </div>
             </div>
           </section>
