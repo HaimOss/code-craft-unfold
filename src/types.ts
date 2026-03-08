@@ -89,4 +89,16 @@ export interface Trip {
   cover_image?: string;
   album_link?: string;
   dailyInfo?: { [date: string]: DailyInfo };
+  budget?: number;
+}
+
+export interface TripCollaborator {
+  id: string;
+  trip_id: string;
+  user_id?: string;
+  invited_email?: string;
+  invite_token: string;
+  role: 'editor' | 'viewer';
+  status: 'pending' | 'accepted' | 'declined';
+  created_at: string;
 }
