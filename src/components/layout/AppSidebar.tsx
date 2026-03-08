@@ -24,6 +24,7 @@ interface AppSidebarProps {
 const NAV_KEYS: { view: AppView; labelKey: string; icon: React.ElementType }[] = [
   { view: 'dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
   { view: 'trips', labelKey: 'nav.trips', icon: Plane },
+  { view: 'activityBank', labelKey: 'nav.activityBank', icon: Bookmark },
   { view: 'stats', labelKey: 'nav.stats', icon: BarChart3 },
   { view: 'notifications', labelKey: 'nav.notifications', icon: Bell },
   { view: 'settings', labelKey: 'nav.settings', icon: Settings },
