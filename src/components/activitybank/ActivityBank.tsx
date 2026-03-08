@@ -117,7 +117,7 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
         const { error } = await supabase.from('saved_activities').update(activity).eq('id', editingActivity.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('saved_activities').insert({ ...activity, user_id: user.id });
+        const { error } = await supabase.from('saved_activities').insert([{ ...activity, user_id: user.id } as any]);
         if (error) throw error;
       }
       setIsSaveModalOpen(false);
