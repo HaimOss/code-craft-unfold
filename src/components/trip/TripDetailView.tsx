@@ -125,6 +125,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
               </div>
             </div>
           </div>
+          <BudgetBar trip={trip} totalCost={totalCost} isCalculating={isCalculating} />
         </div>
       </header>
 
