@@ -94,7 +94,7 @@ const renderDetails = (category: EventCategory, details: Event['details']) => {
           {shopping.customs_note && <p className="text-xs text-muted-foreground">📦 {shopping.customs_note}</p>}
           {shopping.website && (
             <a href={shopping.website} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="inline-flex items-center text-xs text-primary hover:underline">
-              <ExternalLink className="h-3 w-3 mr-1" /> Website
+              <ExternalLink className="h-3 w-3 ml-1" /> אתר
             </a>
           )}
         </div>
