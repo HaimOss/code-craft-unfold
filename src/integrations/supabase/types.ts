@@ -24,10 +24,12 @@ export type Database = {
           details: Json | null
           end_time: string | null
           id: string
+          is_favorite: boolean
           notes: string | null
           payment_method: string
           rating: number | null
           sort_order: number
+          tags: string[]
           time: string
           title: string
           trip_id: string
@@ -42,10 +44,12 @@ export type Database = {
           details?: Json | null
           end_time?: string | null
           id?: string
+          is_favorite?: boolean
           notes?: string | null
           payment_method?: string
           rating?: number | null
           sort_order?: number
+          tags?: string[]
           time?: string
           title: string
           trip_id: string
@@ -60,10 +64,12 @@ export type Database = {
           details?: Json | null
           end_time?: string | null
           id?: string
+          is_favorite?: boolean
           notes?: string | null
           payment_method?: string
           rating?: number | null
           sort_order?: number
+          tags?: string[]
           time?: string
           title?: string
           trip_id?: string
