@@ -52,7 +52,7 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
       <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-border mb-8">
         <div>
-          <h1 className="text-4xl font-bold font-display flex items-center gap-3">
+          <h1 className="text-4xl font-bold font-display flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <Compass className="h-8 w-8 text-accent" />
             WonderJourney
           </h1>
