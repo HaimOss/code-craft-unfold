@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Trip, Event, EventCategory } from '@/types';
@@ -186,32 +186,8 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     ...filteredPoints.map(p => [p.lat, p.lng] as [number, number]),
   ];
 
-  // Group events by day for polylines
-  const dayRoutes = useMemo(() => {
-    const routes: { dayIndex: number; positions: [number, number][] }[] = [];
-    const byDay = new Map<number, GeocodedEvent[]>();
-    
-    const eventsToUse = selectedDay !== null
-      ? geocodedEvents.filter(e => e.dayIndex === selectedDay)
-      : geocodedEvents;
-
-    eventsToUse.forEach(e => {
-      if (!byDay.has(e.dayIndex)) byDay.set(e.dayIndex, []);
-      byDay.get(e.dayIndex)!.push(e);
-    });
-
-    byDay.forEach((events, dayIndex) => {
-      const sorted = events.sort((a, b) => a.event.time.localeCompare(b.event.time));
-      if (sorted.length > 1) {
-        routes.push({
-          dayIndex,
-          positions: sorted.map(e => [e.lat, e.lng]),
-        });
-      }
-    });
-
-    return routes;
-  }, [geocodedEvents, selectedDay]);
+  // Build day routes including start/end points (no dashed lines - removed)
+  // Routes are not drawn as straight lines are not useful
 
   if (loading) {
     return (
@@ -337,18 +313,6 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
             </Marker>
           ))}
 
-          {dayRoutes.map((route) => (
-            <Polyline
-              key={`route-${route.dayIndex}`}
-              positions={route.positions}
-              pathOptions={{
-                color: DAY_COLORS[route.dayIndex % DAY_COLORS.length],
-                weight: 3,
-                opacity: 0.7,
-                dashArray: '8, 8',
-              }}
-            />
-          ))}
         </MapContainer>
       </div>
 
