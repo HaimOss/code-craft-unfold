@@ -377,64 +377,21 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
           </p>
         </div>
       ) : (
-        <div className="space-y-1.5">
-          {/* High priority first, then by sort_order */}
-          {filtered
-            .sort((a, b) => {
-              if (a.is_completed !== b.is_completed) return a.is_completed ? 1 : -1;
-              if (a.priority !== b.priority) return a.priority === 'high' ? -1 : 1;
-              return a.sort_order - b.sort_order;
-            })
-            .map(item => {
-              const catConfig = getCategoryConfig(item.category);
-              return (
-                <div
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={sortedFiltered.map(i => i.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-1.5">
+              {sortedFiltered.map(item => (
+                <SortableChecklistItem
                   key={item.id}
-                  className={`group card-surface p-3 flex items-center gap-3 transition-all ${
-                    item.is_completed ? 'opacity-60' : ''
-                  } ${item.priority === 'high' && !item.is_completed ? 'border-accent/30 bg-accent/5' : ''}`}
-                >
-                  <button
-                    onClick={() => toggleComplete(item)}
-                    className="flex-shrink-0 text-primary hover:scale-110 transition-transform"
-                  >
-                    {item.is_completed ? (
-                      <CheckSquare className="h-5 w-5" />
-                    ) : (
-                      <Square className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </button>
-
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground`}>
-                    {catConfig.emoji}
-                  </span>
-
-                  <span className={`flex-1 text-sm ${item.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-                    {item.text}
-                  </span>
-
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => togglePriority(item)}
-                      className={`p-1 rounded transition-colors ${
-                        item.priority === 'high' ? 'text-accent' : 'text-muted-foreground/40 hover:text-accent'
-                      }`}
-                      title="עדיפות"
-                    >
-                      <Star className={`h-3.5 w-3.5 ${item.priority === 'high' ? 'fill-accent' : ''}`} />
-                    </button>
-                    <button
-                      onClick={() => deleteItem(item.id)}
-                      className="p-1 text-muted-foreground/40 hover:text-destructive rounded transition-colors"
-                      title="מחק"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-        </div>
+                  item={item}
+                  onToggleComplete={toggleComplete}
+                  onTogglePriority={togglePriority}
+                  onDelete={deleteItem}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );
