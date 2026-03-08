@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Trip, Event } from '@/types';
-import TripDashboard from '@/components/trip/TripDashboard';
 import TripDetailView from '@/components/trip/TripDetailView';
+import DashboardHome from '@/components/dashboard/DashboardHome';
+import TripsGrid from '@/components/dashboard/TripsGrid';
+import ActivityArchive from '@/components/trip/ActivityArchive';
+import StatsDashboard from '@/components/trip/StatsDashboard';
+import NotificationBell from '@/components/NotificationBell';
+import AppSidebar, { AppView } from '@/components/layout/AppSidebar';
+import TopBar from '@/components/layout/TopBar';
+import AddTripModal from '@/components/modals/AddTripModal';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchTrips, createTrip, updateTrip, deleteTrip, syncTripEvents } from '@/services/tripService';
 import { fetchSharedTrips } from '@/services/collaborationService';
@@ -13,17 +21,18 @@ const Index = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeView, setActiveView] = useState<AppView>('dashboard');
+  const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const loadTrips = useCallback(async () => {
     if (!user) return;
     try {
       const ownTrips = await fetchTrips(user.id);
-
-      // Also fetch shared trips
       const sharedTripIds = await fetchSharedTrips(user.id);
       let sharedTrips: Trip[] = [];
       if (sharedTripIds.length > 0) {
-        // Fetch each shared trip's data
         for (const tripId of sharedTripIds) {
           const { data: tripData } = await supabase.from('trips').select('*').eq('id', tripId).single();
           const { data: eventsData } = await supabase.from('events').select('*').eq('trip_id', tripId).order('sort_order', { ascending: true });
@@ -51,7 +60,6 @@ const Index = () => {
           }
         }
       }
-
       setTrips([...ownTrips, ...sharedTrips]);
     } catch (err: any) {
       toast({ title: 'שגיאה בטעינת טיולים', description: err.message, variant: 'destructive' });
@@ -60,29 +68,37 @@ const Index = () => {
     }
   }, [user]);
 
-  useEffect(() => {
-    loadTrips();
-  }, [loadTrips]);
-
-  // Realtime subscriptions
+  // Load profile
   useEffect(() => {
     if (!user) return;
+    supabase.from('profiles').select('display_name').eq('id', user.id).single().then(({ data }) => {
+      if (data?.display_name) setDisplayName(data.display_name);
+      else setDisplayName(user.email?.split('@')[0] || '');
+    });
+  }, [user]);
 
+  // Load notification count
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('is_read', false).then(({ count }) => {
+      setNotificationCount(count || 0);
+    });
+  }, [user]);
+
+  useEffect(() => { loadTrips(); }, [loadTrips]);
+
+  useEffect(() => {
+    if (!user) return;
     const channel = supabase
       .channel('trip-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, () => {
-        loadTrips();
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
-        loadTrips();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'trips' }, () => loadTrips())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadTrips())
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [user, loadTrips]);
 
-  const handleSelectTrip = (tripId: string) => setSelectedTripId(tripId);
-  const handleBackToDashboard = () => setSelectedTripId(null);
+  const handleSelectTrip = (tripId: string) => { setSelectedTripId(tripId); };
+  const handleBackToDashboard = () => { setSelectedTripId(null); };
 
   const handleAddTrip = async (newTrip: Trip) => {
     if (!user) return;
@@ -116,10 +132,7 @@ const Index = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await signOut();
-  };
-
+  const handleLogout = async () => { await signOut(); };
   const selectedTrip = trips.find(t => t.id === selectedTripId);
 
   if (loading) {
@@ -133,27 +146,79 @@ const Index = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      {selectedTrip ? (
+  // Trip detail view - full screen, no sidebar
+  if (selectedTrip) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
         <TripDetailView
           trip={selectedTrip}
           onBack={handleBackToDashboard}
           onUpdateTrip={handleUpdateTrip}
           onDeleteTrip={handleDeleteTrip}
         />
-      ) : (
-        <TripDashboard
-          trips={trips}
-          onSelectTrip={handleSelectTrip}
-          onAddTrip={handleAddTrip}
-          onUpdateTrip={handleUpdateTrip}
-          unscheduledEvents={[]}
-          onAddUnscheduledEvent={() => {}}
-          onLogout={handleLogout}
-        />
-      )}
-    </div>
+      </div>
+    );
+  }
+
+  // Dashboard views with sidebar
+  const renderView = () => {
+    switch (activeView) {
+      case 'dashboard':
+        return (
+          <DashboardHome
+            trips={trips}
+            onSelectTrip={handleSelectTrip}
+            onAddTrip={() => setIsAddTripModalOpen(true)}
+            displayName={displayName}
+          />
+        );
+      case 'trips':
+        return (
+          <TripsGrid
+            trips={trips}
+            onSelectTrip={handleSelectTrip}
+            onAddTrip={handleAddTrip}
+          />
+        );
+      case 'stats':
+        return (
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir="rtl">
+            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">סטטיסטיקות</h1>
+            <StatsDashboard trips={trips} />
+          </div>
+        );
+      case 'notifications':
+        return (
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir="rtl">
+            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">הודעות</h1>
+            <p className="text-muted-foreground">ההודעות שלך מוצגות בפעמון למעלה.</p>
+          </div>
+        );
+      case 'settings':
+        return (
+          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir="rtl">
+            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">הגדרות</h1>
+            <p className="text-muted-foreground">הגדרות נוספות יתווספו בקרוב.</p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background text-foreground">
+        <AppSidebar activeView={activeView} onViewChange={setActiveView} notificationCount={notificationCount} />
+        <div className="flex-1 flex flex-col min-w-0">
+          <TopBar onLogout={handleLogout} onSelectTrip={handleSelectTrip} />
+          <main className="flex-1 overflow-auto">
+            {renderView()}
+          </main>
+        </div>
+      </div>
+      <AddTripModal isOpen={isAddTripModalOpen} onClose={() => setIsAddTripModalOpen(false)} onAddTrip={handleAddTrip} />
+    </SidebarProvider>
   );
 };
 
