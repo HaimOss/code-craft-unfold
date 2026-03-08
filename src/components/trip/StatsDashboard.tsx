@@ -3,7 +3,8 @@ import { Trip, EventCategory } from '@/types';
 import { normalizeCost } from '@/services/currencyService';
 import { CATEGORY_DISPLAY_CONFIG, CURRENCY_SYMBOLS } from '@/constants';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { BarChart3, PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
+import { BarChart3, PieChart as PieChartIcon, TrendingUp, Filter } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface StatsDashboardProps {
   trips: Trip[];
@@ -15,14 +16,42 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ trips }) => {
   const [categoryData, setCategoryData] = useState<{ name: string; value: number; icon: string }[]>([]);
   const [tripComparisonData, setTripComparisonData] = useState<{ name: string; total: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState<string>('all');
+  const [selectedTripId, setSelectedTripId] = useState<string>('all');
+
+  // Extract available years from trips
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    trips.forEach(trip => {
+      if (trip.start_date) years.add(trip.start_date.substring(0, 4));
+    });
+    return Array.from(years).sort().reverse();
+  }, [trips]);
+
+  // Filter trips based on selections
+  const filteredTrips = useMemo(() => {
+    let result = trips;
+    if (selectedYear !== 'all') {
+      result = result.filter(t => t.start_date?.startsWith(selectedYear));
+    }
+    if (selectedTripId !== 'all') {
+      result = result.filter(t => t.id === selectedTripId);
+    }
+    return result;
+  }, [trips, selectedYear, selectedTripId]);
+
+  // Available trips for the selected year filter
+  const tripsForFilter = useMemo(() => {
+    if (selectedYear === 'all') return trips;
+    return trips.filter(t => t.start_date?.startsWith(selectedYear));
+  }, [trips, selectedYear]);
 
   useEffect(() => {
     const calculate = async () => {
       setLoading(true);
 
-      // Category breakdown across all trips
       const categoryTotals: Record<string, number> = {};
-      for (const trip of trips) {
+      for (const trip of filteredTrips) {
         for (const event of trip.events) {
           const cost = await normalizeCost(event.amount, event.currency, 'ILS', event.date);
           const cat = event.category;
@@ -40,9 +69,8 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ trips }) => {
           .sort((a, b) => b.value - a.value)
       );
 
-      // Trip comparison
       const tripTotals: { name: string; total: number }[] = [];
-      for (const trip of trips) {
+      for (const trip of filteredTrips) {
         let total = 0;
         for (const event of trip.events) {
           total += await normalizeCost(event.amount, event.currency, 'ILS', event.date);
@@ -53,14 +81,23 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ trips }) => {
 
       setLoading(false);
     };
-    if (trips.length > 0) calculate();
-    else setLoading(false);
-  }, [trips]);
+    if (filteredTrips.length > 0) calculate();
+    else {
+      setCategoryData([]);
+      setTripComparisonData([]);
+      setLoading(false);
+    }
+  }, [filteredTrips]);
 
   const totalSpent = useMemo(() => categoryData.reduce((sum, c) => sum + c.value, 0), [categoryData]);
-  const totalEvents = useMemo(() => trips.reduce((sum, t) => sum + t.events.length, 0), [trips]);
+  const totalEvents = useMemo(() => filteredTrips.reduce((sum, t) => sum + t.events.length, 0), [filteredTrips]);
 
-  if (loading) {
+  // Reset trip filter when year changes
+  useEffect(() => {
+    setSelectedTripId('all');
+  }, [selectedYear]);
+
+  if (loading && trips.length > 0) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
@@ -80,6 +117,34 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ trips }) => {
 
   return (
     <div className="space-y-8">
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3 bg-card border border-border rounded-xl p-4">
+        <Filter className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-medium text-muted-foreground">סינון:</span>
+        <Select value={selectedYear} onValueChange={setSelectedYear}>
+          <SelectTrigger className="w-[140px] h-9">
+            <SelectValue placeholder="כל השנים" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">כל השנים</SelectItem>
+            {availableYears.map(year => (
+              <SelectItem key={year} value={year}>{year}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={selectedTripId} onValueChange={setSelectedTripId}>
+          <SelectTrigger className="w-[200px] h-9">
+            <SelectValue placeholder="כל הטיולים" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">כל הטיולים</SelectItem>
+            {tripsForFilter.map(trip => (
+              <SelectItem key={trip.id} value={trip.id}>{trip.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-card border border-border rounded-xl p-5">
@@ -88,7 +153,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ trips }) => {
         </div>
         <div className="bg-card border border-border rounded-xl p-5">
           <p className="text-sm text-muted-foreground mb-1">מספר טיולים</p>
-          <p className="text-2xl font-bold">{trips.length}</p>
+          <p className="text-2xl font-bold">{filteredTrips.length}</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-5">
           <p className="text-sm text-muted-foreground mb-1">סה"כ פעילויות</p>
