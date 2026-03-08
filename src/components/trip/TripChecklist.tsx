@@ -425,6 +425,7 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     }
   };
 
+  const toggleCollapse = (id: string) => {
     setCollapsedParents(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
