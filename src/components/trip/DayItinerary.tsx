@@ -116,119 +116,85 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     return null;
   };
 
-  const handleExportDay = () => {
+  const handleExportDay = async () => {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const pageW = doc.internal.pageSize.getWidth();
     const margin = 15;
     const contentW = pageW - margin * 2;
-    let y = margin;
 
-    const addPage = () => { doc.addPage(); y = margin; };
-    const checkPage = (needed: number) => { if (y + needed > 280) addPage(); };
-
-    // Header bar
-    doc.setFillColor(55, 90, 180);
-    doc.rect(0, 0, pageW, 38, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.text(trip.name, margin, 16);
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Day ${dayNumber}  |  ${date}  |  ${trip.destination || ''}`, margin, 26);
     const totalStr = dayTotal.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 });
-    doc.text(`Total: ${totalStr}`, pageW - margin - doc.getTextWidth(`Total: ${totalStr}`), 26);
-    y = 46;
 
-    // Start point
-    if (dailyInfo.startPoint) {
-      doc.setTextColor(34, 139, 34);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`START: ${dailyInfo.startPoint}`, margin, y);
-      y += 8;
-    }
-
-    // Events
-    dailyEvents.forEach((event, idx) => {
-      checkPage(35);
+    // Build HTML string for the PDF
+    let eventsHtml = '';
+    dailyEvents.forEach((event) => {
       const config = CATEGORY_DISPLAY_CONFIG[event.category];
-
-      // Event card background
-      doc.setFillColor(248, 248, 252);
-      doc.setDrawColor(220, 220, 230);
-      doc.roundedRect(margin, y, contentW, 28, 3, 3, 'FD');
-
-      // Time
-      doc.setTextColor(100, 100, 120);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text(event.time, margin + 4, y + 7);
-
-      // Category
-      doc.setTextColor(55, 90, 180);
-      doc.setFontSize(8);
-      doc.text(config?.name || event.category, margin + 20, y + 7);
-
-      // Title
-      doc.setTextColor(30, 30, 50);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text(event.title, margin + 4, y + 15, { maxWidth: contentW - 50 });
-
-      // Amount
       const amountStr = `${CURRENCY_SYMBOLS[event.currency] || ''}${event.amount.toLocaleString()}`;
-      doc.setTextColor(230, 120, 50);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text(amountStr, pageW - margin - 4 - doc.getTextWidth(amountStr), y + 15);
-
-      // Location / notes line
       const loc = getLocationFromEvent(event);
       let detailLine = '';
       if (loc) detailLine += loc;
       if (event.notes) detailLine += (detailLine ? '  |  ' : '') + event.notes;
-      if (detailLine) {
-        doc.setTextColor(120, 120, 140);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.text(detailLine, margin + 4, y + 23, { maxWidth: contentW - 10 });
-      }
 
-      // Rating
-      if (event.rating) {
-        doc.setTextColor(255, 180, 0);
-        doc.setFontSize(8);
-        const stars = '★'.repeat(event.rating) + '☆'.repeat(5 - event.rating);
-        doc.text(stars, pageW - margin - 4 - doc.getTextWidth(stars), y + 23);
-      }
-
-      y += 32;
+      eventsHtml += `
+        <div style="background:#f8f8fc;border:1px solid #dcdce6;border-radius:6px;padding:8px 10px;margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">
+            <div>
+              <span style="color:#64647a;font-size:9px;font-weight:bold;margin-left:8px;">${event.time}</span>
+              <span style="color:#375ab4;font-size:8px;">${config?.name || event.category}</span>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="color:#1e1e32;font-size:13px;font-weight:bold;">${event.title}</span>
+            <span style="color:#e67832;font-size:12px;font-weight:bold;">${amountStr}</span>
+          </div>
+          ${detailLine ? `<div style="color:#78788c;font-size:8px;margin-top:3px;">${detailLine}</div>` : ''}
+          ${event.rating ? `<div style="color:#ffb400;font-size:8px;margin-top:2px;">${'★'.repeat(event.rating)}${'☆'.repeat(5 - event.rating)}</div>` : ''}
+        </div>
+      `;
     });
 
-    // End point
-    if (dailyInfo.endPoint) {
-      checkPage(10);
-      doc.setTextColor(200, 50, 50);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`END: ${dailyInfo.endPoint}`, margin, y);
-      y += 8;
+    const html = `
+      <div style="font-family:'Segoe UI',Tahoma,Arial,sans-serif;direction:rtl;width:${contentW}mm;padding:0;">
+        <div style="background:#375ab4;color:white;padding:12px ${margin}px;margin:0 -${margin}mm;border-radius:0;">
+          <div style="font-size:20px;font-weight:bold;margin-bottom:4px;">${trip.name}</div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;">
+            <span>יום ${dayNumber}  |  ${date}  |  ${trip.destination || ''}</span>
+            <span>סה"כ: ${totalStr}</span>
+          </div>
+        </div>
+        <div style="padding:10px 0;">
+          ${dailyInfo.startPoint ? `<div style="color:#228b22;font-size:10px;font-weight:bold;margin-bottom:8px;">📍 התחלה: ${dailyInfo.startPoint}</div>` : ''}
+          ${eventsHtml}
+          ${dailyInfo.endPoint ? `<div style="color:#c83232;font-size:10px;font-weight:bold;margin-top:8px;">🏁 סיום: ${dailyInfo.endPoint}</div>` : ''}
+        </div>
+        <hr style="border:none;border-top:1px solid #c8c8d2;margin:10px 0;"/>
+        <div style="display:flex;justify-content:space-between;color:#64647a;font-size:9px;">
+          <span>Generated by WonderJourney</span>
+          <span>${new Date().toLocaleDateString()}</span>
+        </div>
+      </div>
+    `;
+
+    // Create a temporary container
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
+    container.style.top = '0';
+    container.style.width = `${contentW}mm`;
+    container.innerHTML = html;
+    document.body.appendChild(container);
+
+    try {
+      await doc.html(container, {
+        x: margin,
+        y: 0,
+        width: contentW,
+        windowWidth: container.scrollWidth,
+        margin: [0, 0, 0, 0],
+      });
+      doc.save(`${trip.name}_Day${dayNumber}_${date}.pdf`);
+    } finally {
+      document.body.removeChild(container);
     }
-
-    // Footer
-    checkPage(15);
-    y += 5;
-    doc.setDrawColor(200, 200, 210);
-    doc.line(margin, y, pageW - margin, y);
-    y += 7;
-    doc.setTextColor(100, 100, 120);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Generated by WonderJourney`, margin, y);
-    doc.text(new Date().toLocaleDateString(), pageW - margin - doc.getTextWidth(new Date().toLocaleDateString()), y);
-
-    doc.save(`${trip.name}_Day${dayNumber}_${date}.pdf`);
   };
 
   const mapsUrl = getGoogleMapsUrl();
