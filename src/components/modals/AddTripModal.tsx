@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trip, TripStatus } from '@/types';
-import { CURRENCIES, TRIP_STATUSES } from '@/constants';
+import { TRIP_STATUSES } from '@/constants';
+import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { generateId } from '@/utils/helpers';
 import { X } from 'lucide-react';
 import CoverImagePicker from './CoverImagePicker';
@@ -17,7 +18,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
-  const [baseCurrency, setBaseCurrency] = useState(CURRENCIES[0]);
+  const [baseCurrency, setBaseCurrency] = useState('ILS');
   const [status, setStatus] = useState(TripStatus.Idea);
   const [coverImage, setCoverImage] = useState('');
   const [budget, setBudget] = useState('');
@@ -46,7 +47,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
     onAddTrip(newTrip);
     onClose();
     setName(''); setDestination(''); setStartDate(today); setEndDate(today);
-    setBaseCurrency(CURRENCIES[0]); setStatus(TripStatus.Idea); setCoverImage(''); setBudget(''); setError('');
+    setBaseCurrency('ILS'); setStatus(TripStatus.Idea); setCoverImage(''); setBudget(''); setError('');
   };
 
   return (
@@ -73,9 +74,7 @@ const AddTripModal: React.FC<AddTripModalProps> = ({ isOpen, onClose, onAddTrip 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-muted-foreground font-medium">Currency</label>
-              <select value={baseCurrency} onChange={e => setBaseCurrency(e.target.value)} className="input-field">
-                {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
+              <CurrencyPicker value={baseCurrency} onChange={setBaseCurrency} />
             </div>
             <div>
               <label className="text-xs text-muted-foreground font-medium">Status</label>

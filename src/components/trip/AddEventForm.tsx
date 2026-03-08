@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Trip, Event, EventCategory, PaymentMethod, FlightDetails, AccommodationDetails, TransportDetails, ActivityDetails, ShoppingDetails } from '@/types';
-import { EVENT_CATEGORIES, CURRENCIES, PAYMENT_METHODS, PRESET_TAGS } from '@/constants';
+import { EVENT_CATEGORIES, PAYMENT_METHODS, PRESET_TAGS } from '@/constants';
+import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { generateId } from '@/utils/helpers';
 import { Calendar, Clock, DollarSign, CreditCard, Star, FileText, MapPin, Phone, Globe, Plane, Building, Car, X, Plus, Tag, ShoppingBag, Ticket, ExternalLink } from 'lucide-react';
 
@@ -166,7 +167,7 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="relative"><DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="amount" type="number" step="0.01" placeholder="Amount" value={formData.amount} onChange={handleInputChange} className="input-field pl-10" /></div>
-          <select name="currency" value={formData.currency} onChange={handleInputChange} className="input-field">{CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
+          <CurrencyPicker value={formData.currency} onChange={(c) => setFormData(p => ({...p, currency: c}))} />
           <select name="payment_method" value={formData.payment_method} onChange={handleInputChange} className="input-field">{PAYMENT_METHODS.map(pm => <option key={pm} value={pm}>{pm}</option>)}</select>
           <select name="rating" value={formData.rating || 0} onChange={(e) => setFormData(p => ({...p, rating: parseInt(e.target.value, 10)}))} className="input-field">
             <option value={0}>No rating</option>

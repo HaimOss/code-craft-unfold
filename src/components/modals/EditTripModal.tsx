@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trip, TripStatus } from '@/types';
-import { CURRENCIES, TRIP_STATUSES } from '@/constants';
+import { TRIP_STATUSES } from '@/constants';
+import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { X } from 'lucide-react';
 import CoverImagePicker from './CoverImagePicker';
 
@@ -64,7 +65,7 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
             <div><label className="text-xs text-muted-foreground font-medium">End Date</label><input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="input-field" /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="text-xs text-muted-foreground font-medium">Currency</label><select value={baseCurrency} onChange={e => setBaseCurrency(e.target.value)} className="input-field">{CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+            <div><label className="text-xs text-muted-foreground font-medium">Currency</label><CurrencyPicker value={baseCurrency} onChange={setBaseCurrency} /></div>
             <div><label className="text-xs text-muted-foreground font-medium">Status</label><select value={status} onChange={e => setStatus(e.target.value as TripStatus)} className="input-field">{TRIP_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
           </div>
           <CoverImagePicker value={coverImage} onChange={setCoverImage} />
