@@ -37,6 +37,14 @@ interface GeocodedEvent {
   dayIndex: number;
 }
 
+interface GeocodedPoint {
+  label: string;
+  type: 'start' | 'end';
+  lat: number;
+  lng: number;
+  dayIndex: number;
+}
+
 const geocodeCache = new Map<string, { lat: number; lng: number } | null>();
 
 async function geocodeLocation(location: string): Promise<{ lat: number; lng: number } | null> {
