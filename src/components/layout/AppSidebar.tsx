@@ -33,7 +33,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ activeView, onViewChange, notif
   const collapsed = state === 'collapsed';
 
   return (
-    <Sidebar collapsible="icon" side="right" className="border-l border-border">
+    <Sidebar collapsible="icon" side="right" className="border-l border-border" dir="rtl">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-2 justify-end" dir="rtl">
           <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
