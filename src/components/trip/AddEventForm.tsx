@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Trip, Event, EventCategory, PaymentMethod, FlightDetails, AccommodationDetails, TransportDetails, ActivityDetails, ShoppingDetails } from '@/types';
+import { Trip, Event, EventCategory, PaymentMethod } from '@/types';
 import { EVENT_CATEGORIES, PAYMENT_METHODS, PRESET_TAGS } from '@/constants';
 import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { generateId } from '@/utils/helpers';
 import { Calendar, Clock, DollarSign, CreditCard, Star, FileText, MapPin, Phone, Globe, Plane, Building, Car, X, Plus, Tag, ShoppingBag, Ticket, ExternalLink } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AddEventFormProps {
   trip: Trip;
@@ -15,6 +16,7 @@ interface AddEventFormProps {
 }
 
 const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateEvent, onCancel, existingEvent, initialDate }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<Partial<Event>>({
     date: initialDate || new Date().toISOString().split('T')[0],
     time: new Date().toTimeString().substring(0, 5),
@@ -45,12 +47,7 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
   const toggleTag = (tag: string) => {
     setFormData(prev => {
       const currentTags = prev.tags || [];
-      return {
-        ...prev,
-        tags: currentTags.includes(tag)
-          ? currentTags.filter(t => t !== tag)
-          : [...currentTags, tag],
-      };
+      return { ...prev, tags: currentTags.includes(tag) ? currentTags.filter(t => t !== tag) : [...currentTags, tag] };
     });
   };
 
@@ -154,10 +151,10 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
 
   return (
     <div className="card-surface p-6 animate-fade-in">
-      <h2 className="text-2xl font-bold font-display mb-4">{existingEvent ? 'Edit Event' : 'Add New Event'}</h2>
+      <h2 className="text-2xl font-bold font-display mb-4">{existingEvent ? t('eventForm.editEvent') : t('eventForm.addEvent')}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative"><FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="title" placeholder="Title" value={formData.title || ''} onChange={handleInputChange} required className="input-field pl-10" /></div>
+          <div className="relative"><FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="title" placeholder={t('eventForm.title')} value={formData.title || ''} onChange={handleInputChange} required className="input-field pl-10" /></div>
           <select name="category" value={formData.category} onChange={handleInputChange} className="input-field">{EVENT_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}</select>
           <div className="relative"><Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="date" type="date" value={formData.date} onChange={handleInputChange} required className="input-field pl-10" /></div>
           <div className="flex gap-2">
@@ -170,37 +167,32 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
           <CurrencyPicker value={formData.currency} onChange={(c) => setFormData(p => ({...p, currency: c}))} />
           <select name="payment_method" value={formData.payment_method} onChange={handleInputChange} className="input-field">{PAYMENT_METHODS.map(pm => <option key={pm} value={pm}>{pm}</option>)}</select>
           <select name="rating" value={formData.rating || 0} onChange={(e) => setFormData(p => ({...p, rating: parseInt(e.target.value, 10)}))} className="input-field">
-            <option value={0}>No rating</option>
+            <option value={0}>{t('eventForm.noRating')}</option>
             {[1,2,3,4,5].map(r => <option key={r} value={r}>{'⭐'.repeat(r)}</option>)}
           </select>
         </div>
 
-        {/* Tags Section */}
+        {/* Tags */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
-            <Tag className="h-4 w-4" /> תגיות
+            <Tag className="h-4 w-4" /> {t('eventForm.tags')}
           </label>
           <div className="flex flex-wrap gap-2">
             {PRESET_TAGS.map(preset => {
               const isActive = (formData.tags || []).includes(preset.label);
               return (
-                <button
-                  key={preset.label}
-                  type="button"
-                  onClick={() => toggleTag(preset.label)}
+                <button key={preset.label} type="button" onClick={() => toggleTag(preset.label)}
                   className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
                     isActive ? preset.color + ' shadow-sm ring-1 ring-offset-1' : 'bg-card border-border text-muted-foreground hover:border-primary/30'
-                  }`}
-                >
+                  }`}>
                   {preset.emoji} {preset.label}
                 </button>
               );
             })}
           </div>
-          {/* Custom tags display */}
-          {(formData.tags || []).filter(t => !PRESET_TAGS.find(p => p.label === t)).length > 0 && (
+          {(formData.tags || []).filter(tg => !PRESET_TAGS.find(p => p.label === tg)).length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {(formData.tags || []).filter(t => !PRESET_TAGS.find(p => p.label === t)).map(tag => (
+              {(formData.tags || []).filter(tg => !PRESET_TAGS.find(p => p.label === tg)).map(tag => (
                 <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-secondary text-foreground border border-border">
                   🏷️ {tag}
                   <button type="button" onClick={() => toggleTag(tag)} className="hover:text-destructive"><X className="h-3 w-3" /></button>
@@ -208,16 +200,10 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
               ))}
             </div>
           )}
-          {/* Add custom tag */}
           <div className="flex gap-2">
-            <input
-              type="text"
-              value={customTagInput}
-              onChange={e => setCustomTagInput(e.target.value)}
+            <input type="text" value={customTagInput} onChange={e => setCustomTagInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomTag(); } }}
-              placeholder="תגית מותאמת אישית..."
-              className="input-field text-sm flex-1"
-            />
+              placeholder={t('eventForm.customTag')} className="input-field text-sm flex-1" />
             <button type="button" onClick={addCustomTag} disabled={!customTagInput.trim()} className="btn-secondary px-3 text-sm disabled:opacity-50">
               <Plus className="h-4 w-4" />
             </button>
@@ -225,10 +211,10 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{renderCategoryFields()}</div>
-        <textarea name="notes" placeholder="Notes / Review" value={formData.notes || ''} onChange={handleInputChange} className="input-field" rows={2} />
+        <textarea name="notes" placeholder={t('eventForm.notes')} value={formData.notes || ''} onChange={handleInputChange} className="input-field" rows={2} />
         <div className="flex justify-end space-x-3">
-          <button type="button" onClick={onCancel} className="btn-secondary">Cancel</button>
-          <button type="submit" className="btn-primary">{existingEvent ? 'Update' : 'Add Event'}</button>
+          <button type="button" onClick={onCancel} className="btn-secondary">{t('actions.cancel')}</button>
+          <button type="submit" className="btn-primary">{existingEvent ? t('eventForm.update') : t('eventForm.add')}</button>
         </div>
       </form>
     </div>
