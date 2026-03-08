@@ -195,7 +195,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     return (
       <div className="card-surface p-12 flex flex-col items-center justify-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-muted-foreground text-sm">טוען מפה ומאתר מיקומים...</p>
+        <p className="text-muted-foreground text-sm">{t('map.loadingMapLocations')}</p>
       </div>
     );
   }
