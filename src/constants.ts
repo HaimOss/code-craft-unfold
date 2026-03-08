@@ -1,6 +1,12 @@
 import { Trip, TripStatus, EventCategory, PaymentMethod } from './types';
 
-export const CURRENCIES = ["ILS", "USD", "EUR", "GBP", "JPY", "THB", "CHF"];
+export const CURRENCIES = [
+  "ILS", "USD", "EUR", "GBP", "JPY", "THB", "CHF",
+  "AUD", "CAD", "NZD", "SEK", "NOK", "DKK", "PLN",
+  "CZK", "HUF", "TRY", "KRW", "SGD", "HKD", "MXN",
+  "BRL", "ZAR", "INR", "IDR", "MYR", "PHP", "TWD",
+  "RON", "BGN", "HRK", "ISK", "CNY",
+];
 export const TRIP_STATUSES = Object.values(TripStatus);
 export const EVENT_CATEGORIES = Object.values(EventCategory);
 export const PAYMENT_METHODS = Object.values(PaymentMethod);
