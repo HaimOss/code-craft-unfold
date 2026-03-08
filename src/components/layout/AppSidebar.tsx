@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export type AppView = 'dashboard' | 'trips' | 'stats' | 'notifications' | 'settings';
+export type AppView = 'dashboard' | 'trips' | 'activityBank' | 'stats' | 'notifications' | 'settings';
 
 interface AppSidebarProps {
   activeView: AppView;
