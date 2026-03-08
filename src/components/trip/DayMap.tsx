@@ -6,6 +6,7 @@ import { Event, EventCategory, DailyInfo } from '@/types';
 import { getLocationFromEvent } from '@/utils/helpers';
 import { CATEGORY_ICONS } from '@/constants';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const CATEGORY_COLORS: Record<string, string> = {
   [EventCategory.Flights]: '#0ea5e9',
@@ -83,6 +84,7 @@ interface GeocodedItem {
 }
 
 const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
+  const { t } = useLanguage();
   const [items, setItems] = useState<GeocodedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -129,7 +131,7 @@ const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
     return (
       <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin" />
-        <span className="text-sm">טוען מפה...</span>
+        <span className="text-sm">{t('map.loadingMap')}</span>
       </div>
     );
   }
@@ -137,7 +139,7 @@ const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
   if (items.length === 0) {
     return (
       <div className="text-center py-6 text-muted-foreground text-sm">
-        🗺️ אין מיקומים להציג ליום זה. הוסף מיקומים לפעילויות או הגדר נקודות התחלה/סיום.
+        🗺️ {t('map.noLocationsDayDesc')}
       </div>
     );
   }
@@ -197,7 +199,7 @@ const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
                 <Popup>
                   <div className="text-sm">
                     <div className="font-bold">{item.label}</div>
-                    <div style={{ color: '#6b7280' }}>{item.type === 'start' ? '📍 נקודת התחלה' : '🏁 נקודת סיום'}</div>
+                    <div style={{ color: '#6b7280' }}>{item.type === 'start' ? `📍 ${t('map.startPoint')}` : `🏁 ${t('map.endPoint')}`}</div>
                   </div>
                 </Popup>
               </Marker>

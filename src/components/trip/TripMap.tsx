@@ -6,6 +6,7 @@ import { Trip, Event, EventCategory } from '@/types';
 import { getLocationFromEvent } from '@/utils/helpers';
 import { CATEGORY_ICONS } from '@/constants';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Fix default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -102,6 +103,7 @@ interface TripMapProps {
 }
 
 const TripMap: React.FC<TripMapProps> = ({ trip }) => {
+  const { t } = useLanguage();
   const [geocodedEvents, setGeocodedEvents] = useState<GeocodedEvent[]>([]);
   const [geocodedPoints, setGeocodedPoints] = useState<GeocodedPoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -193,7 +195,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     return (
       <div className="card-surface p-12 flex flex-col items-center justify-center gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-muted-foreground text-sm">טוען מפה ומאתר מיקומים...</p>
+        <p className="text-muted-foreground text-sm">{t('map.loadingMapLocations')}</p>
       </div>
     );
   }
@@ -202,8 +204,8 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     return (
       <div className="card-surface p-12 flex flex-col items-center justify-center text-center">
         <p className="text-4xl mb-4">🗺️</p>
-        <h3 className="text-xl font-bold font-display mb-2">אין מיקומים להציג</h3>
-        <p className="text-muted-foreground text-sm">הוסף כתובות ומיקומים לפעילויות כדי לראות אותן על המפה.</p>
+        <h3 className="text-xl font-bold font-display mb-2">{t('map.noLocations')}</h3>
+        <p className="text-muted-foreground text-sm">{t('map.noLocationsDesc')}</p>
       </div>
     );
   }
@@ -220,7 +222,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
               : 'bg-secondary text-muted-foreground hover:text-foreground'
           }`}
         >
-          כל הימים
+          {t('map.allDays')}
         </button>
         {tripDays.map((day, idx) => {
           const hasEvents = geocodedEvents.some(e => e.dayIndex === idx) || geocodedPoints.some(p => p.dayIndex === idx);
@@ -237,7 +239,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
               }`}
               style={selectedDay === idx ? { backgroundColor: DAY_COLORS[idx % DAY_COLORS.length] } : undefined}
             >
-              יום {idx + 1} · {dayDate.getDate()}/{dayDate.getMonth() + 1}
+              {t('map.dayLabel', { idx: String(idx + 1) })} · {dayDate.getDate()}/{dayDate.getMonth() + 1}
             </button>
           );
         })}
@@ -266,9 +268,9 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
               <Popup>
                 <div className="text-sm min-w-[180px]">
                   <div className="font-bold text-base mb-1">{ge.event.title}</div>
-                  <div className="text-gray-500 mb-1">
-                    יום {ge.dayIndex + 1} · {ge.event.time}
-                  </div>
+                   <div className="text-gray-500 mb-1">
+                     {t('map.dayLabel', { idx: String(ge.dayIndex + 1) })} · {ge.event.time}
+                   </div>
                   {ge.event.notes && (
                     <div className="text-gray-600 text-xs mt-1">{ge.event.notes}</div>
                   )}
@@ -306,8 +308,8 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
                 <div className="text-sm min-w-[150px]">
                   <div className="font-bold text-base mb-1">{pt.label}</div>
                   <div style={{ color: '#6b7280' }}>
-                    {pt.type === 'start' ? '📍 נקודת התחלה' : '🏁 נקודת סיום'} · יום {pt.dayIndex + 1}
-                  </div>
+                     {pt.type === 'start' ? `📍 ${t('map.startPoint')}` : `🏁 ${t('map.endPoint')}`} · {t('map.dayLabel', { idx: String(pt.dayIndex + 1) })}
+                   </div>
                 </div>
               </Popup>
             </Marker>
@@ -318,7 +320,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
 
       {/* Legend */}
       <div className="p-3 border-t border-border flex flex-wrap gap-3 text-xs text-muted-foreground">
-        <span className="font-medium">מקרא:</span>
+        <span className="font-medium">{t('map.legend')}</span>
         {Object.entries(CATEGORY_COLORS).map(([cat, color]) => {
           const hasCategory = filteredEvents.some(e => e.event.category === cat);
           if (!hasCategory) return null;

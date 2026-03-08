@@ -301,6 +301,18 @@ const translations: Record<Language, TranslationTree> = {
       noItinerary: 'אין מסלול עדיין',
       setDates: 'הגדר תאריכי התחלה וסיום תקינים ליצירת מסלול.',
     },
+    map: {
+      loadingMap: 'טוען מפה...',
+      loadingMapLocations: 'טוען מפה ומאתר מיקומים...',
+      noLocations: 'אין מיקומים להציג',
+      noLocationsDesc: 'הוסף כתובות ומיקומים לפעילויות כדי לראות אותן על המפה.',
+      noLocationsDayDesc: 'אין מיקומים להציג ליום זה. הוסף מיקומים לפעילויות או הגדר נקודות התחלה/סיום.',
+      allDays: 'כל הימים',
+      dayLabel: 'יום {idx}',
+      startPoint: 'נקודת התחלה',
+      endPoint: 'נקודת סיום',
+      legend: 'מקרא:',
+    },
   },
   en: {
     app: {
@@ -597,6 +609,18 @@ const translations: Record<Language, TranslationTree> = {
     itinerary: {
       noItinerary: 'No Itinerary Yet',
       setDates: 'Set valid start and end dates to create your itinerary.',
+    },
+    map: {
+      loadingMap: 'Loading map...',
+      loadingMapLocations: 'Loading map and locating places...',
+      noLocations: 'No locations to display',
+      noLocationsDesc: 'Add addresses and locations to activities to see them on the map.',
+      noLocationsDayDesc: 'No locations to display for this day. Add locations to activities or set start/end points.',
+      allDays: 'All days',
+      dayLabel: 'Day {idx}',
+      startPoint: 'Start point',
+      endPoint: 'End point',
+      legend: 'Legend:',
     },
   },
 };
