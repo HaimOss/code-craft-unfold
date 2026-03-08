@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Trip, Event, DailyInfo } from '@/types';
+import jsPDF from 'jspdf';
 import AddEventForm from './AddEventForm';
 import EventCard from './EventCard';
 import ShareModal from '../modals/ShareModal';
@@ -116,34 +117,118 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   };
 
   const handleExportDay = () => {
-    const lines: string[] = [];
-    lines.push(`${trip.name} — Day ${dayNumber} (${date})`);
-    lines.push('='.repeat(40));
-    if (dailyInfo.startPoint) lines.push(`📍 Start: ${dailyInfo.startPoint}`);
-    lines.push('');
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const contentW = pageW - margin * 2;
+    let y = margin;
 
-    dailyEvents.forEach(event => {
+    const addPage = () => { doc.addPage(); y = margin; };
+    const checkPage = (needed: number) => { if (y + needed > 280) addPage(); };
+
+    // Header bar
+    doc.setFillColor(55, 90, 180);
+    doc.rect(0, 0, pageW, 38, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text(trip.name, margin, 16);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Day ${dayNumber}  |  ${date}  |  ${trip.destination || ''}`, margin, 26);
+    const totalStr = dayTotal.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    doc.text(`Total: ${totalStr}`, pageW - margin - doc.getTextWidth(`Total: ${totalStr}`), 26);
+    y = 46;
+
+    // Start point
+    if (dailyInfo.startPoint) {
+      doc.setTextColor(34, 139, 34);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`START: ${dailyInfo.startPoint}`, margin, y);
+      y += 8;
+    }
+
+    // Events
+    dailyEvents.forEach((event, idx) => {
+      checkPage(35);
       const config = CATEGORY_DISPLAY_CONFIG[event.category];
-      lines.push(`${event.time} ${config?.icon || ''} ${event.title}`);
-      lines.push(`   ${CURRENCY_SYMBOLS[event.currency] || ''}${event.amount.toLocaleString()} ${event.currency} (${event.payment_method})`);
+
+      // Event card background
+      doc.setFillColor(248, 248, 252);
+      doc.setDrawColor(220, 220, 230);
+      doc.roundedRect(margin, y, contentW, 28, 3, 3, 'FD');
+
+      // Time
+      doc.setTextColor(100, 100, 120);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(event.time, margin + 4, y + 7);
+
+      // Category
+      doc.setTextColor(55, 90, 180);
+      doc.setFontSize(8);
+      doc.text(config?.name || event.category, margin + 20, y + 7);
+
+      // Title
+      doc.setTextColor(30, 30, 50);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(event.title, margin + 4, y + 15, { maxWidth: contentW - 50 });
+
+      // Amount
+      const amountStr = `${CURRENCY_SYMBOLS[event.currency] || ''}${event.amount.toLocaleString()}`;
+      doc.setTextColor(230, 120, 50);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text(amountStr, pageW - margin - 4 - doc.getTextWidth(amountStr), y + 15);
+
+      // Location / notes line
       const loc = getLocationFromEvent(event);
-      if (loc) lines.push(`   📍 ${loc}`);
-      if (event.notes) lines.push(`   💬 ${event.notes}`);
-      if (event.rating) lines.push(`   ⭐ ${event.rating}/5`);
-      lines.push('');
+      let detailLine = '';
+      if (loc) detailLine += loc;
+      if (event.notes) detailLine += (detailLine ? '  |  ' : '') + event.notes;
+      if (detailLine) {
+        doc.setTextColor(120, 120, 140);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text(detailLine, margin + 4, y + 23, { maxWidth: contentW - 10 });
+      }
+
+      // Rating
+      if (event.rating) {
+        doc.setTextColor(255, 180, 0);
+        doc.setFontSize(8);
+        const stars = '★'.repeat(event.rating) + '☆'.repeat(5 - event.rating);
+        doc.text(stars, pageW - margin - 4 - doc.getTextWidth(stars), y + 23);
+      }
+
+      y += 32;
     });
 
-    if (dailyInfo.endPoint) lines.push(`📍 End: ${dailyInfo.endPoint}`);
-    lines.push('');
-    lines.push(`Day Total: ${dayTotal.toLocaleString(undefined, { style: 'currency', currency: trip.base_currency, minimumFractionDigits: 0, maximumFractionDigits: 0 })}`);
+    // End point
+    if (dailyInfo.endPoint) {
+      checkPage(10);
+      doc.setTextColor(200, 50, 50);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`END: ${dailyInfo.endPoint}`, margin, y);
+      y += 8;
+    }
 
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${trip.name}_Day${dayNumber}_${date}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    // Footer
+    checkPage(15);
+    y += 5;
+    doc.setDrawColor(200, 200, 210);
+    doc.line(margin, y, pageW - margin, y);
+    y += 7;
+    doc.setTextColor(100, 100, 120);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated by WonderJourney`, margin, y);
+    doc.text(new Date().toLocaleDateString(), pageW - margin - doc.getTextWidth(new Date().toLocaleDateString()), y);
+
+    doc.save(`${trip.name}_Day${dayNumber}_${date}.pdf`);
   };
 
   const mapsUrl = getGoogleMapsUrl();
