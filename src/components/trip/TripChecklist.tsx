@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Plus, X, CheckSquare, Square, Star, Trash2, ShoppingBag, ClipboardList, StickyNote, Plane, Filter } from 'lucide-react';
+import { Plus, X, CheckSquare, Square, Star, Trash2, ShoppingBag, ClipboardList, StickyNote, Plane, Filter, Download, Upload } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 interface ChecklistItem {
@@ -130,6 +130,113 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     }
   };
 
+  const exportCSV = () => {
+    const header = 'טקסט,קטגוריה,עדיפות,הושלם';
+    const rows = items.map(item => {
+      const cat = getCategoryConfig(item.category);
+      return `"${item.text.replace(/"/g, '""')}","${cat.label}","${item.priority === 'high' ? 'גבוהה' : 'רגילה'}","${item.is_completed ? 'כן' : 'לא'}"`;
+    });
+    const csv = '\uFEFF' + [header, ...rows].join('\n'); // BOM for Hebrew Excel support
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `checklist_${tripId.slice(0, 8)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: 'הצ\'קליסט יוצא בהצלחה! 📥' });
+  };
+
+  const importCSV = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file || !user) return;
+
+      const text = await file.text();
+      const lines = text.split('\n').filter(l => l.trim());
+      
+      // Skip header row
+      const dataLines = lines.slice(1);
+      if (dataLines.length === 0) {
+        toast({ title: 'הקובץ ריק', variant: 'destructive' });
+        return;
+      }
+
+      const categoryMap: Record<string, string> = {
+        'לפני הטיול': 'before_trip',
+        'קניות': 'shopping',
+        'משימה': 'task',
+        'הערה': 'note',
+        'before_trip': 'before_trip',
+        'shopping': 'shopping',
+        'task': 'task',
+        'note': 'note',
+      };
+
+      const newItems: Array<{
+        trip_id: string;
+        user_id: string;
+        text: string;
+        category: string;
+        priority: string;
+        is_completed: boolean;
+        sort_order: number;
+      }> = [];
+
+      dataLines.forEach((line, idx) => {
+        // Parse CSV line respecting quotes
+        const cols: string[] = [];
+        let current = '';
+        let inQuotes = false;
+        for (const char of line) {
+          if (char === '"') { inQuotes = !inQuotes; continue; }
+          if (char === ',' && !inQuotes) { cols.push(current.trim()); current = ''; continue; }
+          current += char;
+        }
+        cols.push(current.trim());
+
+        const itemText = cols[0];
+        if (!itemText) return;
+
+        const catRaw = cols[1] || '';
+        const category = categoryMap[catRaw] || 'task';
+        const priority = (cols[2] || '').includes('גבוהה') || (cols[2] || '').toLowerCase() === 'high' ? 'high' : 'normal';
+        const isCompleted = (cols[3] || '').includes('כן') || (cols[3] || '').toLowerCase() === 'yes';
+
+        newItems.push({
+          trip_id: tripId,
+          user_id: user.id,
+          text: itemText,
+          category,
+          priority,
+          is_completed: isCompleted,
+          sort_order: items.length + idx,
+        });
+      });
+
+      if (newItems.length === 0) {
+        toast({ title: 'לא נמצאו פריטים בקובץ', variant: 'destructive' });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('checklist_items')
+        .insert(newItems)
+        .select();
+
+      if (error) {
+        toast({ title: 'שגיאה בייבוא', description: error.message, variant: 'destructive' });
+      } else {
+        setItems(prev => [...prev, ...((data as any[]) || [])]);
+        toast({ title: `יובאו ${newItems.length} פריטים בהצלחה! 🎉` });
+      }
+    };
+    input.click();
+  };
+
   if (loading) {
     return (
       <div className="card-surface p-12 flex items-center justify-center">
@@ -138,18 +245,27 @@ const TripChecklist: React.FC<TripChecklistProps> = ({ tripId }) => {
     );
   }
 
+
   return (
     <div className="space-y-4 animate-fade-in">
-      {/* Progress */}
+      {/* Progress + Export/Import */}
       {totalCount > 0 && (
         <div className="card-surface p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-foreground">
               {completedCount}/{totalCount} הושלמו
             </span>
-            <span className="text-xs text-muted-foreground">
-              {totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0}%
-            </span>
+            <div className="flex items-center gap-2">
+              <button onClick={exportCSV} className="btn-ghost flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="ייצוא CSV">
+                <Download className="h-3.5 w-3.5" /> ייצוא
+              </button>
+              <button onClick={importCSV} className="btn-ghost flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" title="ייבוא CSV">
+                <Upload className="h-3.5 w-3.5" /> ייבוא
+              </button>
+              <span className="text-xs text-muted-foreground">
+                {totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0}%
+              </span>
+            </div>
           </div>
           <div className="h-2 bg-secondary rounded-full overflow-hidden">
             <div
