@@ -75,9 +75,14 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
       case EventCategory.Flights:
         return (
           <>
+            <div className="relative"><Plane className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="airline" placeholder="Airline" value={(formData.details as any)?.airline || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><Plane className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="flight_num" placeholder="Flight Number" value={(formData.details as any)?.flight_num || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><Plane className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="dept_airport" placeholder="Departure Airport" value={(formData.details as any)?.dept_airport || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><Plane className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="arr_airport" placeholder="Arrival Airport" value={(formData.details as any)?.arr_airport || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="confirmation_num" placeholder="Confirmation Number" value={(formData.details as any)?.confirmation_num || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="terminal" placeholder="Terminal" value={(formData.details as any)?.terminal || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="gate" placeholder="Gate" value={(formData.details as any)?.gate || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="checkin_link" placeholder="Check-in Link" value={(formData.details as any)?.checkin_link || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
           </>
         );
       case EventCategory.Accommodation:
@@ -86,6 +91,8 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
             <div className="relative"><Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="check_in" type="time" placeholder="Check-in" value={(formData.details as any)?.check_in || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="check_out" type="time" placeholder="Check-out" value={(formData.details as any)?.check_out || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="address" placeholder="Address" value={(formData.details as any)?.address || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="room_type" placeholder="Room Type" value={(formData.details as any)?.room_type || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="confirmation_num" placeholder="Confirmation Number" value={(formData.details as any)?.confirmation_num || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="book_link" placeholder="Booking Link" value={(formData.details as any)?.book_link || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="phone" placeholder="Phone" value={(formData.details as any)?.phone || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
           </>
@@ -93,8 +100,44 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
       case EventCategory.Transport:
         return (
           <>
+            <div className="relative">
+              <Car className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <select name="transport_type" value={(formData.details as any)?.transport_type || ''} onChange={(e) => handleDetailChange(e as any)} className="input-field pl-10">
+                <option value="">Transport Type</option>
+                <option value="rental">🚗 Rental Car</option>
+                <option value="train">🚆 Train</option>
+                <option value="bus">🚌 Bus</option>
+                <option value="taxi">🚕 Taxi / Ride</option>
+                <option value="ferry">⛴️ Ferry</option>
+                <option value="other">📦 Other</option>
+              </select>
+            </div>
             <div className="relative"><Car className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="pickup_point" placeholder="Pick-up Point" value={(formData.details as any)?.pickup_point || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="dropoff_point" placeholder="Drop-off Point" value={(formData.details as any)?.dropoff_point || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="company" placeholder="Company" value={(formData.details as any)?.company || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="confirmation_num" placeholder="Confirmation Number" value={(formData.details as any)?.confirmation_num || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="book_link" placeholder="Booking Link" value={(formData.details as any)?.book_link || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+          </>
+        );
+      case EventCategory.Activity:
+        return (
+          <>
+            <div className="relative"><MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="address" placeholder="Address" value={(formData.details as any)?.address || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="location" placeholder="Location / Area" value={(formData.details as any)?.location || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="opening_hours" placeholder="Opening Hours" value={(formData.details as any)?.opening_hours || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="book_link" placeholder="Booking Link" value={(formData.details as any)?.book_link || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="confirmation_num" placeholder="Confirmation Number" value={(formData.details as any)?.confirmation_num || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="phone" placeholder="Phone" value={(formData.details as any)?.phone || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="website" placeholder="Website" value={(formData.details as any)?.website || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+          </>
+        );
+      case EventCategory.Shopping:
+        return (
+          <>
+            <div className="relative"><MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="address" placeholder="Address" value={(formData.details as any)?.address || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="opening_hours" placeholder="Opening Hours" value={(formData.details as any)?.opening_hours || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="website" placeholder="Website" value={(formData.details as any)?.website || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="customs_note" placeholder="Customs / Returns Note" value={(formData.details as any)?.customs_note || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
           </>
         );
       default:

@@ -247,7 +247,7 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips, onUpdateTrip, 
                 {/* Expanded details */}
                 {isExpanded && (
                   <div className="px-4 pb-4 border-t border-border pt-3 space-y-3 animate-fade-in">
-                    {/* Details grid */}
+                    {/* Category-specific details */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                       {location && (
                         <div className="flex items-center gap-2 text-muted-foreground">
@@ -269,26 +269,43 @@ const ActivityArchive: React.FC<ActivityArchiveProps> = ({ trips, onUpdateTrip, 
                           <span>{event.tripDestination}</span>
                         </div>
                       )}
-                      {details?.flight_num && (
+                      {/* Flight-specific */}
+                      {details?.airline && <div className="flex items-center gap-2 text-muted-foreground">✈️ {details.airline}</div>}
+                      {details?.flight_num && <div className="flex items-center gap-2 text-muted-foreground">✈️ טיסה: {details.flight_num}</div>}
+                      {details?.terminal && <div className="flex items-center gap-2 text-muted-foreground">🏢 Terminal {details.terminal}{details?.gate ? ` · Gate ${details.gate}` : ''}</div>}
+                      {/* Accommodation-specific */}
+                      {details?.room_type && <div className="flex items-center gap-2 text-muted-foreground">🛏️ {details.room_type}</div>}
+                      {details?.check_in && <div className="flex items-center gap-2 text-muted-foreground">🔑 Check-in: {details.check_in}{details?.check_out ? ` · Check-out: ${details.check_out}` : ''}</div>}
+                      {/* Transport-specific */}
+                      {details?.transport_type && (
                         <div className="flex items-center gap-2 text-muted-foreground">
-                          <span>✈️ טיסה: {details.flight_num}</span>
+                          🚗 {({ rental: 'Rental Car', train: 'Train', bus: 'Bus', taxi: 'Taxi', ferry: 'Ferry', other: 'Other' } as Record<string, string>)[details.transport_type] || details.transport_type}
                         </div>
+                      )}
+                      {details?.company && <div className="flex items-center gap-2 text-muted-foreground">🏢 {details.company}</div>}
+                      {/* Common optional fields */}
+                      {details?.confirmation_num && <div className="flex items-center gap-2 text-muted-foreground">📋 {details.confirmation_num}</div>}
+                      {details?.opening_hours && <div className="flex items-center gap-2 text-muted-foreground">🕐 {details.opening_hours}</div>}
+                      {details?.customs_note && <div className="flex items-center gap-2 text-muted-foreground">📦 {details.customs_note}</div>}
+                      {/* Links */}
+                      {details?.checkin_link && (
+                        <a href={details.checkin_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                          <ExternalLink className="h-4 w-4 shrink-0" /> Check-in
+                        </a>
                       )}
                       {details?.book_link && (
                         <a href={details.book_link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
-                          <ExternalLink className="h-4 w-4 shrink-0" />
-                          <span>קישור הזמנה</span>
+                          <ExternalLink className="h-4 w-4 shrink-0" /> קישור הזמנה
                         </a>
                       )}
                       {details?.website && (
                         <a href={details.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
-                          <ExternalLink className="h-4 w-4 shrink-0" />
-                          <span>אתר</span>
+                          <ExternalLink className="h-4 w-4 shrink-0" /> אתר
                         </a>
                       )}
                       {details?.phone && (
                         <a href={`tel:${details.phone}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
-                          <span>📞 {details.phone}</span>
+                          📞 {details.phone}
                         </a>
                       )}
                     </div>
