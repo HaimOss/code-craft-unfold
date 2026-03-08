@@ -177,7 +177,14 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     ? geocodedEvents.filter(e => e.dayIndex === selectedDay)
     : geocodedEvents;
 
-  const positions: [number, number][] = filteredEvents.map(e => [e.lat, e.lng]);
+  const filteredPoints = selectedDay !== null
+    ? geocodedPoints.filter(p => p.dayIndex === selectedDay)
+    : geocodedPoints;
+
+  const positions: [number, number][] = [
+    ...filteredEvents.map(e => [e.lat, e.lng] as [number, number]),
+    ...filteredPoints.map(p => [p.lat, p.lng] as [number, number]),
+  ];
 
   // Group events by day for polylines
   const dayRoutes = useMemo(() => {
@@ -215,7 +222,7 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     );
   }
 
-  if (geocodedEvents.length === 0) {
+  if (geocodedEvents.length === 0 && geocodedPoints.length === 0) {
     return (
       <div className="card-surface p-12 flex flex-col items-center justify-center text-center">
         <p className="text-4xl mb-4">🗺️</p>
