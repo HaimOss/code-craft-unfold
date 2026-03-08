@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Trip, Event, User } from '@/types';
 import TripCard from './TripCard';
 import AddTripModal from '../modals/AddTripModal';
-import { Plus, LogOut, User as UserIcon, Compass, Archive, Briefcase } from 'lucide-react';
+import ActivityArchive from './ActivityArchive';
+import { Plus, LogOut, Compass, Archive } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface TripDashboardProps {
   trips: Trip[];
@@ -38,22 +40,39 @@ const TripDashboard: React.FC<TripDashboardProps> = ({
         </div>
       </header>
 
-      {trips.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-6xl mb-4">🌍</p>
-          <h2 className="text-2xl font-bold font-display mb-2">No Trips Yet</h2>
-          <p className="text-muted-foreground mb-6">Start planning your next adventure!</p>
-          <button onClick={() => setIsAddTripModalOpen(true)} className="btn-primary flex items-center gap-2">
-            <Plus className="h-4 w-4" /> Create Your First Trip
-          </button>
-        </div>
-      ) : (
-        <main className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {trips.map(trip => (
-            <TripCard key={trip.id} trip={trip} onSelectTrip={onSelectTrip} />
-          ))}
-        </main>
-      )}
+      <Tabs defaultValue="trips" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="trips" className="flex items-center gap-2">
+            <Compass className="h-4 w-4" /> טיולים
+          </TabsTrigger>
+          <TabsTrigger value="archive" className="flex items-center gap-2">
+            <Archive className="h-4 w-4" /> ארכיון פעילויות
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="trips">
+          {trips.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <p className="text-6xl mb-4">🌍</p>
+              <h2 className="text-2xl font-bold font-display mb-2">No Trips Yet</h2>
+              <p className="text-muted-foreground mb-6">Start planning your next adventure!</p>
+              <button onClick={() => setIsAddTripModalOpen(true)} className="btn-primary flex items-center gap-2">
+                <Plus className="h-4 w-4" /> Create Your First Trip
+              </button>
+            </div>
+          ) : (
+            <main className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {trips.map(trip => (
+                <TripCard key={trip.id} trip={trip} onSelectTrip={onSelectTrip} />
+              ))}
+            </main>
+          )}
+        </TabsContent>
+
+        <TabsContent value="archive">
+          <ActivityArchive trips={trips} />
+        </TabsContent>
+      </Tabs>
 
       <AddTripModal isOpen={isAddTripModalOpen} onClose={() => setIsAddTripModalOpen(false)} onAddTrip={onAddTrip} />
     </div>
