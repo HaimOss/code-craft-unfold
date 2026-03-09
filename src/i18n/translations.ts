@@ -96,6 +96,8 @@ const translations: Record<Language, TranslationTree> = {
       importActivity: 'ייבוא פעילות',
       addToFavorites: 'הוסף למועדפים',
       removeFromFavorites: 'הסר מהמועדפים',
+      saveToBank: 'שמור לבנק',
+      savedToBank: 'הפעילות נשמרה לבנק בהצלחה',
     },
     auth: {
       welcome: 'ברוך הבא!',
