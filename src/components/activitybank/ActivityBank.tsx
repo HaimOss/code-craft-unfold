@@ -40,6 +40,7 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
   const { user } = useAuth();
   const { t, dir } = useLanguage();
   const [activities, setActivities] = useState<SavedActivity[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -88,6 +89,12 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
 
   useEffect(() => { loadActivities(); loadReceivedShares(); }, [user]);
 
+  const countries = useMemo(() => {
+    const set = new Set<string>();
+    activities.forEach(a => { if (a.country?.trim()) set.add(a.country.trim()); });
+    return [...set].sort();
+  }, [activities]);
+
   const filtered = useMemo(() => {
     let list = activities;
     if (search) {
@@ -97,8 +104,11 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
     if (selectedCategory) {
       list = list.filter(a => a.category === selectedCategory);
     }
+    if (selectedCountry) {
+      list = list.filter(a => a.country?.trim() === selectedCountry);
+    }
     return list;
-  }, [activities, search, selectedCategory]);
+  }, [activities, search, selectedCategory, selectedCountry]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -240,6 +250,18 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
             );
           })}
         </div>
+        {countries.length > 0 && (
+          <select
+            value={selectedCountry || ''}
+            onChange={e => setSelectedCountry(e.target.value || null)}
+            className="rounded-md border border-input bg-background px-3 py-1.5 text-sm h-9"
+          >
+            <option value="">{t('eventForm.allLocations')}</option>
+            {countries.map(c => (
+              <option key={c} value={c}>🌍 {c}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Activity list */}
