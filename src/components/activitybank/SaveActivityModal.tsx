@@ -50,16 +50,18 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
+    const locationVal = form.location.trim() || undefined;
     onSave({
       title: form.title.trim(),
       category: form.category,
-      location: form.location.trim() || undefined,
+      location: locationVal,
       country: form.country.trim() || undefined,
       estimated_cost: form.estimated_cost ? Number(form.estimated_cost) : undefined,
       currency: form.currency,
       source_url: form.source_url.trim() || undefined,
       notes: form.notes.trim() || undefined,
       tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+      details: { address: locationVal, location: locationVal },
     } as any);
   };
 

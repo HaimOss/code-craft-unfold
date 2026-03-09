@@ -48,6 +48,7 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
         ...(prev.details || {}),
         ...(activity.details || {}),
         location: activity.location || (prev.details as any)?.location,
+        address: activity.location || (prev.details as any)?.address,
       },
     }));
   };
