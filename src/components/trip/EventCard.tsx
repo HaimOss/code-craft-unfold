@@ -12,6 +12,7 @@ interface EventCardProps {
   onDelete: () => void;
   onShare: () => void;
   onToggleFavorite?: () => void;
+  onSaveToBank?: () => void;
 }
 
 const renderDetails = (category: EventCategory, details: Event['details'], t: (key: string) => string, isRTL: boolean) => {
