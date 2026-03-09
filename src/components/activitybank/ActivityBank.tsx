@@ -20,6 +20,7 @@ export interface SavedActivity {
   title: string;
   category: string;
   location?: string;
+  country?: string;
   details?: any;
   notes?: string;
   tags?: string[];
