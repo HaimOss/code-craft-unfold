@@ -40,6 +40,7 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
   const { user } = useAuth();
   const { t, dir } = useLanguage();
   const [activities, setActivities] = useState<SavedActivity[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
