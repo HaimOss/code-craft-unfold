@@ -124,7 +124,7 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
             onChange={e => setSelectedLocation(e.target.value)}
             className="rounded-md border border-input bg-background px-3 py-1.5 text-xs"
           >
-            <option value="">{t('eventForm.allLocations')}</option>
+            <option value="">{t('eventForm.allCountries')}</option>
             {countries.map(c => (
               <option key={c} value={c}>🌍 {c}</option>
             ))}

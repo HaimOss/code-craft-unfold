@@ -256,7 +256,7 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
             onChange={e => setSelectedCountry(e.target.value || null)}
             className="rounded-md border border-input bg-background px-3 py-1.5 text-sm h-9"
           >
-            <option value="">{t('eventForm.allLocations')}</option>
+            <option value="">{t('eventForm.allCountries')}</option>
             {countries.map(c => (
               <option key={c} value={c}>🌍 {c}</option>
             ))}
