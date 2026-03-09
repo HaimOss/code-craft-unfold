@@ -696,6 +696,9 @@ const translations: Record<Language, TranslationTree> = {
       tags: 'Tags',
       customTag: 'Custom tag...',
       noRating: 'No rating',
+      importFromBank: 'Import from Bank',
+      searchBank: 'Search activity bank...',
+      noBankActivities: 'No saved activities in the bank',
     },
     itinerary: {
       noItinerary: 'No Itinerary Yet',

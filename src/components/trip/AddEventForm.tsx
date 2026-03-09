@@ -170,7 +170,16 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
 
   return (
     <div className="card-surface p-6 animate-fade-in">
-      <h2 className="text-2xl font-bold font-display mb-4">{existingEvent ? t('eventForm.editEvent') : t('eventForm.addEvent')}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold font-display">{existingEvent ? t('eventForm.editEvent') : t('eventForm.addEvent')}</h2>
+        {!existingEvent && (
+          <button type="button" onClick={() => setShowBankModal(true)} className="btn-secondary flex items-center gap-1.5 text-sm">
+            <BookmarkPlus className="h-4 w-4" />
+            {t('eventForm.importFromBank')}
+          </button>
+        )}
+      </div>
+      <ImportFromBankModal open={showBankModal} onClose={() => setShowBankModal(false)} onSelect={handleImportFromBank} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative"><FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="title" placeholder={t('eventForm.title')} value={formData.title || ''} onChange={handleInputChange} required className="input-field pl-10" /></div>
