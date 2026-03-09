@@ -3,8 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Search, MapPin, DollarSign, Tag } from 'lucide-react';
-import { CATEGORY_ICONS } from '@/constants';
+import { Search, MapPin, DollarSign, Tag, Filter, X } from 'lucide-react';
+import { CATEGORY_ICONS, EVENT_CATEGORIES } from '@/constants';
 
 interface SavedActivity {
   id: string;
@@ -26,13 +26,18 @@ interface ImportFromBankModalProps {
 }
 
 const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose, onSelect }) => {
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const [activities, setActivities] = useState<SavedActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
 
   useEffect(() => {
     if (!open) return;
+    setSearch('');
+    setSelectedCategory('');
+    setSelectedLocation('');
     const load = async () => {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
@@ -48,15 +53,33 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
     load();
   }, [open]);
 
+  // Extract unique locations for the filter
+  const locations = useMemo(() => {
+    const locs = activities
+      .map(a => a.location)
+      .filter((l): l is string => !!l && l.trim() !== '');
+    return [...new Set(locs)].sort();
+  }, [activities]);
+
   const filtered = useMemo(() => {
-    if (!search.trim()) return activities;
-    const q = search.toLowerCase();
-    return activities.filter(a =>
-      a.title.toLowerCase().includes(q) ||
-      a.location?.toLowerCase().includes(q) ||
-      a.category.toLowerCase().includes(q)
-    );
-  }, [activities, search]);
+    return activities.filter(a => {
+      // Text search
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        const matchesSearch = a.title.toLowerCase().includes(q) ||
+          a.location?.toLowerCase().includes(q) ||
+          a.category.toLowerCase().includes(q);
+        if (!matchesSearch) return false;
+      }
+      // Category filter
+      if (selectedCategory && a.category !== selectedCategory) return false;
+      // Location filter
+      if (selectedLocation && a.location !== selectedLocation) return false;
+      return true;
+    });
+  }, [activities, search, selectedCategory, selectedLocation]);
+
+  const hasActiveFilters = selectedCategory || selectedLocation;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -65,17 +88,56 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
           <DialogTitle>{t('eventForm.importFromBank')}</DialogTitle>
         </DialogHeader>
 
+        {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-3 h-4 w-4 text-muted-foreground`} />
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder={t('eventForm.searchBank')}
-            className="input-field pl-10 w-full"
+            className={`input-field w-full ${isRTL ? 'pr-10' : 'pl-10'}`}
           />
         </div>
 
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2">
+          {/* Category filter */}
+          <select
+            value={selectedCategory}
+            onChange={e => setSelectedCategory(e.target.value)}
+            className="rounded-md border border-input bg-background px-3 py-1.5 text-xs"
+          >
+            <option value="">{t('eventForm.allCategories')}</option>
+            {EVENT_CATEGORIES.map(cat => (
+              <option key={cat} value={cat}>{(CATEGORY_ICONS as any)[cat] || '📌'} {cat}</option>
+            ))}
+          </select>
+
+          {/* Location filter */}
+          <select
+            value={selectedLocation}
+            onChange={e => setSelectedLocation(e.target.value)}
+            className="rounded-md border border-input bg-background px-3 py-1.5 text-xs"
+          >
+            <option value="">{t('eventForm.allLocations')}</option>
+            {locations.map(loc => (
+              <option key={loc} value={loc}>📍 {loc}</option>
+            ))}
+          </select>
+
+          {/* Clear filters */}
+          {hasActiveFilters && (
+            <button
+              onClick={() => { setSelectedCategory(''); setSelectedLocation(''); }}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5"
+            >
+              <X className="h-3 w-3" /> {t('eventForm.clearFilters')}
+            </button>
+          )}
+        </div>
+
+        {/* Results */}
         <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
           {loading ? (
             <p className="text-center text-muted-foreground py-8">{t('app.loading')}</p>

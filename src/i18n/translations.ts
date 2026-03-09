@@ -320,6 +320,9 @@ const translations: Record<Language, TranslationTree> = {
       importFromBank: 'ייבא מהבנק',
       searchBank: 'חפש פעילות בבנק...',
       noBankActivities: 'אין פעילויות שמורות בבנק',
+      allCategories: 'כל הקטגוריות',
+      allLocations: 'כל המיקומים',
+      clearFilters: 'נקה סינון',
     },
     itinerary: {
       noItinerary: 'אין מסלול עדיין',
@@ -703,6 +706,9 @@ const translations: Record<Language, TranslationTree> = {
       importFromBank: 'Import from Bank',
       searchBank: 'Search activity bank...',
       noBankActivities: 'No saved activities in the bank',
+      allCategories: 'All categories',
+      allLocations: 'All locations',
+      clearFilters: 'Clear filters',
     },
     itinerary: {
       noItinerary: 'No Itinerary Yet',
