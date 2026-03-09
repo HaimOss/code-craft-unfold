@@ -53,12 +53,17 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
     load();
   }, [open]);
 
-  // Extract unique locations for the filter
-  const locations = useMemo(() => {
-    const locs = activities
-      .map(a => a.location)
-      .filter((l): l is string => !!l && l.trim() !== '');
-    return [...new Set(locs)].sort();
+  // Extract unique countries from locations (last part after comma, or full string)
+  const countries = useMemo(() => {
+    const countrySet = new Set<string>();
+    activities.forEach(a => {
+      if (a.location?.trim()) {
+        const parts = a.location.split(',').map(p => p.trim());
+        const country = parts[parts.length - 1];
+        if (country) countrySet.add(country);
+      }
+    });
+    return [...countrySet].sort();
   }, [activities]);
 
   const filtered = useMemo(() => {
