@@ -479,6 +479,8 @@ const translations: Record<Language, TranslationTree> = {
       importActivity: 'Import Activity',
       addToFavorites: 'Add to favorites',
       removeFromFavorites: 'Remove from favorites',
+      saveToBank: 'Save to Bank',
+      savedToBank: 'Activity saved to bank successfully',
     },
     auth: {
       welcome: 'Welcome!',

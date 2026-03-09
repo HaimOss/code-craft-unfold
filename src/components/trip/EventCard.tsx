@@ -192,6 +192,9 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare,
             </button>
           )}
           <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+            {onSaveToBank && (
+              <button onClick={(e) => { e.stopPropagation(); onSaveToBank(); }} className="btn-ghost p-1.5" title={t('actions.saveToBank')}><BookmarkPlus className="h-3.5 w-3.5" /></button>
+            )}
             <button onClick={(e) => { e.stopPropagation(); onShare(); }} className="btn-ghost p-1.5" title={t('actions.share')}><Share2 className="h-3.5 w-3.5" /></button>
             <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="btn-ghost p-1.5" title={t('actions.edit')}><Pencil className="h-3.5 w-3.5" /></button>
             <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="btn-ghost p-1.5 hover:text-destructive" title={t('actions.delete')}><Trash2 className="h-3.5 w-3.5" /></button>
