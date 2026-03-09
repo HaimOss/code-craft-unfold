@@ -140,8 +140,7 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
       case EventCategory.Activity:
         return (
           <>
-            <div className="relative"><MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="address" placeholder="Address" value={(formData.details as any)?.address || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
-            <div className="relative"><MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="location" placeholder="Location / Area" value={(formData.details as any)?.location || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
+            <div className="relative"><MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="address" placeholder="Address / Location" value={(formData.details as any)?.address || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="opening_hours" placeholder="Opening Hours" value={(formData.details as any)?.opening_hours || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><Globe className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="book_link" placeholder="Booking Link" value={(formData.details as any)?.book_link || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
             <div className="relative"><FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="confirmation_num" placeholder="Confirmation Number" value={(formData.details as any)?.confirmation_num || ''} onChange={handleDetailChange} className="input-field pl-10" /></div>
