@@ -321,7 +321,7 @@ const translations: Record<Language, TranslationTree> = {
       searchBank: 'חפש פעילות בבנק...',
       noBankActivities: 'אין פעילויות שמורות בבנק',
       allCategories: 'כל הקטגוריות',
-      allLocations: 'כל המיקומים',
+      allCountries: 'כל המדינות',
       clearFilters: 'נקה סינון',
     },
     itinerary: {
