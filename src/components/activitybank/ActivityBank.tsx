@@ -148,6 +148,7 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
         title: activity.title,
         category: activity.category,
         location: activity.location,
+        country: activity.country,
         details: activity.details,
         notes: activity.notes,
         tags: activity.tags,
