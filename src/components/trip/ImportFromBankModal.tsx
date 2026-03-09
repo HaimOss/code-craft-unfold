@@ -78,8 +78,12 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
       }
       // Category filter
       if (selectedCategory && a.category !== selectedCategory) return false;
-      // Location filter
-      if (selectedLocation && a.location !== selectedLocation) return false;
+      // Country filter
+      if (selectedLocation) {
+        const parts = a.location?.split(',').map(p => p.trim()) || [];
+        const country = parts[parts.length - 1] || '';
+        if (country !== selectedLocation) return false;
+      }
       return true;
     });
   }, [activities, search, selectedCategory, selectedLocation]);
