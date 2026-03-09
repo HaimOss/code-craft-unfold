@@ -355,6 +355,7 @@ const translations: Record<Language, TranslationTree> = {
       activityName: 'שם הפעילות',
       category: 'קטגוריה',
       location: 'מיקום',
+      country: 'מדינה',
       estimatedCost: 'עלות משוערת',
       currency: 'מטבע',
       sourceUrl: 'קישור למקור',
