@@ -3,8 +3,9 @@ import { Trip, Event, EventCategory, PaymentMethod } from '@/types';
 import { EVENT_CATEGORIES, PAYMENT_METHODS, PRESET_TAGS } from '@/constants';
 import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { generateId } from '@/utils/helpers';
-import { Calendar, Clock, DollarSign, CreditCard, Star, FileText, MapPin, Phone, Globe, Plane, Building, Car, X, Plus, Tag, ShoppingBag, Ticket, ExternalLink } from 'lucide-react';
+import { Calendar, Clock, DollarSign, CreditCard, Star, FileText, MapPin, Phone, Globe, Plane, Building, Car, X, Plus, Tag, ShoppingBag, Ticket, ExternalLink, BookmarkPlus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ImportFromBankModal from './ImportFromBankModal';
 
 interface AddEventFormProps {
   trip: Trip;
