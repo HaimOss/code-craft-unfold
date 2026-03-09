@@ -708,7 +708,7 @@ const translations: Record<Language, TranslationTree> = {
       searchBank: 'Search activity bank...',
       noBankActivities: 'No saved activities in the bank',
       allCategories: 'All categories',
-      allLocations: 'All locations',
+      allCountries: 'All countries',
       clearFilters: 'Clear filters',
     },
     itinerary: {
