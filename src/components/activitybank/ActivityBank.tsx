@@ -89,6 +89,12 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
 
   useEffect(() => { loadActivities(); loadReceivedShares(); }, [user]);
 
+  const countries = useMemo(() => {
+    const set = new Set<string>();
+    activities.forEach(a => { if (a.country?.trim()) set.add(a.country.trim()); });
+    return [...set].sort();
+  }, [activities]);
+
   const filtered = useMemo(() => {
     let list = activities;
     if (search) {
@@ -98,8 +104,11 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
     if (selectedCategory) {
       list = list.filter(a => a.category === selectedCategory);
     }
+    if (selectedCountry) {
+      list = list.filter(a => a.country?.trim() === selectedCountry);
+    }
     return list;
-  }, [activities, search, selectedCategory]);
+  }, [activities, search, selectedCategory, selectedCountry]);
 
   const handleDelete = async (id: string) => {
     try {
