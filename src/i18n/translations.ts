@@ -315,6 +315,9 @@ const translations: Record<Language, TranslationTree> = {
       tags: 'תגיות',
       customTag: 'תגית מותאמת אישית...',
       noRating: 'ללא דירוג',
+      importFromBank: 'ייבא מהבנק',
+      searchBank: 'חפש פעילות בבנק...',
+      noBankActivities: 'אין פעילויות שמורות בבנק',
     },
     itinerary: {
       noItinerary: 'אין מסלול עדיין',
