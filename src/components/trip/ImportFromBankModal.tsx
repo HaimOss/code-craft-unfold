@@ -53,12 +53,17 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
     load();
   }, [open]);
 
-  // Extract unique locations for the filter
-  const locations = useMemo(() => {
-    const locs = activities
-      .map(a => a.location)
-      .filter((l): l is string => !!l && l.trim() !== '');
-    return [...new Set(locs)].sort();
+  // Extract unique countries from locations (last part after comma, or full string)
+  const countries = useMemo(() => {
+    const countrySet = new Set<string>();
+    activities.forEach(a => {
+      if (a.location?.trim()) {
+        const parts = a.location.split(',').map(p => p.trim());
+        const country = parts[parts.length - 1];
+        if (country) countrySet.add(country);
+      }
+    });
+    return [...countrySet].sort();
   }, [activities]);
 
   const filtered = useMemo(() => {
@@ -73,8 +78,12 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
       }
       // Category filter
       if (selectedCategory && a.category !== selectedCategory) return false;
-      // Location filter
-      if (selectedLocation && a.location !== selectedLocation) return false;
+      // Country filter
+      if (selectedLocation) {
+        const parts = a.location?.split(',').map(p => p.trim()) || [];
+        const country = parts[parts.length - 1] || '';
+        if (country !== selectedLocation) return false;
+      }
       return true;
     });
   }, [activities, search, selectedCategory, selectedLocation]);
@@ -121,8 +130,8 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
             className="rounded-md border border-input bg-background px-3 py-1.5 text-xs"
           >
             <option value="">{t('eventForm.allLocations')}</option>
-            {locations.map(loc => (
-              <option key={loc} value={loc}>📍 {loc}</option>
+            {countries.map(c => (
+              <option key={c} value={c}>🌍 {c}</option>
             ))}
           </select>
 
