@@ -90,7 +90,12 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
 
           <div>
             <Label>{t('activityBank.location')}</Label>
-            <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="📍" />
+            <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="📍 עיר / כתובת" />
+          </div>
+
+          <div>
+            <Label>{t('activityBank.country')}</Label>
+            <Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="🌍 איטליה, יפן..." />
           </div>
 
           <div className="flex gap-2">
