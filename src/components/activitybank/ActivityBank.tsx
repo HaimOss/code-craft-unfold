@@ -290,10 +290,10 @@ const ActivityBank: React.FC<ActivityBankProps> = ({ trips, onUpdateTrip }) => {
                     </div>
                   </div>
 
-                  {activity.location && (
+                  {(activity.location || activity.country) && (
                     <div className="flex items-center gap-1 text-muted-foreground text-xs mb-2">
                       <MapPin className="h-3 w-3" />
-                      <span>{activity.location}</span>
+                      <span>{[activity.location, activity.country].filter(Boolean).join(', ')}</span>
                     </div>
                   )}
 

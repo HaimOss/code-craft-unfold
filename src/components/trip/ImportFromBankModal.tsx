@@ -90,6 +90,7 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{t('eventForm.importFromBank')}</DialogTitle>
+          <DialogDescription className="sr-only">{t('eventForm.searchBank')}</DialogDescription>
         </DialogHeader>
 
         {/* Search */}
