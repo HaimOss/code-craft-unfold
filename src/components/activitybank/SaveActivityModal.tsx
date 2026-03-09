@@ -35,6 +35,7 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
         title: existingActivity.title,
         category: existingActivity.category,
         location: existingActivity.location || '',
+        country: (existingActivity as any).country || '',
         estimated_cost: existingActivity.estimated_cost?.toString() || '',
         currency: existingActivity.currency || 'ILS',
         source_url: existingActivity.source_url || '',
@@ -42,7 +43,7 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
         tags: existingActivity.tags?.join(', ') || '',
       });
     } else {
-      setForm({ title: '', category: EVENT_CATEGORIES[3], location: '', estimated_cost: '', currency: 'ILS', source_url: '', notes: '', tags: '' });
+      setForm({ title: '', category: EVENT_CATEGORIES[3], location: '', country: '', estimated_cost: '', currency: 'ILS', source_url: '', notes: '', tags: '' });
     }
   }, [existingActivity, isOpen]);
 
