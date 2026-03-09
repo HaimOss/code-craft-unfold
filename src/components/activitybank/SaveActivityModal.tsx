@@ -68,6 +68,7 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
       <DialogContent className="max-w-md" dir={dir}>
         <DialogHeader>
           <DialogTitle>{existingActivity ? t('activityBank.edit') : t('activityBank.add')}</DialogTitle>
+          <DialogDescription className="sr-only">{t('activityBank.description')}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
