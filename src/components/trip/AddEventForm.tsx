@@ -33,6 +33,24 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
   });
 
   const [customTagInput, setCustomTagInput] = useState('');
+  const [showBankModal, setShowBankModal] = useState(false);
+
+  const handleImportFromBank = (activity: any) => {
+    setFormData(prev => ({
+      ...prev,
+      title: activity.title || prev.title,
+      category: activity.category || prev.category,
+      amount: activity.estimated_cost || 0,
+      currency: activity.currency || prev.currency,
+      notes: activity.notes || prev.notes,
+      tags: activity.tags || prev.tags,
+      details: {
+        ...(prev.details || {}),
+        ...(activity.details || {}),
+        location: activity.location || (prev.details as any)?.location,
+      },
+    }));
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
