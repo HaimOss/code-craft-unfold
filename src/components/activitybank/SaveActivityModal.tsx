@@ -54,12 +54,13 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
       title: form.title.trim(),
       category: form.category,
       location: form.location.trim() || undefined,
+      country: form.country.trim() || undefined,
       estimated_cost: form.estimated_cost ? Number(form.estimated_cost) : undefined,
       currency: form.currency,
       source_url: form.source_url.trim() || undefined,
       notes: form.notes.trim() || undefined,
       tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-    });
+    } as any);
   };
 
   return (
