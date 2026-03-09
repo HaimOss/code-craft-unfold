@@ -11,6 +11,7 @@ interface SavedActivity {
   title: string;
   category: string;
   location: string | null;
+  country: string | null;
   estimated_cost: number | null;
   currency: string | null;
   notes: string | null;
