@@ -121,7 +121,7 @@ const getTagEmoji = (tag: string) => {
   return preset?.emoji || '🏷️';
 };
 
-const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare, onToggleFavorite }) => {
+const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare, onToggleFavorite, onSaveToBank }) => {
   const { t, isRTL } = useLanguage();
   const categoryIcon = CATEGORY_ICONS[event.category] || '📌';
 
