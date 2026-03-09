@@ -11,6 +11,7 @@ interface SavedActivity {
   title: string;
   category: string;
   location: string | null;
+  country: string | null;
   estimated_cost: number | null;
   currency: string | null;
   notes: string | null;
@@ -53,14 +54,12 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
     load();
   }, [open]);
 
-  // Extract unique countries from locations (last part after comma, or full string)
+  // Extract unique countries for the filter
   const countries = useMemo(() => {
     const countrySet = new Set<string>();
     activities.forEach(a => {
-      if (a.location?.trim()) {
-        const parts = a.location.split(',').map(p => p.trim());
-        const country = parts[parts.length - 1];
-        if (country) countrySet.add(country);
+      if (a.country?.trim()) {
+        countrySet.add(a.country.trim());
       }
     });
     return [...countrySet].sort();
@@ -79,11 +78,7 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
       // Category filter
       if (selectedCategory && a.category !== selectedCategory) return false;
       // Country filter
-      if (selectedLocation) {
-        const parts = a.location?.split(',').map(p => p.trim()) || [];
-        const country = parts[parts.length - 1] || '';
-        if (country !== selectedLocation) return false;
-      }
+      if (selectedLocation && a.country?.trim() !== selectedLocation) return false;
       return true;
     });
   }, [activities, search, selectedCategory, selectedLocation]);

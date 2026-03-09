@@ -278,6 +278,7 @@ export type Database = {
       saved_activities: {
         Row: {
           category: string
+          country: string | null
           created_at: string | null
           currency: string | null
           details: Json | null
@@ -293,6 +294,7 @@ export type Database = {
         }
         Insert: {
           category: string
+          country?: string | null
           created_at?: string | null
           currency?: string | null
           details?: Json | null
@@ -308,6 +310,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          country?: string | null
           created_at?: string | null
           currency?: string | null
           details?: Json | null

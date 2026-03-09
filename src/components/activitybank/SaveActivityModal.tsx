@@ -21,6 +21,7 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
     title: '',
     category: EVENT_CATEGORIES[3] as string,
     location: '',
+    country: '',
     estimated_cost: '',
     currency: 'ILS',
     source_url: '',
@@ -34,6 +35,7 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
         title: existingActivity.title,
         category: existingActivity.category,
         location: existingActivity.location || '',
+        country: (existingActivity as any).country || '',
         estimated_cost: existingActivity.estimated_cost?.toString() || '',
         currency: existingActivity.currency || 'ILS',
         source_url: existingActivity.source_url || '',
@@ -41,7 +43,7 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
         tags: existingActivity.tags?.join(', ') || '',
       });
     } else {
-      setForm({ title: '', category: EVENT_CATEGORIES[3], location: '', estimated_cost: '', currency: 'ILS', source_url: '', notes: '', tags: '' });
+      setForm({ title: '', category: EVENT_CATEGORIES[3], location: '', country: '', estimated_cost: '', currency: 'ILS', source_url: '', notes: '', tags: '' });
     }
   }, [existingActivity, isOpen]);
 
@@ -52,12 +54,13 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
       title: form.title.trim(),
       category: form.category,
       location: form.location.trim() || undefined,
+      country: form.country.trim() || undefined,
       estimated_cost: form.estimated_cost ? Number(form.estimated_cost) : undefined,
       currency: form.currency,
       source_url: form.source_url.trim() || undefined,
       notes: form.notes.trim() || undefined,
       tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-    });
+    } as any);
   };
 
   return (
@@ -87,7 +90,12 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
 
           <div>
             <Label>{t('activityBank.location')}</Label>
-            <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="📍" />
+            <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="📍 עיר / כתובת" />
+          </div>
+
+          <div>
+            <Label>{t('activityBank.country')}</Label>
+            <Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="🌍 איטליה, יפן..." />
           </div>
 
           <div className="flex gap-2">
