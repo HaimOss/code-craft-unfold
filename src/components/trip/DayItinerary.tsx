@@ -13,6 +13,8 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { Plus, ExternalLink, ChevronDown, ChevronUp, MapPin, Download, Map } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const DayMap = lazy(() => import('./DayMap'));
 
@@ -307,6 +309,27 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
                     onToggleFavorite={() => {
                       const updated = { ...event, is_favorite: !event.is_favorite };
                       onUpdateEvent(updated);
+                    }}
+                    onSaveToBank={async () => {
+                      const { data: { user } } = await supabase.auth.getUser();
+                      if (!user) return;
+                      const location = getLocationFromEvent(event);
+                      const { error } = await supabase.from('saved_activities').insert({
+                        user_id: user.id,
+                        title: event.title,
+                        category: event.category,
+                        location: location || null,
+                        estimated_cost: event.amount || null,
+                        currency: event.currency,
+                        notes: event.notes || null,
+                        tags: event.tags || [],
+                        details: event.details as any,
+                      });
+                      if (error) {
+                        toast.error(error.message);
+                      } else {
+                        toast.success(t('actions.savedToBank'));
+                      }
                     }}
                   />
                 ))}

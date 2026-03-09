@@ -3,7 +3,7 @@ import { Event, EventCategory, FlightDetails, AccommodationDetails, TransportDet
 import { CATEGORY_ICONS, CURRENCY_SYMBOLS, PRESET_TAGS } from '@/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Pencil, Trash2, Share2, ExternalLink, MapPin, Star, Heart } from 'lucide-react';
+import { GripVertical, Pencil, Trash2, Share2, ExternalLink, MapPin, Star, Heart, BookmarkPlus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EventCardProps {
@@ -12,6 +12,7 @@ interface EventCardProps {
   onDelete: () => void;
   onShare: () => void;
   onToggleFavorite?: () => void;
+  onSaveToBank?: () => void;
 }
 
 const renderDetails = (category: EventCategory, details: Event['details'], t: (key: string) => string, isRTL: boolean) => {
@@ -120,7 +121,7 @@ const getTagEmoji = (tag: string) => {
   return preset?.emoji || '🏷️';
 };
 
-const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare, onToggleFavorite }) => {
+const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare, onToggleFavorite, onSaveToBank }) => {
   const { t, isRTL } = useLanguage();
   const categoryIcon = CATEGORY_ICONS[event.category] || '📌';
 
@@ -191,6 +192,9 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare,
             </button>
           )}
           <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+            {onSaveToBank && (
+              <button onClick={(e) => { e.stopPropagation(); onSaveToBank(); }} className="btn-ghost p-1.5" title={t('actions.saveToBank')}><BookmarkPlus className="h-3.5 w-3.5" /></button>
+            )}
             <button onClick={(e) => { e.stopPropagation(); onShare(); }} className="btn-ghost p-1.5" title={t('actions.share')}><Share2 className="h-3.5 w-3.5" /></button>
             <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="btn-ghost p-1.5" title={t('actions.edit')}><Pencil className="h-3.5 w-3.5" /></button>
             <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="btn-ghost p-1.5 hover:text-destructive" title={t('actions.delete')}><Trash2 className="h-3.5 w-3.5" /></button>
