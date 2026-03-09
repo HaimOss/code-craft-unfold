@@ -3,8 +3,9 @@ import { Trip, Event, EventCategory, PaymentMethod } from '@/types';
 import { EVENT_CATEGORIES, PAYMENT_METHODS, PRESET_TAGS } from '@/constants';
 import CurrencyPicker from '@/components/ui/CurrencyPicker';
 import { generateId } from '@/utils/helpers';
-import { Calendar, Clock, DollarSign, CreditCard, Star, FileText, MapPin, Phone, Globe, Plane, Building, Car, X, Plus, Tag, ShoppingBag, Ticket, ExternalLink } from 'lucide-react';
+import { Calendar, Clock, DollarSign, CreditCard, Star, FileText, MapPin, Phone, Globe, Plane, Building, Car, X, Plus, Tag, ShoppingBag, Ticket, ExternalLink, BookmarkPlus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ImportFromBankModal from './ImportFromBankModal';
 
 interface AddEventFormProps {
   trip: Trip;
@@ -32,6 +33,24 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
   });
 
   const [customTagInput, setCustomTagInput] = useState('');
+  const [showBankModal, setShowBankModal] = useState(false);
+
+  const handleImportFromBank = (activity: any) => {
+    setFormData(prev => ({
+      ...prev,
+      title: activity.title || prev.title,
+      category: activity.category || prev.category,
+      amount: activity.estimated_cost || 0,
+      currency: activity.currency || prev.currency,
+      notes: activity.notes || prev.notes,
+      tags: activity.tags || prev.tags,
+      details: {
+        ...(prev.details || {}),
+        ...(activity.details || {}),
+        location: activity.location || (prev.details as any)?.location,
+      },
+    }));
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -151,7 +170,16 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
 
   return (
     <div className="card-surface p-6 animate-fade-in">
-      <h2 className="text-2xl font-bold font-display mb-4">{existingEvent ? t('eventForm.editEvent') : t('eventForm.addEvent')}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold font-display">{existingEvent ? t('eventForm.editEvent') : t('eventForm.addEvent')}</h2>
+        {!existingEvent && (
+          <button type="button" onClick={() => setShowBankModal(true)} className="btn-secondary flex items-center gap-1.5 text-sm">
+            <BookmarkPlus className="h-4 w-4" />
+            {t('eventForm.importFromBank')}
+          </button>
+        )}
+      </div>
+      <ImportFromBankModal open={showBankModal} onClose={() => setShowBankModal(false)} onSelect={handleImportFromBank} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative"><FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><input name="title" placeholder={t('eventForm.title')} value={formData.title || ''} onChange={handleInputChange} required className="input-field pl-10" /></div>

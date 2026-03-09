@@ -315,6 +315,9 @@ const translations: Record<Language, TranslationTree> = {
       tags: 'תגיות',
       customTag: 'תגית מותאמת אישית...',
       noRating: 'ללא דירוג',
+      importFromBank: 'ייבא מהבנק',
+      searchBank: 'חפש פעילות בבנק...',
+      noBankActivities: 'אין פעילויות שמורות בבנק',
     },
     itinerary: {
       noItinerary: 'אין מסלול עדיין',
@@ -693,6 +696,9 @@ const translations: Record<Language, TranslationTree> = {
       tags: 'Tags',
       customTag: 'Custom tag...',
       noRating: 'No rating',
+      importFromBank: 'Import from Bank',
+      searchBank: 'Search activity bank...',
+      noBankActivities: 'No saved activities in the bank',
     },
     itinerary: {
       noItinerary: 'No Itinerary Yet',
