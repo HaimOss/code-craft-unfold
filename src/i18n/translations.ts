@@ -742,6 +742,7 @@ const translations: Record<Language, TranslationTree> = {
       activityName: 'Activity Name',
       category: 'Category',
       location: 'Location',
+      country: 'Country',
       estimatedCost: 'Estimated Cost',
       currency: 'Currency',
       sourceUrl: 'Source URL',
