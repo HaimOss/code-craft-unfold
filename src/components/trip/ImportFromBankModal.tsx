@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Search, MapPin, DollarSign, Tag, Filter, X } from 'lucide-react';
 import { CATEGORY_ICONS, EVENT_CATEGORIES } from '@/constants';
@@ -90,6 +90,7 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>{t('eventForm.importFromBank')}</DialogTitle>
+          <DialogDescription className="sr-only">{t('eventForm.searchBank')}</DialogDescription>
         </DialogHeader>
 
         {/* Search */}
@@ -159,8 +160,8 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
                   <span className="font-medium text-foreground">{activity.title}</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                  {activity.location && (
-                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{activity.location}</span>
+                  {(activity.location || activity.country) && (
+                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{[activity.location, activity.country].filter(Boolean).join(', ')}</span>
                   )}
                   {activity.estimated_cost != null && activity.estimated_cost > 0 && (
                     <span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />{activity.estimated_cost} {activity.currency}</span>
