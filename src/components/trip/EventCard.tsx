@@ -3,7 +3,7 @@ import { Event, EventCategory, FlightDetails, AccommodationDetails, TransportDet
 import { CATEGORY_ICONS, CURRENCY_SYMBOLS, PRESET_TAGS } from '@/constants';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Pencil, Trash2, Share2, ExternalLink, MapPin, Star, Heart } from 'lucide-react';
+import { GripVertical, Pencil, Trash2, Share2, ExternalLink, MapPin, Star, Heart, BookmarkPlus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EventCardProps {
