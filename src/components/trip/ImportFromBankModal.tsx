@@ -54,14 +54,12 @@ const ImportFromBankModal: React.FC<ImportFromBankModalProps> = ({ open, onClose
     load();
   }, [open]);
 
-  // Extract unique countries from locations (last part after comma, or full string)
+  // Extract unique countries for the filter
   const countries = useMemo(() => {
     const countrySet = new Set<string>();
     activities.forEach(a => {
-      if (a.location?.trim()) {
-        const parts = a.location.split(',').map(p => p.trim());
-        const country = parts[parts.length - 1];
-        if (country) countrySet.add(country);
+      if (a.country?.trim()) {
+        countrySet.add(a.country.trim());
       }
     });
     return [...countrySet].sort();
