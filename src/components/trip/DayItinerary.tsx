@@ -13,6 +13,8 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { Plus, ExternalLink, ChevronDown, ChevronUp, MapPin, Download, Map } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const DayMap = lazy(() => import('./DayMap'));
 
