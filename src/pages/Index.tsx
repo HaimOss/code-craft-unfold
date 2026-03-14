@@ -7,6 +7,7 @@ import ActivityArchive from '@/components/trip/ActivityArchive';
 import ActivityBank from '@/components/activitybank/ActivityBank';
 import StatsDashboard from '@/components/trip/StatsDashboard';
 import SettingsView from '@/components/dashboard/SettingsView';
+import NotificationsView from '@/components/dashboard/NotificationsView';
 import NotificationBell from '@/components/NotificationBell';
 import AppSidebar, { AppView } from '@/components/layout/AppSidebar';
 import TopBar from '@/components/layout/TopBar';
@@ -190,12 +191,7 @@ const Index = () => {
           </div>
         );
       case 'notifications':
-        return (
-          <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto" dir={dir}>
-            <h1 className="text-2xl sm:text-3xl font-bold font-display mb-6">{t('nav.notifications')}</h1>
-            <p className="text-muted-foreground">{t('notifications.notificationsPage')}</p>
-          </div>
-        );
+        return <NotificationsView onSelectTrip={handleSelectTrip} />;
       case 'settings':
         return <SettingsView />;
       default:
