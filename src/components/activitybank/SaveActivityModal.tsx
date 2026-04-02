@@ -67,12 +67,12 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md" dir={dir}>
+      <DialogContent className="max-w-md max-h-[90vh] flex flex-col" dir={dir}>
         <DialogHeader>
           <DialogTitle>{existingActivity ? t('activityBank.edit') : t('activityBank.add')}</DialogTitle>
           <DialogDescription className="sr-only">{t('activityBank.description')}</DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 pb-2">
           <div>
             <Label>{t('activityBank.activityName')}</Label>
             <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
