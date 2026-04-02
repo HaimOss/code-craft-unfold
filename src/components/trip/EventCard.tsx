@@ -139,59 +139,59 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare,
       style={style}
       className={`group relative card-surface p-3 transition-all ${isDragging ? 'opacity-50 scale-105 shadow-xl ring-2 ring-primary/20' : 'hover:shadow-md hover:border-primary/30'}`}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex items-start flex-grow">
-          <div {...attributes} {...listeners} className={`${isRTL ? 'ml-2' : 'mr-2'} mt-2 p-1 text-muted-foreground/40 cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors`}>
-            <GripVertical className="h-4 w-4" />
-          </div>
+      {/* Main content row */}
+      <div className="flex items-start">
+        <div {...attributes} {...listeners} className={`${isRTL ? 'ml-2' : 'mr-2'} mt-2 p-1 text-muted-foreground/40 cursor-grab active:cursor-grabbing hover:text-muted-foreground transition-colors flex-shrink-0`}>
+          <GripVertical className="h-4 w-4" />
+        </div>
 
-          <div className="flex items-start cursor-pointer flex-grow" onClick={onEdit} role="button" tabIndex={0} aria-label={`${t('actions.edit')}: ${event.title}`}>
-            <div className={`text-lg ${isRTL ? 'ml-3' : 'mr-3'} mt-0.5 flex-shrink-0 w-9 h-9 flex items-center justify-center bg-secondary rounded-lg`}>
-              {categoryIcon.replace('️', '')}
+        <div className="flex items-start cursor-pointer flex-grow min-w-0" onClick={onEdit} role="button" tabIndex={0} aria-label={`${t('actions.edit')}: ${event.title}`}>
+          <div className={`text-lg ${isRTL ? 'ml-3' : 'mr-3'} mt-0.5 flex-shrink-0 w-9 h-9 flex items-center justify-center bg-secondary rounded-lg`}>
+            {categoryIcon.replace('️', '')}
+          </div>
+          <div className="flex-grow min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground">{event.time}{event.endTime ? ` - ${event.endTime}` : ''}</span>
+              {event.amount > 0 && (
+                <span className="text-xs font-semibold text-accent">
+                  {event.amount.toLocaleString()} {CURRENCY_SYMBOLS[event.currency] || event.currency}
+                </span>
+              )}
             </div>
-            <div className="flex-grow min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">{event.time}{event.endTime ? ` - ${event.endTime}` : ''}</span>
-                {event.amount > 0 && (
-                  <span className="text-xs font-semibold text-accent">
-                    {event.amount.toLocaleString()} {CURRENCY_SYMBOLS[event.currency] || event.currency}
+            <h3 className="font-semibold text-card-foreground leading-tight">{event.title}</h3>
+            <div className="mt-0.5">{renderDetails(event.category, event.details, t, isRTL)}</div>
+            {event.tags && event.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                {event.tags.map(tag => (
+                  <span key={tag} className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${getTagStyle(tag)}`}>
+                    {getTagEmoji(tag)} {tag}
                   </span>
-                )}
+                ))}
               </div>
-              <h3 className="font-semibold text-card-foreground leading-tight">{event.title}</h3>
-              <div className="mt-0.5">{renderDetails(event.category, event.details, t, isRTL)}</div>
-              {event.tags && event.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {event.tags.map(tag => (
-                    <span key={tag} className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${getTagStyle(tag)}`}>
-                      {getTagEmoji(tag)} {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {event.rating && event.rating > 0 && (
-                <div className="flex items-center mt-1">
-                  {Array.from({ length: event.rating }).map((_, i) => (
-                    <Star key={i} className="h-3 w-3 fill-accent text-accent" />
-                  ))}
-                </div>
-              )}
-              {event.notes && <p className="text-xs text-muted-foreground mt-1 italic line-clamp-1">📝 {event.notes}</p>}
-            </div>
+            )}
+            {event.rating && event.rating > 0 && (
+              <div className="flex items-center mt-1">
+                {Array.from({ length: event.rating }).map((_, i) => (
+                  <Star key={i} className="h-3 w-3 fill-accent text-accent" />
+                ))}
+              </div>
+            )}
+            {event.notes && <p className="text-xs text-muted-foreground mt-1 italic line-clamp-1">📝 {event.notes}</p>}
           </div>
         </div>
 
-        <div className={`flex items-center gap-0.5 flex-shrink-0 ${isRTL ? 'mr-2' : 'ml-2'}`}>
+        {/* Desktop: icons on the side */}
+        <div className={`hidden sm:flex items-center gap-0.5 flex-shrink-0 ${isRTL ? 'mr-2' : 'ml-2'}`}>
           {onToggleFavorite && (
             <button
               onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-              className={`p-1.5 transition-colors ${event.is_favorite ? 'text-red-500' : 'sm:opacity-0 sm:group-hover:opacity-100 btn-ghost'}`}
+              className={`p-1.5 transition-colors ${event.is_favorite ? 'text-red-500' : 'opacity-0 group-hover:opacity-100 btn-ghost'}`}
               title={event.is_favorite ? t('actions.removeFromFavorites') : t('actions.addToFavorites')}
             >
               <Heart className={`h-3.5 w-3.5 ${event.is_favorite ? 'fill-red-500' : ''}`} />
             </button>
           )}
-          <div className="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
             {onSaveToBank && (
               <button onClick={(e) => { e.stopPropagation(); onSaveToBank(); }} className="btn-ghost p-1.5" title={t('actions.saveToBank')}><BookmarkPlus className="h-3.5 w-3.5" /></button>
             )}
@@ -200,6 +200,24 @@ const EventCard: React.FC<EventCardProps> = ({ event, onEdit, onDelete, onShare,
             <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="btn-ghost p-1.5 hover:text-destructive" title={t('actions.delete')}><Trash2 className="h-3.5 w-3.5" /></button>
           </div>
         </div>
+      </div>
+
+      {/* Mobile: icons below content */}
+      <div className="flex sm:hidden items-center justify-center gap-1 mt-2 pt-2 border-t border-border">
+        {onToggleFavorite && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+            className={`p-2 transition-colors ${event.is_favorite ? 'text-red-500' : 'btn-ghost'}`}
+          >
+            <Heart className={`h-4 w-4 ${event.is_favorite ? 'fill-red-500' : ''}`} />
+          </button>
+        )}
+        {onSaveToBank && (
+          <button onClick={(e) => { e.stopPropagation(); onSaveToBank(); }} className="btn-ghost p-2"><BookmarkPlus className="h-4 w-4" /></button>
+        )}
+        <button onClick={(e) => { e.stopPropagation(); onShare(); }} className="btn-ghost p-2"><Share2 className="h-4 w-4" /></button>
+        <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="btn-ghost p-2"><Pencil className="h-4 w-4" /></button>
+        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="btn-ghost p-2 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
       </div>
     </div>
   );
