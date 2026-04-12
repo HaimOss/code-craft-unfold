@@ -18,6 +18,8 @@ interface SaveActivityModalProps {
 
 const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, onSave, existingActivity }) => {
   const { t, dir } = useLanguage();
+  const [countries, setCountries] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
   const [form, setForm] = useState({
     title: '',
     category: EVENT_CATEGORIES[3] as string,
@@ -29,6 +31,30 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
     notes: '',
     tags: '',
   });
+
+  // Load unique countries and locations from existing activities
+  useEffect(() => {
+    if (!isOpen) return;
+    const loadSuggestions = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('saved_activities')
+        .select('country, location')
+        .eq('user_id', user.id);
+      if (data) {
+        const countrySet = new Set<string>();
+        const locationSet = new Set<string>();
+        data.forEach((a: any) => {
+          if (a.country?.trim()) countrySet.add(a.country.trim());
+          if (a.location?.trim()) locationSet.add(a.location.trim());
+        });
+        setCountries([...countrySet].sort());
+        setLocations([...locationSet].sort());
+      }
+    };
+    loadSuggestions();
+  }, [isOpen]);
 
   useEffect(() => {
     if (existingActivity) {
