@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EVENT_CATEGORIES, CURRENCIES, CURRENCY_SYMBOLS } from '@/constants';
+import { supabase } from '@/integrations/supabase/client';
 import type { SavedActivity } from './ActivityBank';
 
 interface SaveActivityModalProps {
