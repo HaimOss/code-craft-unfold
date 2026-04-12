@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { EVENT_CATEGORIES, CURRENCIES, CURRENCY_SYMBOLS } from '@/constants';
+import { supabase } from '@/integrations/supabase/client';
 import type { SavedActivity } from './ActivityBank';
 
 interface SaveActivityModalProps {
@@ -17,6 +18,8 @@ interface SaveActivityModalProps {
 
 const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, onSave, existingActivity }) => {
   const { t, dir } = useLanguage();
+  const [countries, setCountries] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>([]);
   const [form, setForm] = useState({
     title: '',
     category: EVENT_CATEGORIES[3] as string,
@@ -28,6 +31,30 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
     notes: '',
     tags: '',
   });
+
+  // Load unique countries and locations from existing activities
+  useEffect(() => {
+    if (!isOpen) return;
+    const loadSuggestions = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from('saved_activities')
+        .select('country, location')
+        .eq('user_id', user.id);
+      if (data) {
+        const countrySet = new Set<string>();
+        const locationSet = new Set<string>();
+        data.forEach((a: any) => {
+          if (a.country?.trim()) countrySet.add(a.country.trim());
+          if (a.location?.trim()) locationSet.add(a.location.trim());
+        });
+        setCountries([...countrySet].sort());
+        setLocations([...locationSet].sort());
+      }
+    };
+    loadSuggestions();
+  }, [isOpen]);
 
   useEffect(() => {
     if (existingActivity) {
@@ -93,12 +120,32 @@ const SaveActivityModal: React.FC<SaveActivityModalProps> = ({ isOpen, onClose, 
 
           <div>
             <Label>{t('activityBank.location')}</Label>
-            <Input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="📍 עיר / כתובת" />
+            <Input
+              list="location-suggestions"
+              value={form.location}
+              onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+              placeholder="📍 עיר / כתובת"
+            />
+            <datalist id="location-suggestions">
+              {locations.map(loc => (
+                <option key={loc} value={loc} />
+              ))}
+            </datalist>
           </div>
 
           <div>
             <Label>{t('activityBank.country')}</Label>
-            <Input value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} placeholder="🌍 איטליה, יפן..." />
+            <Input
+              list="country-suggestions"
+              value={form.country}
+              onChange={e => setForm(f => ({ ...f, country: e.target.value }))}
+              placeholder="🌍 איטליה, יפן..."
+            />
+            <datalist id="country-suggestions">
+              {countries.map(c => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
           </div>
 
           <div className="flex gap-2">
