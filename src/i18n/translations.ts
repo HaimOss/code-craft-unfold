@@ -130,8 +130,13 @@ const translations: Record<Language, TranslationTree> = {
     notifications: {
       title: 'התראות',
       markAllRead: 'סמן הכל כנקרא',
+      markRead: 'סמן כנקרא',
       noNew: 'אין התראות חדשות',
       notificationsPage: 'ההודעות שלך מוצגות בפעמון למעלה.',
+      emptyDesc: 'כשיהיו לך התראות חדשות, הן יופיעו כאן.',
+      allMarkedRead: 'כל ההתראות סומנו כנקראו',
+      deleteRead: 'מחק שנקראו',
+      readDeleted: 'ההתראות שנקראו נמחקו',
     },
     settings: {
       title: 'הגדרות',
@@ -517,8 +522,13 @@ const translations: Record<Language, TranslationTree> = {
     notifications: {
       title: 'Notifications',
       markAllRead: 'Mark all as read',
+      markRead: 'Mark as read',
       noNew: 'No new notifications',
       notificationsPage: 'Your notifications are shown in the bell above.',
+      emptyDesc: 'When you have new notifications, they will appear here.',
+      allMarkedRead: 'All notifications marked as read',
+      deleteRead: 'Delete read',
+      readDeleted: 'Read notifications deleted',
     },
     settings: {
       title: 'Settings',
