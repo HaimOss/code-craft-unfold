@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Trip, Event } from '@/types';
 import TripCard from '@/components/trip/TripCard';
 import AddTripModal from '@/components/modals/AddTripModal';
-import { Plus, Upload } from 'lucide-react';
+import BulkTripUploadModal from '@/components/modals/BulkTripUploadModal';
+import { Plus, Upload, FileSpreadsheet } from 'lucide-react';
 import { parseImportFile, importSharedTrip } from '@/services/shareService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -18,6 +19,7 @@ const TripsGrid: React.FC<TripsGridProps> = ({ trips, onSelectTrip, onAddTrip })
   const { user } = useAuth();
   const { t, dir } = useLanguage();
   const [isAddTripModalOpen, setIsAddTripModalOpen] = useState(false);
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
 
   const handleImportJSON = () => {
     const input = document.createElement('input');
@@ -44,6 +46,9 @@ const TripsGrid: React.FC<TripsGridProps> = ({ trips, onSelectTrip, onAddTrip })
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold font-display">{t('trips.myTrips')}</h1>
         <div className="flex items-center gap-2">
+          <button onClick={() => setIsBulkUploadOpen(true)} className="btn-ghost flex items-center gap-2 text-sm">
+            <FileSpreadsheet className="h-4 w-4" /> טעינת טיול מלא
+          </button>
           <button onClick={handleImportJSON} className="btn-ghost flex items-center gap-2 text-sm">
             <Upload className="h-4 w-4" /> {t('trips.importBtn')}
           </button>
@@ -58,9 +63,14 @@ const TripsGrid: React.FC<TripsGridProps> = ({ trips, onSelectTrip, onAddTrip })
           <p className="text-6xl mb-4">🌍</p>
           <h2 className="text-2xl font-bold font-display mb-2">{t('trips.noTrips')}</h2>
           <p className="text-muted-foreground mb-6">{t('trips.startPlanning')}</p>
-          <button onClick={() => setIsAddTripModalOpen(true)} className="btn-primary flex items-center gap-2">
-            <Plus className="h-4 w-4" /> {t('trips.createFirst')}
-          </button>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <button onClick={() => setIsAddTripModalOpen(true)} className="btn-primary flex items-center gap-2">
+              <Plus className="h-4 w-4" /> {t('trips.createFirst')}
+            </button>
+            <button onClick={() => setIsBulkUploadOpen(true)} className="btn-ghost flex items-center gap-2">
+              <FileSpreadsheet className="h-4 w-4" /> טעינת טיול מקובץ Excel
+            </button>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -71,6 +81,7 @@ const TripsGrid: React.FC<TripsGridProps> = ({ trips, onSelectTrip, onAddTrip })
       )}
 
       <AddTripModal isOpen={isAddTripModalOpen} onClose={() => setIsAddTripModalOpen(false)} onAddTrip={onAddTrip} />
+      <BulkTripUploadModal isOpen={isBulkUploadOpen} onClose={() => setIsBulkUploadOpen(false)} onTripCreated={onAddTrip} />
     </div>
   );
 };
