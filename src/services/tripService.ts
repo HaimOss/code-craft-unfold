@@ -138,6 +138,11 @@ export const deleteEvent = async (eventId: string) => {
   if (error) throw error;
 };
 
+export const deleteAllTripEvents = async (tripId: string) => {
+  const { error } = await supabase.from('events').delete().eq('trip_id', tripId);
+  if (error) throw error;
+};
+
 export const syncTripEvents = async (userId: string, trip: Trip) => {
   // Update trip metadata
   await updateTrip(trip);
