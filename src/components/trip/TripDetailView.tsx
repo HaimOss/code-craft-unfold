@@ -384,6 +384,12 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
       <EditTripModal isOpen={isEditModalOpen} trip={trip} onClose={() => setIsEditModalOpen(false)} onUpdateTrip={onUpdateTrip} />
       <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} title={t('trip.shareEvent', { title: trip.name })} itemType="trip" itemData={trip} />
       <CollaboratorManager isOpen={isCollabModalOpen} onClose={() => setIsCollabModalOpen(false)} tripId={trip.id} tripName={trip.name} />
+      <BulkTripUploadModal
+        isOpen={isBulkReplaceOpen}
+        onClose={() => setIsBulkReplaceOpen(false)}
+        targetTrip={trip}
+        onTripReplaced={(t) => onUpdateTrip(t)}
+      />
     </div>
   );
 };
