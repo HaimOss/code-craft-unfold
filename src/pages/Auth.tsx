@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
 import { Input } from '@/components/ui/input';
 import { Compass, Mail, Lock, User, ArrowLeft, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Auth = () => {
@@ -12,15 +12,18 @@ const Auth = () => {
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [name, setName] = useState('');
   const [loading, setLoading] = useState(false); const [message, setMessage] = useState(''); const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const nextParam = searchParams.get('next');
+  const safeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/';
   const SubmitArrow = isRTL ? ArrowLeft : ArrowRight;
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault(); setLoading(true); setError(''); setMessage('');
-    if (isLogin) { const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) setError(error.message); else navigate('/'); }
-    else { const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name }, emailRedirectTo: window.location.origin } }); if (error) setError(error.message); else setMessage(t('auth.verificationSent')); }
+    if (isLogin) { const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) setError(error.message); else navigate(safeNext); }
+    else { const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: name }, emailRedirectTo: window.location.origin + safeNext } }); if (error) setError(error.message); else setMessage(t('auth.verificationSent')); }
     setLoading(false);
   };
-  const handleGoogleSignIn = async () => { setLoading(true); setError(''); const { error } = await lovable.auth.signInWithOAuth('google', { redirect_uri: window.location.origin }); if (error) setError(error.message); setLoading(false); };
+  const handleGoogleSignIn = async () => { setLoading(true); setError(''); const { error } = await lovable.auth.signInWithOAuth('google', { redirect_uri: window.location.origin + safeNext }); if (error) setError(error.message); setLoading(false); };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
