@@ -7,7 +7,8 @@ import ShareModal from '../modals/ShareModal';
 import CollaboratorManager from '../modals/CollaboratorManager';
 import BudgetBar from './BudgetBar';
 import { CURRENCY_SYMBOLS, CATEGORY_DISPLAY_CONFIG } from '@/constants';
-import { ArrowRight, ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare, FileText, Compass, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare, FileText, Compass, Plus, ChevronLeft, ChevronRight, FileSpreadsheet } from 'lucide-react';
+import BulkTripUploadModal from '../modals/BulkTripUploadModal';
 
 const TripMap = lazy(() => import('./TripMap'));
 const TripChecklist = lazy(() => import('./TripChecklist'));
@@ -43,6 +44,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
+  const [isBulkReplaceOpen, setIsBulkReplaceOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'itinerary' | 'map' | 'checklist'>('itinerary');
 
   const handleExportJSON = () => exportTripToJSON(trip);
@@ -299,6 +301,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
                 <button onClick={handleExportJSON} className="btn-ghost p-2 rounded-lg" title={t('actions.exportJSON')}><Download className="h-4 w-4" /></button>
                 <button onClick={handleExportFullPDF} className="btn-ghost p-2 rounded-lg" title={t('actions.exportPDF')}><FileText className="h-4 w-4" /></button>
                 <button onClick={handleImportEventJSON} className="btn-ghost p-2 rounded-lg hidden sm:inline-flex" title={t('actions.importActivity')}><Upload className="h-4 w-4" /></button>
+                <button onClick={() => setIsBulkReplaceOpen(true)} className="btn-ghost p-2 rounded-lg text-destructive" title="החלף תוכן טיול מ-Excel (יאפס אירועים)"><FileSpreadsheet className="h-4 w-4" /></button>
                 <button onClick={() => setIsEditModalOpen(true)} className="btn-ghost p-2 rounded-lg" title={t('actions.edit')}><Pencil className="h-4 w-4" /></button>
                 <button onClick={confirmDeleteTrip} className="btn-ghost p-2 rounded-lg text-destructive" title={t('actions.delete')}><Trash2 className="h-4 w-4" /></button>
               </div>
@@ -381,6 +384,12 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
       <EditTripModal isOpen={isEditModalOpen} trip={trip} onClose={() => setIsEditModalOpen(false)} onUpdateTrip={onUpdateTrip} />
       <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} title={t('trip.shareEvent', { title: trip.name })} itemType="trip" itemData={trip} />
       <CollaboratorManager isOpen={isCollabModalOpen} onClose={() => setIsCollabModalOpen(false)} tripId={trip.id} tripName={trip.name} />
+      <BulkTripUploadModal
+        isOpen={isBulkReplaceOpen}
+        onClose={() => setIsBulkReplaceOpen(false)}
+        targetTrip={trip}
+        onTripReplaced={(t) => onUpdateTrip(t)}
+      />
     </div>
   );
 };

@@ -1,9 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Download, Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, Loader2, ShieldAlert } from 'lucide-react';
 import { downloadTripTemplate, parseTripExcel, ParsedTripResult } from '@/services/tripTemplateService';
-import { createTrip, upsertEvent } from '@/services/tripService';
+import { createTrip, upsertEvent, deleteAllTripEvents, updateTrip } from '@/services/tripService';
+import { exportTripToJSON } from '@/services/shareService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from '@/hooks/use-toast';
@@ -13,19 +14,33 @@ interface BulkTripUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onTripCreated?: (trip: Trip) => void;
+  /** If provided, the modal replaces this trip's content instead of creating a new one. */
+  targetTrip?: Trip;
+  /** Called after a successful replace with the fully updated trip. */
+  onTripReplaced?: (trip: Trip) => void;
 }
 
-const BulkTripUploadModal: React.FC<BulkTripUploadModalProps> = ({ isOpen, onClose, onTripCreated }) => {
+const BulkTripUploadModal: React.FC<BulkTripUploadModalProps> = ({ isOpen, onClose, onTripCreated, targetTrip, onTripReplaced }) => {
   const { user } = useAuth();
   const { dir } = useLanguage();
+  const isReplaceMode = !!targetTrip;
   const [parsed, setParsed] = useState<ParsedTripResult | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [dragging, setDragging] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [backupDone, setBackupDone] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
 
-  const reset = () => { setParsed(null); setFileName(''); setImporting(false); };
+  const reset = () => { setParsed(null); setFileName(''); setImporting(false); setConfirmReset(false); };
 
   const handleClose = () => { reset(); onClose(); };
+
+  const handleBackup = () => {
+    if (!targetTrip) return;
+    exportTripToJSON(targetTrip);
+    setBackupDone(true);
+    toast({ title: 'גיבוי JSON הורד', description: 'שמור את הקובץ במקום בטוח לפני האיפוס.' });
+  };
 
   const handleFile = useCallback(async (file: File) => {
     setFileName(file.name);
@@ -58,17 +73,32 @@ const BulkTripUploadModal: React.FC<BulkTripUploadModalProps> = ({ isOpen, onClo
 
   const handleImport = async () => {
     if (!user || !parsed || parsed.errors.length > 0) return;
+    if (isReplaceMode && !confirmReset) return;
     setImporting(true);
     try {
-      const tripId = await createTrip(user.id, { ...(parsed.trip as any) });
-      for (let i = 0; i < parsed.events.length; i++) {
-        await upsertEvent(user.id, tripId, parsed.events[i], i);
+      if (isReplaceMode && targetTrip) {
+        // 1. Wipe existing events
+        await deleteAllTripEvents(targetTrip.id);
+        // 2. Update trip metadata from Excel (keep same id + user)
+        const merged: Trip = { ...targetTrip, ...(parsed.trip as any), id: targetTrip.id, events: parsed.events };
+        await updateTrip(merged);
+        // 3. Insert new events
+        for (let i = 0; i < parsed.events.length; i++) {
+          await upsertEvent(user.id, targetTrip.id, parsed.events[i], i);
+        }
+        toast({ title: 'הטיול עודכן! 🔄', description: `${parsed.events.length} אירועים חדשים נטענו` });
+        onTripReplaced?.(merged);
+      } else {
+        const tripId = await createTrip(user.id, { ...(parsed.trip as any) });
+        for (let i = 0; i < parsed.events.length; i++) {
+          await upsertEvent(user.id, tripId, parsed.events[i], i);
+        }
+        toast({ title: 'הטיול נוצר בהצלחה! 🎉', description: `${parsed.events.length} אירועים נטענו` });
+        onTripCreated?.({ ...(parsed.trip as any), id: tripId, events: parsed.events });
       }
-      toast({ title: 'הטיול נוצר בהצלחה! 🎉', description: `${parsed.events.length} אירועים נטענו` });
-      onTripCreated?.({ ...(parsed.trip as any), id: tripId, events: parsed.events });
       handleClose();
     } catch (err: any) {
-      toast({ title: 'שגיאה ביצירת הטיול', description: err.message, variant: 'destructive' });
+      toast({ title: isReplaceMode ? 'שגיאה בעדכון הטיול' : 'שגיאה ביצירת הטיול', description: err.message, variant: 'destructive' });
     } finally {
       setImporting(false);
     }
@@ -85,14 +115,60 @@ const BulkTripUploadModal: React.FC<BulkTripUploadModalProps> = ({ isOpen, onClo
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5 text-primary" />
-            טעינת טיול מלא מ-Excel
+            {isReplaceMode ? `החלפת תוכן הטיול "${targetTrip?.name}" מ-Excel` : 'טעינת טיול מלא מ-Excel'}
           </DialogTitle>
           <DialogDescription>
-            הורד תבנית, מלא אותה ב-Excel, והעלה חזרה כדי ליצור טיול שלם עם כל האירועים בבת אחת.
+            {isReplaceMode
+              ? 'פעולה זו תמחק את כל האירועים הקיימים בטיול ותחליף אותם בתוכן שבקובץ ה-Excel. מומלץ בחום להוריד גיבוי JSON קודם.'
+              : 'הורד תבנית, מלא אותה ב-Excel, והעלה חזרה כדי ליצור טיול שלם עם כל האירועים בבת אחת.'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="overflow-y-auto flex-1 space-y-5 pr-1">
+          {isReplaceMode && targetTrip && (
+            <section className="rounded-xl border-2 border-destructive/40 bg-destructive/5 p-4">
+              <div className="flex items-start gap-3">
+                <ShieldAlert className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-3">
+                  <div>
+                    <h3 className="font-bold text-destructive mb-1">אזהרה — פעולה בלתי הפיכה</h3>
+                    <p className="text-sm text-foreground">
+                      טעינת קובץ Excel <b>תמחק לצמיתות</b> את <b>{targetTrip.events.length}</b> האירועים הקיימים בטיול זה,
+                      ותחליף אותם באירועים שבקובץ. פרטי הטיול (שם, יעד, תאריכים וכו') יעודכנו גם הם לפי הקובץ.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      onClick={handleBackup}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      {backupDone ? 'הורד גיבוי שוב' : 'הורד גיבוי JSON קודם (מומלץ)'}
+                    </Button>
+                    {backupDone && (
+                      <span className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> גיבוי הורד
+                      </span>
+                    )}
+                  </div>
+                  <label className="flex items-start gap-2 text-sm cursor-pointer select-none pt-1">
+                    <input
+                      type="checkbox"
+                      checked={confirmReset}
+                      onChange={(e) => setConfirmReset(e.target.checked)}
+                      className="mt-1"
+                    />
+                    <span>
+                      אני מבין/ה ש-<b>{targetTrip.events.length} האירועים</b> הקיימים יימחקו ולא ניתן יהיה לשחזרם ללא הגיבוי.
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Step 1 */}
           <section className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-start gap-3">
@@ -210,11 +286,16 @@ const BulkTripUploadModal: React.FC<BulkTripUploadModalProps> = ({ isOpen, onClo
           <Button variant="ghost" onClick={handleClose} disabled={importing}>ביטול</Button>
           <Button
             onClick={handleImport}
-            disabled={!parsed || parsed.errors.length > 0 || importing}
+            disabled={!parsed || parsed.errors.length > 0 || importing || (isReplaceMode && !confirmReset)}
             className="gap-2"
+            variant={isReplaceMode ? 'destructive' : 'default'}
           >
             {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            {importing ? 'יוצר טיול...' : `צור טיול${parsed ? ` (${parsed.events.length} אירועים)` : ''}`}
+            {importing
+              ? (isReplaceMode ? 'מחליף תוכן...' : 'יוצר טיול...')
+              : isReplaceMode
+                ? `מחק והחלף (${parsed?.events.length ?? 0} אירועים)`
+                : `צור טיול${parsed ? ` (${parsed.events.length} אירועים)` : ''}`}
           </Button>
         </div>
       </DialogContent>
