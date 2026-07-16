@@ -105,6 +105,13 @@ const Index = () => {
   const handleAddTrip = async (newTrip: Trip) => {
     if (!user) return;
     try {
+      // If the trip already has an id, it was already persisted by the caller
+      // (e.g. bulk Excel upload creates the trip + events itself). Just add to state.
+      if (newTrip.id) {
+        setTrips(prev => [newTrip, ...prev]);
+        setSelectedTripId(newTrip.id);
+        return;
+      }
       const id = await createTrip(user.id, newTrip);
       setTrips(prev => [{ ...newTrip, id, events: [] }, ...prev]);
       setSelectedTripId(id);
