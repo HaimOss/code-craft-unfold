@@ -270,6 +270,21 @@ export const parseTripExcel = async (file: File): Promise<ParsedTripResult> => {
       const location = String(r.location || '').trim();
       if (address) (details as any).address = address;
       if (location) (details as any).location = location;
+      const website = String(r.website || '').trim();
+      const phone = String(r.phone || '').trim();
+      const opening_hours = String(r.opening_hours || '').trim();
+      const confirmation_num = String(r.confirmation_num || '').trim();
+      const book_link = String(r.book_link || '').trim();
+      if (website) (details as any).website = website;
+      if (phone) (details as any).phone = phone;
+      if (opening_hours) (details as any).opening_hours = opening_hours;
+      if (confirmation_num) (details as any).confirmation_num = confirmation_num;
+      if (book_link) (details as any).book_link = book_link;
+      if (category === EventCategory.Accommodation && book_link) (details as any).book_link = book_link;
+      // Gentle nudge: warn when address is missing for location-based categories
+      if (!address && (category === EventCategory.Accommodation || category === EventCategory.Activity || category === EventCategory.Food || category === EventCategory.Shopping)) {
+        warnings.push(`שורה ${rowNum}: חסרה כתובת (address) — מומלץ למלא כתובת מלאה קריאה ל-Google Maps`);
+      }
 
       const tags = String(r.tags || '').split(',').map(s => s.trim()).filter(Boolean);
 
