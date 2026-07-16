@@ -3,7 +3,7 @@ import { Trip, Event, EventCategory, PaymentMethod, TripStatus, EventDetails } f
 import { CURRENCIES, TRIP_STATUSES, EVENT_CATEGORIES, PAYMENT_METHODS } from '@/constants';
 
 const TRIP_HEADERS = ['name', 'destination', 'start_date', 'end_date', 'base_currency', 'status', 'budget', 'cover_image', 'album_link'];
-const EVENT_HEADERS = ['date', 'time', 'end_time', 'category', 'title', 'amount', 'currency', 'payment_method', 'address', 'location', 'notes', 'tags'];
+const EVENT_HEADERS = ['date', 'time', 'end_time', 'category', 'title', 'amount', 'currency', 'payment_method', 'address', 'location', 'website', 'phone', 'opening_hours', 'confirmation_num', 'book_link', 'notes', 'tags'];
 
 export interface ParsedTripResult {
   trip: Omit<Trip, 'id' | 'events'>;
@@ -29,57 +29,111 @@ export const downloadTripTemplate = () => {
   // Events sheet
   const eventsExample = [
     EVENT_HEADERS,
-    ['2026-05-10', '06:00', '10:30', EventCategory.Flights, 'טיסה לרומא', 350, 'EUR', PaymentMethod.Credit, '', 'TLV → FCO', 'טיסה ישירה', 'חובה'],
-    ['2026-05-10', '14:00', '', EventCategory.Accommodation, 'מלון ליד הקולוסיאום', 120, 'EUR', PaymentMethod.Credit, 'Via dei Fori Imperiali 25, Rome', '', '3 לילות', ''],
-    ['2026-05-11', '09:00', '12:00', EventCategory.Activity, 'סיור בקולוסיאום', 25, 'EUR', PaymentMethod.Credit, 'Piazza del Colosseo, 1, Rome', '', 'להזמין מראש', 'מומלץ,חובה'],
-    ['2026-05-11', '13:00', '14:00', EventCategory.Food, 'פיצה אמיתית', 18, 'EUR', PaymentMethod.Cash, 'Pizzeria Da Baffetto, Rome', '', '', ''],
+    // Day 1 — start of day (flight from home)
+    ['2026-05-10', '06:00', '10:30', EventCategory.Flights, 'טיסה לרומא — תחילת יום', 350, 'EUR', PaymentMethod.Credit, 'Ben Gurion Airport, Terminal 3, Israel', 'TLV → FCO (Fiumicino)', 'https://www.italiatrasporto.it', '', '', 'AZ801-XYZ', 'https://checkin.ita-airways.com', 'טיסה ישירה — צ׳ק אין 3 שעות לפני', 'חובה,תחילת-יום'],
+    // Day 1 — end of day (check-in at accommodation)
+    ['2026-05-10', '14:00', '', EventCategory.Accommodation, 'צ׳ק אין — מלון ליד הקולוסיאום — סוף יום', 120, 'EUR', PaymentMethod.Credit, 'Via dei Fori Imperiali 25, 00184 Roma RM, Italy', 'Rione Monti, Rome', 'https://hotelfoiromani.com', '+39 06 1234 5678', 'Check-in 14:00, Check-out 11:00', 'HTL-9F2K1', 'https://booking.com/hotel/xyz', '3 לילות — לינה עד 13/05', 'סוף-יום,לינה'],
+    ['2026-05-11', '09:00', '12:00', EventCategory.Activity, 'סיור בקולוסיאום', 25, 'EUR', PaymentMethod.Credit, 'Piazza del Colosseo, 1, 00184 Roma RM, Italy', '', 'https://colosseo.it', '+39 06 3996 7700', 'Mon-Sun 08:30-19:15', 'COL-2026-4421', 'https://ticket.colosseo.it/xyz', 'להזמין מראש — לא לשכוח מים', 'מומלץ,חובה'],
+    ['2026-05-11', '13:00', '14:00', EventCategory.Food, 'פיצה בבאפטו', 18, 'EUR', PaymentMethod.Cash, 'Via del Governo Vecchio, 114, 00186 Roma RM, Italy', '', 'https://pizzeriabaffetto.it', '+39 06 686 1617', 'Daily 12:00-15:30, 18:30-01:00', '', '', 'הכי טוב ברומא', ''],
   ];
   const eventsSheet = XLSX.utils.aoa_to_sheet(eventsExample);
   eventsSheet['!cols'] = EVENT_HEADERS.map(() => ({ wch: 18 }));
   XLSX.utils.book_append_sheet(wb, eventsSheet, 'Events');
 
-  // Instructions sheet
+  // Instructions sheet — geared towards AI-assisted filling
   const instr: any[][] = [
-    ['הוראות מילוי'],
+    ['📘 הוראות מילוי — קובץ תבנית טיול'],
+    ['הקובץ מיועד לרוב להיות ממולא בעזרת AI (ChatGPT / Claude / Gemini). ראו גיליון "AI Prompt" — העתיקו משם את ה-Prompt המלא ל-AI לפני שתבקשו לבנות טיול.'],
     [],
-    ['גיליון Trip'],
+    ['⚠️ כללי זהב'],
+    ['1. לכל יום בטיול חובה שיהיה אירוע ראשון (תחילת יום) ואירוע אחרון (סיום יום). זה מאפשר לאפליקציה לחשב טיימליין נכון ולהציג מפה יומית.'],
+    ['   • תחילת יום = איפה מתחילים את הבוקר (מלון, שדה תעופה, תחנת רכבת). סמן ב-tag "תחילת-יום".'],
+    ['   • סיום יום = איפה ישנים / חוזרים בסוף היום (מלון, טיסה חזרה). סמן ב-tag "סוף-יום".'],
+    ['   • אם ישנים באותו מלון כמה לילות — חזור על אירוע Accommodation קצר בכל בוקר כתחילת יום ("יציאה מהמלון").'],
+    ['2. שדה address חייב להיות כתובת מלאה שגוגל מפות יודע לפתוח בלחיצה אחת:'],
+    ['   • פורמט: "שם המקום, רחוב + מספר, מיקוד, עיר, מדינה"'],
+    ['   • ✅ טוב:  "Colosseum, Piazza del Colosseo 1, 00184 Roma RM, Italy"'],
+    ['   • ❌ רע:   "קולוסיאום" / "ברומא" / "ליד הכיכר"'],
+    ['   • לשדה תעופה — כלול קוד IATA + טרמינל: "Ben Gurion Airport (TLV), Terminal 3, Israel"'],
+    ['3. מלא כמה שיותר metadata — כל שדה שיודעים אותו. זה מייצר טיול עשיר עם קישורים, שעות פתיחה, טלפונים ומספרי אישור:'],
+    ['   • website — אתר רשמי (URL מלא כולל https://)'],
+    ['   • phone — טלפון בפורמט בינלאומי, למשל +39 06 3996 7700'],
+    ['   • opening_hours — שעות פעילות, למשל "Mon-Sun 08:30-19:15"'],
+    ['   • confirmation_num — מספר הזמנה / אישור מהספק'],
+    ['   • book_link — קישור ישיר להזמנה / כרטיס / צ׳ק אין'],
+    ['4. בסדר האירועים ביום — לפי שעה עולה (time). end_time אופציונלי אבל מומלץ מאוד לפעילויות ולטיסות.'],
+    ['5. הימנע מכפילויות — כל אירוע חייב להיות ייחודי בשילוב תאריך+שעה+כותרת.'],
+    [],
+    ['📋 גיליון Trip'],
     ['- name (חובה): שם הטיול'],
-    ['- destination: יעד (טקסט חופשי)'],
+    ['- destination: יעד ראשי (טקסט חופשי, למשל "רומא, איטליה")'],
     ['- start_date / end_date (חובה): פורמט YYYY-MM-DD, למשל 2026-05-10'],
-    ['- base_currency (חובה): קוד מטבע מהרשימה למטה'],
+    ['- base_currency (חובה): קוד מטבע ISO בן 3 אותיות (ראה רשימה למטה)'],
     ['- status: אחד מהערכים ברשימה למטה'],
-    ['- budget: מספר (אופציונלי)'],
-    ['- cover_image / album_link: URL (אופציונלי)'],
+    ['- budget: מספר במטבע הבסיס (אופציונלי)'],
+    ['- cover_image / album_link: URL תקין כולל https:// (אופציונלי)'],
     [],
-    ['גיליון Events'],
-    ['- date (חובה): YYYY-MM-DD, חייב להיות בטווח הטיול'],
-    ['- time (חובה): HH:MM (24 שעות)'],
-    ['- end_time: HH:MM (אופציונלי)'],
-    ['- category (חובה): אחד מהערכים ברשימה למטה'],
-    ['- title (חובה): כותרת האירוע'],
-    ['- amount (חובה): מספר; 0 אם אין עלות'],
-    ['- currency (חובה): קוד מטבע'],
+    ['📅 גיליון Events — עמודות'],
+    ['- date (חובה): YYYY-MM-DD, חייב להיות בטווח start_date..end_date של הטיול'],
+    ['- time (חובה): HH:MM בפורמט 24 שעות, למשל 06:00 או 14:30'],
+    ['- end_time: HH:MM (אופציונלי אך מומלץ)'],
+    ['- category (חובה): אחד מ: Flights ✈️ / Accommodation 🏨 / Transport 🚗 / Activity 🎭 / Food 🍽️ / Shopping 🛍️ / General 📌'],
+    ['- title (חובה): כותרת קצרה וברורה (עד ~60 תווים)'],
+    ['- amount (חובה): מספר בלבד, ללא סימני מטבע. אם אין עלות — 0'],
+    ['- currency (חובה): קוד מטבע ISO (אם ריק — יילקח מ-base_currency של הטיול)'],
     ['- payment_method (חובה): Credit / Debit / Cash / Other'],
-    ['- address: כתובת מדויקת'],
-    ['- location: אזור / מיקום כללי'],
-    ['- notes: הערות חופשיות'],
-    ['- tags: תגיות מופרדות בפסיק, למשל "מומלץ,חובה"'],
+    ['- address (מומלץ מאוד): כתובת מלאה קריאה ל-Google Maps (ראה כללי הזהב למעלה)'],
+    ['- location: תיאור אזור כללי (רובע, שכונה, נמל, קוד IATA וכו׳)'],
+    ['- website: URL רשמי'],
+    ['- phone: טלפון בפורמט בינלאומי'],
+    ['- opening_hours: שעות פעילות'],
+    ['- confirmation_num: מספר אישור / הזמנה'],
+    ['- book_link: קישור להזמנה / כרטיס / צ׳ק אין'],
+    ['- notes: הערות חופשיות (טיפים, אזהרות, מה להביא)'],
+    ['- tags: תגיות מופרדות בפסיק. תגיות מומלצות: "תחילת-יום", "סוף-יום", "חובה", "מומלץ", "גיבוי"'],
     [],
-    ['סטטוסים אפשריים לטיול'],
+    ['🏷️ סטטוסים אפשריים לטיול'],
     ...TRIP_STATUSES.map(s => [s]),
     [],
-    ['קטגוריות אפשריות לאירוע'],
+    ['🏷️ קטגוריות אפשריות לאירוע'],
     ...EVENT_CATEGORIES.map(c => [c]),
     [],
-    ['שיטות תשלום'],
+    ['💳 שיטות תשלום'],
     ...PAYMENT_METHODS.map(p => [p]),
     [],
-    ['מטבעות נתמכים'],
+    ['💱 מטבעות נתמכים'],
     [CURRENCIES.join(', ')],
   ];
   const instrSheet = XLSX.utils.aoa_to_sheet(instr);
-  instrSheet['!cols'] = [{ wch: 60 }];
+  instrSheet['!cols'] = [{ wch: 100 }];
   XLSX.utils.book_append_sheet(wb, instrSheet, 'Instructions');
+
+  // AI Prompt sheet — a ready-to-paste prompt for building the trip via AI
+  const aiPrompt: any[][] = [
+    ['🤖 Prompt מוכן ל-AI (העתק והדבק ב-ChatGPT / Claude / Gemini)'],
+    ['החלף את החלקים ב-{{סוגריים}} בפרטים שלך, וצרף את הקובץ הזה או תבקש מה-AI להחזיר לך שני CSV מוכנים להדבקה בגיליונות Trip ו-Events.'],
+    [],
+    ['--- התחל להעתיק כאן ---'],
+    ['אני בונה טיול ל-{{יעד, למשל: רומא, איטליה}} בתאריכים {{start_date}} עד {{end_date}} עבור {{מספר אנשים והרכב, למשל: זוג + 2 ילדים בני 8 ו-11}}. תקציב כולל: {{budget}} {{מטבע}}. סגנון: {{למשל: אוכל מקומי, אמנות, ללא תורים, קצב רגוע}}.'],
+    [''],
+    ['בנה לי לוח זמנים מפורט ומלא את שני הגיליונות של הקובץ המצורף (Trip, Events) לפי החוקים הבאים:'],
+    ['1. גיליון Trip: שורה אחת עם name, destination, start_date, end_date, base_currency, status="Planning 📝", budget.'],
+    ['2. גיליון Events: לכל יום בטיול הכנס לפחות אירוע ראשון (תחילת יום, tag="תחילת-יום") ואירוע אחרון (סיום יום, tag="סוף-יום"). לרוב הימים הכנס 4-7 אירועים.'],
+    ['3. עמודות חובה: date (YYYY-MM-DD), time (HH:MM 24h), end_time, category (בדיוק מאחת: Flights ✈️ / Accommodation 🏨 / Transport 🚗 / Activity 🎭 / Food 🍽️ / Shopping 🛍️ / General 📌), title, amount (מספר, 0 אם חינם), currency (ISO), payment_method (Credit/Debit/Cash/Other).'],
+    ['4. שדה address חובה שיהיה כתובת מלאה שגוגל מפות פותח בלחיצה אחת: "שם המקום, רחוב+מספר, מיקוד, עיר, מדינה" — לא לכתוב רק "המלון" או "המסעדה".'],
+    ['5. מלא כמה שיותר metadata לכל אירוע: website (URL מלא), phone (+פורמט בינלאומי), opening_hours, confirmation_num (השאר ריק אם לא ידוע), book_link.'],
+    ['6. אירועי Accommodation — כלול address מלא של המלון + phone + opening_hours="Check-in HH:MM, Check-out HH:MM".'],
+    ['7. אירועי Flights — title כולל יעד; address = שם השדה + טרמינל + מדינה; location = "IATA_מוצא → IATA_יעד"; confirmation_num = PNR/מספר טיסה.'],
+    ['8. אירועי Activity — כלול website + phone + opening_hours. סמן ב-tag="מומלץ" מקומות שאסור לפספס.'],
+    ['9. סדר האירועים בכל יום לפי time עולה. הימנע מחפיפות זמן.'],
+    ['10. שפת title/notes: {{עברית / אנגלית}}. שמור על הכתובות באנגלית בכתיב מקומי כדי שגוגל מפות ימצא אותן.'],
+    [''],
+    ['בסוף — החזר לי את הקובץ המצורף מעודכן, או שני בלוקי CSV נקיים (אחד לכל גיליון) שאוכל להדביק ישירות ב-Excel.'],
+    ['--- סוף העתקה ---'],
+  ];
+  const aiSheet = XLSX.utils.aoa_to_sheet(aiPrompt);
+  aiSheet['!cols'] = [{ wch: 140 }];
+  XLSX.utils.book_append_sheet(wb, aiSheet, 'AI Prompt');
 
   XLSX.writeFile(wb, `trip-template-${today()}.xlsx`);
 };
@@ -216,6 +270,21 @@ export const parseTripExcel = async (file: File): Promise<ParsedTripResult> => {
       const location = String(r.location || '').trim();
       if (address) (details as any).address = address;
       if (location) (details as any).location = location;
+      const website = String(r.website || '').trim();
+      const phone = String(r.phone || '').trim();
+      const opening_hours = String(r.opening_hours || '').trim();
+      const confirmation_num = String(r.confirmation_num || '').trim();
+      const book_link = String(r.book_link || '').trim();
+      if (website) (details as any).website = website;
+      if (phone) (details as any).phone = phone;
+      if (opening_hours) (details as any).opening_hours = opening_hours;
+      if (confirmation_num) (details as any).confirmation_num = confirmation_num;
+      if (book_link) (details as any).book_link = book_link;
+      if (category === EventCategory.Accommodation && book_link) (details as any).book_link = book_link;
+      // Gentle nudge: warn when address is missing for location-based categories
+      if (!address && (category === EventCategory.Accommodation || category === EventCategory.Activity || category === EventCategory.Food || category === EventCategory.Shopping)) {
+        warnings.push(`שורה ${rowNum}: חסרה כתובת (address) — מומלץ למלא כתובת מלאה קריאה ל-Google Maps`);
+      }
 
       const tags = String(r.tags || '').split(',').map(s => s.trim()).filter(Boolean);
 
