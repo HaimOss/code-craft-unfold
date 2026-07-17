@@ -1,22 +1,29 @@
-import { Event, EventCategory, FlightDetails, AccommodationDetails, TransportDetails, GeneralDetails } from '../types';
+import { Event, EventCategory } from '../types';
+
+const firstNonEmpty = (d: Record<string, unknown>, keys: string[]): string | null => {
+  for (const k of keys) {
+    const v = d[k];
+    if (typeof v === 'string' && v.trim()) return v.trim();
+  }
+  return null;
+};
 
 export const getLocationFromEvent = (event: Event): string | null => {
-  const details = event.details;
-  if (!details) return null;
+  if (!event.details) return null;
+  const d = event.details as Record<string, unknown>;
   switch (event.category) {
     case EventCategory.Flights:
-      return (details as FlightDetails)?.arr_airport || (details as FlightDetails)?.dept_airport || null;
+      return firstNonEmpty(d, ['arr_airport', 'dept_airport', 'address', 'location']);
     case EventCategory.Accommodation:
-      return (details as AccommodationDetails)?.address || null;
+      return firstNonEmpty(d, ['address', 'location']);
     case EventCategory.Transport:
-      return (details as TransportDetails)?.dropoff_point || (details as TransportDetails)?.pickup_point || null;
+      return firstNonEmpty(d, ['dropoff_point', 'pickup_point', 'address', 'location']);
     case EventCategory.Activity:
     case EventCategory.Food:
     case EventCategory.Shopping:
     case EventCategory.General:
-      return (details as GeneralDetails)?.location || null;
     default:
-      return null;
+      return firstNonEmpty(d, ['address', 'location']);
   }
 };
 

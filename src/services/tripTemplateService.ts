@@ -1,9 +1,11 @@
 import * as XLSX from 'xlsx';
-import { Trip, Event, EventCategory, PaymentMethod, TripStatus, EventDetails } from '@/types';
+import { Trip, Event, EventCategory, PaymentMethod, TripStatus, EventDetails, DailyInfo } from '@/types';
 import { CURRENCIES, TRIP_STATUSES, EVENT_CATEGORIES, PAYMENT_METHODS } from '@/constants';
+import { getLocationFromEvent } from '@/utils/helpers';
 
 const TRIP_HEADERS = ['name', 'destination', 'start_date', 'end_date', 'base_currency', 'status', 'budget', 'cover_image', 'album_link'];
 const EVENT_HEADERS = ['date', 'time', 'end_time', 'category', 'title', 'amount', 'currency', 'payment_method', 'address', 'location', 'website', 'phone', 'opening_hours', 'confirmation_num', 'book_link', 'notes', 'tags'];
+const DAILY_INFO_HEADERS = ['date', 'start_point', 'end_point'];
 
 export interface ParsedTripResult {
   trip: Omit<Trip, 'id' | 'events'>;
@@ -40,9 +42,24 @@ export const downloadTripTemplate = () => {
   eventsSheet['!cols'] = EVENT_HEADERS.map(() => ({ wch: 18 }));
   XLSX.utils.book_append_sheet(wb, eventsSheet, 'Events');
 
+  // DailyInfo sheet — one row per day with geocodable start/end points
+  const hotel = 'Hotel Foro Romani, Via dei Fori Imperiali 25, 00184 Roma RM, Italy';
+  const dailyInfoExample = [
+    DAILY_INFO_HEADERS,
+    ['2026-05-10', 'Ben Gurion Airport (TLV), Terminal 3, Israel', hotel],
+    ['2026-05-11', hotel, hotel],
+    ['2026-05-12', hotel, hotel],
+    ['2026-05-13', hotel, hotel],
+    ['2026-05-14', hotel, 'Fiumicino Airport (FCO), Terminal 3, 00054 Fiumicino RM, Italy'],
+  ];
+  const dailyInfoSheet = XLSX.utils.aoa_to_sheet(dailyInfoExample);
+  dailyInfoSheet['!cols'] = [{ wch: 12 }, { wch: 60 }, { wch: 60 }];
+  XLSX.utils.book_append_sheet(wb, dailyInfoSheet, 'DailyInfo');
+
   // Instructions sheet — geared towards AI-assisted filling
   const instr: any[][] = [
     ['📘 הוראות מילוי — קובץ תבנית טיול'],
+    ['הקובץ מכיל 4 גיליונות עיקריים: Trip, Events, DailyInfo, Instructions (+ גיליון AI Prompt מוכן להעתקה).'],
     ['הקובץ מיועד לרוב להיות ממולא בעזרת AI (ChatGPT / Claude / Gemini). ראו גיליון "AI Prompt" — העתיקו משם את ה-Prompt המלא ל-AI לפני שתבקשו לבנות טיול.'],
     [],
     ['⚠️ כללי זהב'],
@@ -63,6 +80,16 @@ export const downloadTripTemplate = () => {
     ['   • book_link — קישור ישיר להזמנה / כרטיס / צ׳ק אין'],
     ['4. בסדר האירועים ביום — לפי שעה עולה (time). end_time אופציונלי אבל מומלץ מאוד לפעילויות ולטיסות.'],
     ['5. הימנע מכפילויות — כל אירוע חייב להיות ייחודי בשילוב תאריך+שעה+כותרת.'],
+    [],
+    ['🗺️ גיליון DailyInfo — נקודת התחלה וסיום לכל יום (חשוב מאוד!)'],
+    ['גיליון זה שולט על הסמן הירוק (התחלה) והאדום (סיום) על המפה היומית, על קישור מסלול Google Maps, ועל תצוגת ההתחלה/סיום במסלול. חובה למלא שורה אחת לכל תאריך בטווח הטיול.'],
+    ['- date (חובה): YYYY-MM-DD — חייב להיות בטווח start_date..end_date של הטיול.'],
+    ['- start_point (חובה): המקום בו היום מתחיל בפועל (מלון, שדה תעופה, תחנת רכבת). כתובת מלאה קריאה ל-Google Maps / OSM.'],
+    ['- end_point (חובה): המקום בו היום מסתיים בפועל (מלון, טיסה חזרה).'],
+    ['- אם מתחילים ומסיימים באותו מלון — חזור על כתובת המלון בשתי העמודות.'],
+    ['- בימי מעבר: start_point ו-end_point עשויים להיות מלונות / שדות תעופה / תחנות רכבת שונים.'],
+    ['- התגיות "תחילת-יום" ו-"סוף-יום" בגיליון Events הן metadata מועיל, אך הן אינן מחליפות את גיליון DailyInfo.'],
+    ['- אם גיליון DailyInfo חסר, המערכת תנסה להסיק נקודות מהתגיות ומהאירועים — אך זו לא תחליף לגיליון מלא ומדויק.'],
     [],
     ['📋 גיליון Trip'],
     ['- name (חובה): שם הטיול'],
@@ -111,12 +138,12 @@ export const downloadTripTemplate = () => {
   // AI Prompt sheet — a ready-to-paste prompt for building the trip via AI
   const aiPrompt: any[][] = [
     ['🤖 Prompt מוכן ל-AI (העתק והדבק ב-ChatGPT / Claude / Gemini)'],
-    ['החלף את החלקים ב-{{סוגריים}} בפרטים שלך, וצרף את הקובץ הזה או תבקש מה-AI להחזיר לך שני CSV מוכנים להדבקה בגיליונות Trip ו-Events.'],
+    ['החלף את החלקים ב-{{סוגריים}} בפרטים שלך, וצרף את הקובץ הזה או בקש מה-AI להחזיר לך שלושה CSV מוכנים להדבקה בגיליונות Trip, Events ו-DailyInfo.'],
     [],
     ['--- התחל להעתיק כאן ---'],
     ['אני בונה טיול ל-{{יעד, למשל: רומא, איטליה}} בתאריכים {{start_date}} עד {{end_date}} עבור {{מספר אנשים והרכב, למשל: זוג + 2 ילדים בני 8 ו-11}}. תקציב כולל: {{budget}} {{מטבע}}. סגנון: {{למשל: אוכל מקומי, אמנות, ללא תורים, קצב רגוע}}.'],
     [''],
-    ['בנה לי לוח זמנים מפורט ומלא את שני הגיליונות של הקובץ המצורף (Trip, Events) לפי החוקים הבאים:'],
+    ['בנה לי לוח זמנים מפורט ומלא את שלושת הגיליונות של הקובץ המצורף (Trip, Events, DailyInfo) לפי החוקים הבאים:'],
     ['1. גיליון Trip: שורה אחת עם name, destination, start_date, end_date, base_currency, status="Planning 📝", budget.'],
     ['2. גיליון Events: לכל יום בטיול הכנס לפחות אירוע ראשון (תחילת יום, tag="תחילת-יום") ואירוע אחרון (סיום יום, tag="סוף-יום"). לרוב הימים הכנס 4-7 אירועים.'],
     ['3. עמודות חובה: date (YYYY-MM-DD), time (HH:MM 24h), end_time, category (בדיוק מאחת: Flights ✈️ / Accommodation 🏨 / Transport 🚗 / Activity 🎭 / Food 🍽️ / Shopping 🛍️ / General 📌), title, amount (מספר, 0 אם חינם), currency (ISO), payment_method (Credit/Debit/Cash/Other).'],
@@ -127,8 +154,13 @@ export const downloadTripTemplate = () => {
     ['8. אירועי Activity — כלול website + phone + opening_hours. סמן ב-tag="מומלץ" מקומות שאסור לפספס.'],
     ['9. סדר האירועים בכל יום לפי time עולה. הימנע מחפיפות זמן.'],
     ['10. שפת title/notes: {{עברית / אנגלית}}. שמור על הכתובות באנגלית בכתיב מקומי כדי שגוגל מפות ימצא אותן.'],
+    ['11. גיליון DailyInfo — חובה! צור שורה אחת לכל תאריך בטווח הטיול (כולל תאריך התחלה וסיום). עמודות: date, start_point, end_point.'],
+    ['    • start_point ו-end_point חייבים להיות כתובות מלאות בשפה מקומית/אנגלית שגוגל מפות ו-OpenStreetMap Nominatim יודעים לגאוקוד.'],
+    ['    • אל תניח שהתגיות "תחילת-יום" / "סוף-יום" באירועים יוצרות אוטומטית את DailyInfo — חובה למלא את הגיליון בנפרד.'],
+    ['    • בימים שבהם ישנים באותו מלון — start_point = end_point = כתובת המלון המלאה.'],
+    ['    • בימי מעבר — start_point עשוי להיות מלון קודם / שדה תעופה / תחנת רכבת, ו-end_point עשוי להיות מלון חדש / שדה תעופה / תחנת רכבת אחרת.'],
     [''],
-    ['בסוף — החזר לי את הקובץ המצורף מעודכן, או שני בלוקי CSV נקיים (אחד לכל גיליון) שאוכל להדביק ישירות ב-Excel.'],
+    ['בסוף — החזר לי את הקובץ המצורף מעודכן, או שלושה בלוקי CSV נקיים (אחד לכל גיליון: Trip, Events, DailyInfo) שאוכל להדביק ישירות ב-Excel.'],
     ['--- סוף העתקה ---'],
   ];
   const aiSheet = XLSX.utils.aoa_to_sheet(aiPrompt);
@@ -304,6 +336,100 @@ export const parseTripExcel = async (file: File): Promise<ParsedTripResult> => {
       });
     }
   }
+
+  // ---- DailyInfo (optional) ----
+  const dailyInfo: { [date: string]: DailyInfo } = {};
+  const dailyInfoSheetName = wb.SheetNames.find(n => n.toLowerCase() === 'dailyinfo' || n.toLowerCase() === 'daily_info' || n.toLowerCase() === 'daily info');
+
+  const inRange = (d: string) =>
+    !start_date || !end_date || (d >= start_date && d <= end_date);
+
+  if (dailyInfoSheetName) {
+    const rows = XLSX.utils.sheet_to_json<any[]>(wb.Sheets[dailyInfoSheetName], { header: 1, raw: true, defval: '' });
+    if (rows.length >= 2) {
+      const headers = (rows[0] as any[]).map(h => String(h).trim().toLowerCase());
+      for (let i = 1; i < rows.length; i++) {
+        const raw = rows[i] as any[];
+        if (!raw || raw.every(c => c === '' || c == null)) continue;
+        const r = rowToObject(headers, raw);
+        const rowNum = i + 1;
+        const d = normalizeDate(r.date);
+        if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+          warnings.push(`DailyInfo שורה ${rowNum}: תאריך לא תקין — דילוג`);
+          continue;
+        }
+        if (!inRange(d)) {
+          warnings.push(`DailyInfo שורה ${rowNum}: התאריך ${d} מחוץ לטווח הטיול`);
+        }
+        const sp = String(r.start_point || '').trim();
+        const ep = String(r.end_point || '').trim();
+        if (!sp) warnings.push(`DailyInfo ${d}: חסרה נקודת התחלה (start_point)`);
+        if (!ep) warnings.push(`DailyInfo ${d}: חסרה נקודת סיום (end_point)`);
+        dailyInfo[d] = {
+          ...(sp ? { startPoint: sp } : {}),
+          ...(ep ? { endPoint: ep } : {}),
+        };
+      }
+    }
+  }
+
+  // ---- Inference fallback from tags / event locations ----
+  if (start_date && end_date && /^\d{4}-\d{2}-\d{2}$/.test(start_date) && /^\d{4}-\d{2}-\d{2}$/.test(end_date)) {
+    const eventsByDate = new Map<string, Event[]>();
+    for (const ev of events) {
+      const arr = eventsByDate.get(ev.date) || [];
+      arr.push(ev);
+      eventsByDate.set(ev.date, arr);
+    }
+
+    const hasTag = (ev: Event, tag: string) =>
+      (ev.tags || []).some(t => t.replace(/[\s\u200f\u200e]/g, '') === tag.replace(/[\s\u200f\u200e]/g, ''));
+
+    // enumerate all dates in trip range
+    const s = new Date(start_date + 'T00:00:00');
+    const e = new Date(end_date + 'T00:00:00');
+    for (let dt = new Date(s); dt <= e; dt.setDate(dt.getDate() + 1)) {
+      const key = dt.toISOString().slice(0, 10);
+      const existing = dailyInfo[key] || {};
+      const dayEvents = (eventsByDate.get(key) || []).slice().sort((a, b) => a.time.localeCompare(b.time));
+
+      if (!existing.startPoint) {
+        const tagged = dayEvents.find(ev => hasTag(ev, 'תחילת-יום'));
+        const loc = tagged && getLocationFromEvent(tagged);
+        if (loc) {
+          existing.startPoint = loc;
+          warnings.push(`${key}: נקודת התחלה הוסקה מתגית "תחילת-יום" (${loc})`);
+        } else {
+          const first = dayEvents.map(getLocationFromEvent).find(Boolean);
+          if (first) {
+            existing.startPoint = first;
+            warnings.push(`${key}: נקודת התחלה הוסקה מהאירוע הראשון של היום (${first})`);
+          }
+        }
+      }
+
+      if (!existing.endPoint) {
+        const tagged = [...dayEvents].reverse().find(ev => hasTag(ev, 'סוף-יום'));
+        const loc = tagged && getLocationFromEvent(tagged);
+        if (loc) {
+          existing.endPoint = loc;
+          warnings.push(`${key}: נקודת סיום הוסקה מתגית "סוף-יום" (${loc})`);
+        } else {
+          const last = [...dayEvents].reverse().map(getLocationFromEvent).find(Boolean);
+          if (last) {
+            existing.endPoint = last;
+            warnings.push(`${key}: נקודת סיום הוסקה מהאירוע האחרון של היום (${last})`);
+          }
+        }
+      }
+
+      if (existing.startPoint || existing.endPoint) dailyInfo[key] = existing;
+      if (!existing.startPoint) warnings.push(`${key}: חסרה נקודת התחלה יומית`);
+      if (!existing.endPoint) warnings.push(`${key}: חסרה נקודת סיום יומית`);
+    }
+  }
+
+  (trip as Omit<Trip, 'id' | 'events'>).dailyInfo = dailyInfo;
 
   return { trip, events, errors, warnings };
 };
