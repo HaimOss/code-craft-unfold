@@ -1,9 +1,11 @@
 import * as XLSX from 'xlsx';
-import { Trip, Event, EventCategory, PaymentMethod, TripStatus, EventDetails } from '@/types';
+import { Trip, Event, EventCategory, PaymentMethod, TripStatus, EventDetails, DailyInfo } from '@/types';
 import { CURRENCIES, TRIP_STATUSES, EVENT_CATEGORIES, PAYMENT_METHODS } from '@/constants';
+import { getLocationFromEvent } from '@/utils/helpers';
 
 const TRIP_HEADERS = ['name', 'destination', 'start_date', 'end_date', 'base_currency', 'status', 'budget', 'cover_image', 'album_link'];
 const EVENT_HEADERS = ['date', 'time', 'end_time', 'category', 'title', 'amount', 'currency', 'payment_method', 'address', 'location', 'website', 'phone', 'opening_hours', 'confirmation_num', 'book_link', 'notes', 'tags'];
+const DAILY_INFO_HEADERS = ['date', 'start_point', 'end_point'];
 
 export interface ParsedTripResult {
   trip: Omit<Trip, 'id' | 'events'>;
