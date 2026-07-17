@@ -3,8 +3,11 @@ import * as XLSX from 'xlsx';
 import { parseTripExcel } from '@/services/tripTemplateService';
 
 const makeFile = (wb: XLSX.WorkBook, name = 'test.xlsx'): File => {
-  const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
-  return new File([buf], name, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const buf: ArrayBuffer = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+  // jsdom's File lacks arrayBuffer() — provide a shim.
+  const file = new File([buf], name, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  (file as any).arrayBuffer = async () => buf;
+  return file;
 };
 
 const baseTripRow = {
