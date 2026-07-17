@@ -42,9 +42,24 @@ export const downloadTripTemplate = () => {
   eventsSheet['!cols'] = EVENT_HEADERS.map(() => ({ wch: 18 }));
   XLSX.utils.book_append_sheet(wb, eventsSheet, 'Events');
 
+  // DailyInfo sheet — one row per day with geocodable start/end points
+  const hotel = 'Hotel Foro Romani, Via dei Fori Imperiali 25, 00184 Roma RM, Italy';
+  const dailyInfoExample = [
+    DAILY_INFO_HEADERS,
+    ['2026-05-10', 'Ben Gurion Airport (TLV), Terminal 3, Israel', hotel],
+    ['2026-05-11', hotel, hotel],
+    ['2026-05-12', hotel, hotel],
+    ['2026-05-13', hotel, hotel],
+    ['2026-05-14', hotel, 'Fiumicino Airport (FCO), Terminal 3, 00054 Fiumicino RM, Italy'],
+  ];
+  const dailyInfoSheet = XLSX.utils.aoa_to_sheet(dailyInfoExample);
+  dailyInfoSheet['!cols'] = [{ wch: 12 }, { wch: 60 }, { wch: 60 }];
+  XLSX.utils.book_append_sheet(wb, dailyInfoSheet, 'DailyInfo');
+
   // Instructions sheet — geared towards AI-assisted filling
   const instr: any[][] = [
     ['📘 הוראות מילוי — קובץ תבנית טיול'],
+    ['הקובץ מכיל 4 גיליונות עיקריים: Trip, Events, DailyInfo, Instructions (+ גיליון AI Prompt מוכן להעתקה).'],
     ['הקובץ מיועד לרוב להיות ממולא בעזרת AI (ChatGPT / Claude / Gemini). ראו גיליון "AI Prompt" — העתיקו משם את ה-Prompt המלא ל-AI לפני שתבקשו לבנות טיול.'],
     [],
     ['⚠️ כללי זהב'],
@@ -65,6 +80,16 @@ export const downloadTripTemplate = () => {
     ['   • book_link — קישור ישיר להזמנה / כרטיס / צ׳ק אין'],
     ['4. בסדר האירועים ביום — לפי שעה עולה (time). end_time אופציונלי אבל מומלץ מאוד לפעילויות ולטיסות.'],
     ['5. הימנע מכפילויות — כל אירוע חייב להיות ייחודי בשילוב תאריך+שעה+כותרת.'],
+    [],
+    ['🗺️ גיליון DailyInfo — נקודת התחלה וסיום לכל יום (חשוב מאוד!)'],
+    ['גיליון זה שולט על הסמן הירוק (התחלה) והאדום (סיום) על המפה היומית, על קישור מסלול Google Maps, ועל תצוגת ההתחלה/סיום במסלול. חובה למלא שורה אחת לכל תאריך בטווח הטיול.'],
+    ['- date (חובה): YYYY-MM-DD — חייב להיות בטווח start_date..end_date של הטיול.'],
+    ['- start_point (חובה): המקום בו היום מתחיל בפועל (מלון, שדה תעופה, תחנת רכבת). כתובת מלאה קריאה ל-Google Maps / OSM.'],
+    ['- end_point (חובה): המקום בו היום מסתיים בפועל (מלון, טיסה חזרה).'],
+    ['- אם מתחילים ומסיימים באותו מלון — חזור על כתובת המלון בשתי העמודות.'],
+    ['- בימי מעבר: start_point ו-end_point עשויים להיות מלונות / שדות תעופה / תחנות רכבת שונים.'],
+    ['- התגיות "תחילת-יום" ו-"סוף-יום" בגיליון Events הן metadata מועיל, אך הן אינן מחליפות את גיליון DailyInfo.'],
+    ['- אם גיליון DailyInfo חסר, המערכת תנסה להסיק נקודות מהתגיות ומהאירועים — אך זו לא תחליף לגיליון מלא ומדויק.'],
     [],
     ['📋 גיליון Trip'],
     ['- name (חובה): שם הטיול'],
@@ -113,12 +138,12 @@ export const downloadTripTemplate = () => {
   // AI Prompt sheet — a ready-to-paste prompt for building the trip via AI
   const aiPrompt: any[][] = [
     ['🤖 Prompt מוכן ל-AI (העתק והדבק ב-ChatGPT / Claude / Gemini)'],
-    ['החלף את החלקים ב-{{סוגריים}} בפרטים שלך, וצרף את הקובץ הזה או תבקש מה-AI להחזיר לך שני CSV מוכנים להדבקה בגיליונות Trip ו-Events.'],
+    ['החלף את החלקים ב-{{סוגריים}} בפרטים שלך, וצרף את הקובץ הזה או בקש מה-AI להחזיר לך שלושה CSV מוכנים להדבקה בגיליונות Trip, Events ו-DailyInfo.'],
     [],
     ['--- התחל להעתיק כאן ---'],
     ['אני בונה טיול ל-{{יעד, למשל: רומא, איטליה}} בתאריכים {{start_date}} עד {{end_date}} עבור {{מספר אנשים והרכב, למשל: זוג + 2 ילדים בני 8 ו-11}}. תקציב כולל: {{budget}} {{מטבע}}. סגנון: {{למשל: אוכל מקומי, אמנות, ללא תורים, קצב רגוע}}.'],
     [''],
-    ['בנה לי לוח זמנים מפורט ומלא את שני הגיליונות של הקובץ המצורף (Trip, Events) לפי החוקים הבאים:'],
+    ['בנה לי לוח זמנים מפורט ומלא את שלושת הגיליונות של הקובץ המצורף (Trip, Events, DailyInfo) לפי החוקים הבאים:'],
     ['1. גיליון Trip: שורה אחת עם name, destination, start_date, end_date, base_currency, status="Planning 📝", budget.'],
     ['2. גיליון Events: לכל יום בטיול הכנס לפחות אירוע ראשון (תחילת יום, tag="תחילת-יום") ואירוע אחרון (סיום יום, tag="סוף-יום"). לרוב הימים הכנס 4-7 אירועים.'],
     ['3. עמודות חובה: date (YYYY-MM-DD), time (HH:MM 24h), end_time, category (בדיוק מאחת: Flights ✈️ / Accommodation 🏨 / Transport 🚗 / Activity 🎭 / Food 🍽️ / Shopping 🛍️ / General 📌), title, amount (מספר, 0 אם חינם), currency (ISO), payment_method (Credit/Debit/Cash/Other).'],
@@ -129,8 +154,13 @@ export const downloadTripTemplate = () => {
     ['8. אירועי Activity — כלול website + phone + opening_hours. סמן ב-tag="מומלץ" מקומות שאסור לפספס.'],
     ['9. סדר האירועים בכל יום לפי time עולה. הימנע מחפיפות זמן.'],
     ['10. שפת title/notes: {{עברית / אנגלית}}. שמור על הכתובות באנגלית בכתיב מקומי כדי שגוגל מפות ימצא אותן.'],
+    ['11. גיליון DailyInfo — חובה! צור שורה אחת לכל תאריך בטווח הטיול (כולל תאריך התחלה וסיום). עמודות: date, start_point, end_point.'],
+    ['    • start_point ו-end_point חייבים להיות כתובות מלאות בשפה מקומית/אנגלית שגוגל מפות ו-OpenStreetMap Nominatim יודעים לגאוקוד.'],
+    ['    • אל תניח שהתגיות "תחילת-יום" / "סוף-יום" באירועים יוצרות אוטומטית את DailyInfo — חובה למלא את הגיליון בנפרד.'],
+    ['    • בימים שבהם ישנים באותו מלון — start_point = end_point = כתובת המלון המלאה.'],
+    ['    • בימי מעבר — start_point עשוי להיות מלון קודם / שדה תעופה / תחנת רכבת, ו-end_point עשוי להיות מלון חדש / שדה תעופה / תחנת רכבת אחרת.'],
     [''],
-    ['בסוף — החזר לי את הקובץ המצורף מעודכן, או שני בלוקי CSV נקיים (אחד לכל גיליון) שאוכל להדביק ישירות ב-Excel.'],
+    ['בסוף — החזר לי את הקובץ המצורף מעודכן, או שלושה בלוקי CSV נקיים (אחד לכל גיליון: Trip, Events, DailyInfo) שאוכל להדביק ישירות ב-Excel.'],
     ['--- סוף העתקה ---'],
   ];
   const aiSheet = XLSX.utils.aoa_to_sheet(aiPrompt);
