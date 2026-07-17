@@ -274,6 +274,12 @@ const BulkTripUploadModal: React.FC<BulkTripUploadModalProps> = ({ isOpen, onClo
                           </div>
                         </div>
                       )}
+                      {dailySummary && (
+                        <div className={`text-xs pt-2 border-t border-border/60 ${dailySummary.complete < dailySummary.total ? 'text-yellow-800 dark:text-yellow-200' : 'text-green-700 dark:text-green-400'}`}>
+                          <div className="font-medium mb-0.5">🗺️ נקודות מסלול יומיות: {dailySummary.complete}/{dailySummary.total} ימים מלאים</div>
+                          <div className="text-muted-foreground">התחלה: {dailySummary.withStart}/{dailySummary.total} · סיום: {dailySummary.withEnd}/{dailySummary.total}</div>
+                        </div>
+                      )}
                     </div>
 
                     {parsed.errors.length > 0 && (
