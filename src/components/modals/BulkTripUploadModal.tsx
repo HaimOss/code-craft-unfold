@@ -109,6 +109,28 @@ const BulkTripUploadModal: React.FC<BulkTripUploadModalProps> = ({ isOpen, onClo
     return acc;
   }, {}) : {};
 
+  const dailySummary = React.useMemo(() => {
+    if (!parsed) return null;
+    const s = parsed.trip.start_date;
+    const e = parsed.trip.end_date;
+    if (!s || !e) return null;
+    const dates: string[] = [];
+    const start = new Date(s + 'T00:00:00');
+    const end = new Date(e + 'T00:00:00');
+    for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+      dates.push(dt.toISOString().slice(0, 10));
+    }
+    const di = (parsed.trip as any).dailyInfo || {};
+    let withStart = 0, withEnd = 0, complete = 0;
+    for (const d of dates) {
+      const info = di[d] || {};
+      if (info.startPoint) withStart++;
+      if (info.endPoint) withEnd++;
+      if (info.startPoint && info.endPoint) complete++;
+    }
+    return { total: dates.length, withStart, withEnd, complete };
+  }, [parsed]);
+
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && handleClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col" dir={dir}>
