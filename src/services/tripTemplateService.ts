@@ -337,5 +337,99 @@ export const parseTripExcel = async (file: File): Promise<ParsedTripResult> => {
     }
   }
 
+  // ---- DailyInfo (optional) ----
+  const dailyInfo: { [date: string]: DailyInfo } = {};
+  const dailyInfoSheetName = wb.SheetNames.find(n => n.toLowerCase() === 'dailyinfo' || n.toLowerCase() === 'daily_info' || n.toLowerCase() === 'daily info');
+
+  const inRange = (d: string) =>
+    !start_date || !end_date || (d >= start_date && d <= end_date);
+
+  if (dailyInfoSheetName) {
+    const rows = XLSX.utils.sheet_to_json<any[]>(wb.Sheets[dailyInfoSheetName], { header: 1, raw: true, defval: '' });
+    if (rows.length >= 2) {
+      const headers = (rows[0] as any[]).map(h => String(h).trim().toLowerCase());
+      for (let i = 1; i < rows.length; i++) {
+        const raw = rows[i] as any[];
+        if (!raw || raw.every(c => c === '' || c == null)) continue;
+        const r = rowToObject(headers, raw);
+        const rowNum = i + 1;
+        const d = normalizeDate(r.date);
+        if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+          warnings.push(`DailyInfo שורה ${rowNum}: תאריך לא תקין — דילוג`);
+          continue;
+        }
+        if (!inRange(d)) {
+          warnings.push(`DailyInfo שורה ${rowNum}: התאריך ${d} מחוץ לטווח הטיול`);
+        }
+        const sp = String(r.start_point || '').trim();
+        const ep = String(r.end_point || '').trim();
+        if (!sp) warnings.push(`DailyInfo ${d}: חסרה נקודת התחלה (start_point)`);
+        if (!ep) warnings.push(`DailyInfo ${d}: חסרה נקודת סיום (end_point)`);
+        dailyInfo[d] = {
+          ...(sp ? { startPoint: sp } : {}),
+          ...(ep ? { endPoint: ep } : {}),
+        };
+      }
+    }
+  }
+
+  // ---- Inference fallback from tags / event locations ----
+  if (start_date && end_date && /^\d{4}-\d{2}-\d{2}$/.test(start_date) && /^\d{4}-\d{2}-\d{2}$/.test(end_date)) {
+    const eventsByDate = new Map<string, Event[]>();
+    for (const ev of events) {
+      const arr = eventsByDate.get(ev.date) || [];
+      arr.push(ev);
+      eventsByDate.set(ev.date, arr);
+    }
+
+    const hasTag = (ev: Event, tag: string) =>
+      (ev.tags || []).some(t => t.replace(/[\s\u200f\u200e]/g, '') === tag.replace(/[\s\u200f\u200e]/g, ''));
+
+    // enumerate all dates in trip range
+    const s = new Date(start_date + 'T00:00:00');
+    const e = new Date(end_date + 'T00:00:00');
+    for (let dt = new Date(s); dt <= e; dt.setDate(dt.getDate() + 1)) {
+      const key = dt.toISOString().slice(0, 10);
+      const existing = dailyInfo[key] || {};
+      const dayEvents = (eventsByDate.get(key) || []).slice().sort((a, b) => a.time.localeCompare(b.time));
+
+      if (!existing.startPoint) {
+        const tagged = dayEvents.find(ev => hasTag(ev, 'תחילת-יום'));
+        const loc = tagged && getLocationFromEvent(tagged);
+        if (loc) {
+          existing.startPoint = loc;
+          warnings.push(`${key}: נקודת התחלה הוסקה מתגית "תחילת-יום" (${loc})`);
+        } else {
+          const first = dayEvents.map(getLocationFromEvent).find(Boolean);
+          if (first) {
+            existing.startPoint = first;
+            warnings.push(`${key}: נקודת התחלה הוסקה מהאירוע הראשון של היום (${first})`);
+          }
+        }
+      }
+
+      if (!existing.endPoint) {
+        const tagged = [...dayEvents].reverse().find(ev => hasTag(ev, 'סוף-יום'));
+        const loc = tagged && getLocationFromEvent(tagged);
+        if (loc) {
+          existing.endPoint = loc;
+          warnings.push(`${key}: נקודת סיום הוסקה מתגית "סוף-יום" (${loc})`);
+        } else {
+          const last = [...dayEvents].reverse().map(getLocationFromEvent).find(Boolean);
+          if (last) {
+            existing.endPoint = last;
+            warnings.push(`${key}: נקודת סיום הוסקה מהאירוע האחרון של היום (${last})`);
+          }
+        }
+      }
+
+      if (existing.startPoint || existing.endPoint) dailyInfo[key] = existing;
+      if (!existing.startPoint) warnings.push(`${key}: חסרה נקודת התחלה יומית`);
+      if (!existing.endPoint) warnings.push(`${key}: חסרה נקודת סיום יומית`);
+    }
+  }
+
+  (trip as Omit<Trip, 'id' | 'events'>).dailyInfo = dailyInfo;
+
   return { trip, events, errors, warnings };
 };
