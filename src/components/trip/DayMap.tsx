@@ -122,6 +122,19 @@ const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
 
   const positions = useMemo(() => items.map(i => [i.lat, i.lng] as [number, number]), [items]);
 
+  // Group items with same coords (11m precision). Events group together;
+  // start/end points dedupe against each other and against events.
+  const groupedItems = useMemo(() => {
+    const groups = new Map<string, GeocodedItem[]>();
+    for (const it of items) {
+      const key = `${it.lat.toFixed(4)},${it.lng.toFixed(4)}`;
+      const arr = groups.get(key) ?? [];
+      arr.push(it);
+      groups.set(key, arr);
+    }
+    return Array.from(groups.values());
+  }, [items]);
+
   const defaultCenter: [number, number] = useMemo(() => {
     if (positions.length > 0) return positions[0];
     return [32.0, 34.8];
@@ -159,26 +172,46 @@ const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
           />
           <FitBounds positions={positions} />
 
-          {items.map((item, idx) => {
-            if (item.type === 'event' && item.event) {
+          {groupedItems.map((group, gIdx) => {
+            const first = group[0];
+            // Prefer an event for the icon; else use start/end styling.
+            const eventInGroup = group.find(g => g.type === 'event' && g.event);
+            if (eventInGroup && eventInGroup.event) {
+              const events = group.filter(g => g.type === 'event' && g.event);
+              const points = group.filter(g => g.type !== 'event');
               return (
                 <Marker
-                  key={item.event.id}
-                  position={[item.lat, item.lng]}
-                  icon={createCategoryIcon(item.event.category as EventCategory, CATEGORY_COLORS[item.event.category] || '#6b7280')}
+                  key={`grp-${gIdx}`}
+                  position={[first.lat, first.lng]}
+                  icon={createCategoryIcon(eventInGroup.event.category as EventCategory, CATEGORY_COLORS[eventInGroup.event.category] || '#6b7280')}
                 >
                   <Popup>
-                    <div className="text-sm min-w-[160px]">
-                      <div className="font-bold mb-1">{item.event.title}</div>
-                      <div style={{ color: '#6b7280' }}>{item.event.time} · {item.label}</div>
+                    <div className="text-sm min-w-[160px] max-h-[200px] overflow-y-auto">
+                      {group.length > 1 && (
+                        <div className="text-xs text-gray-500 mb-1">{group.length} פריטים כאן</div>
+                      )}
+                      {points.map((p, i) => (
+                        <div key={`p-${i}`} className="text-xs text-gray-600 mb-1">
+                          {p.type === 'start' ? `📍 ${t('map.startPoint')}` : `🏁 ${t('map.endPoint')}`}
+                        </div>
+                      ))}
+                      {events.map((ge, i) => (
+                        <div key={ge.event!.id} className={i > 0 ? 'mt-2 pt-2 border-t border-gray-200' : ''}>
+                          <div className="font-bold">{ge.event!.title}</div>
+                          <div style={{ color: '#6b7280' }}>{ge.event!.time} · {ge.label}</div>
+                        </div>
+                      ))}
                     </div>
                   </Popup>
                 </Marker>
               );
             }
+            // Only start/end points here — collapse duplicates; prefer 'start' if both.
+            const hasStart = group.some(g => g.type === 'start');
+            const item = hasStart ? group.find(g => g.type === 'start')! : group[0];
             return (
               <Marker
-                key={`${item.type}-${idx}`}
+                key={`pt-${gIdx}`}
                 position={[item.lat, item.lng]}
                 icon={L.divIcon({
                   className: 'custom-map-marker',
