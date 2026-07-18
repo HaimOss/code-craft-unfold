@@ -183,9 +183,32 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
     ? geocodedPoints.filter(p => p.dayIndex === selectedDay)
     : geocodedPoints;
 
+  // Group events that share the same coordinates (within ~11m) into one marker
+  const eventGroups = useMemo(() => {
+    const groups = new Map<string, GeocodedEvent[]>();
+    for (const ge of filteredEvents) {
+      const key = `${ge.lat.toFixed(4)},${ge.lng.toFixed(4)}`;
+      const arr = groups.get(key) ?? [];
+      arr.push(ge);
+      groups.set(key, arr);
+    }
+    return Array.from(groups.values());
+  }, [filteredEvents]);
+
+  // Dedupe start/end points by coordinates + type
+  const uniquePoints = useMemo(() => {
+    const seen = new Set<string>();
+    return filteredPoints.filter(p => {
+      const key = `${p.type}:${p.lat.toFixed(4)},${p.lng.toFixed(4)}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [filteredPoints]);
+
   const positions: [number, number][] = [
-    ...filteredEvents.map(e => [e.lat, e.lng] as [number, number]),
-    ...filteredPoints.map(p => [p.lat, p.lng] as [number, number]),
+    ...eventGroups.map(g => [g[0].lat, g[0].lng] as [number, number]),
+    ...uniquePoints.map(p => [p.lat, p.lng] as [number, number]),
   ];
 
   // Build day routes including start/end points (no dashed lines - removed)
@@ -259,32 +282,36 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
           />
           <FitBounds positions={positions} />
 
-          {filteredEvents.map((ge) => (
-            <Marker
-              key={ge.event.id}
-              position={[ge.lat, ge.lng]}
-              icon={createCategoryIcon(ge.event.category as EventCategory, CATEGORY_COLORS[ge.event.category] || '#6b7280')}
-            >
-              <Popup>
-                <div className="text-sm min-w-[180px]">
-                  <div className="font-bold text-base mb-1">{ge.event.title}</div>
-                   <div className="text-gray-500 mb-1">
-                     {t('map.dayLabel', { idx: String(ge.dayIndex + 1) })} · {ge.event.time}
-                   </div>
-                  {ge.event.notes && (
-                    <div className="text-gray-600 text-xs mt-1">{ge.event.notes}</div>
-                  )}
-                  {ge.event.rating && (
-                    <div className="text-yellow-500 text-xs mt-1">
-                      {'★'.repeat(ge.event.rating)}{'☆'.repeat(5 - ge.event.rating)}
-                    </div>
-                  )}
-                </div>
-              </Popup>
-            </Marker>
-          ))}
+          {eventGroups.map((group) => {
+            const first = group[0];
+            const primary = group[0].event;
+            return (
+              <Marker
+                key={`grp-${first.lat.toFixed(4)}-${first.lng.toFixed(4)}`}
+                position={[first.lat, first.lng]}
+                icon={createCategoryIcon(primary.category as EventCategory, CATEGORY_COLORS[primary.category] || '#6b7280')}
+              >
+                <Popup>
+                  <div className="text-sm min-w-[180px] max-h-[220px] overflow-y-auto">
+                    {group.length > 1 && (
+                      <div className="text-xs text-gray-500 mb-1">{group.length} פריטים במיקום זה</div>
+                    )}
+                    {group.map((ge, i) => (
+                      <div key={ge.event.id} className={i > 0 ? 'mt-2 pt-2 border-t border-gray-200' : ''}>
+                        <div className="font-bold">{ge.event.title}</div>
+                        <div className="text-gray-500 text-xs">
+                          {t('map.dayLabel', { idx: String(ge.dayIndex + 1) })} · {ge.event.time}
+                        </div>
+                        {ge.event.notes && <div className="text-gray-600 text-xs mt-1">{ge.event.notes}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
 
-          {filteredPoints.map((pt, idx) => (
+          {uniquePoints.map((pt, idx) => (
             <Marker
               key={`point-${pt.type}-${pt.dayIndex}-${idx}`}
               position={[pt.lat, pt.lng]}
