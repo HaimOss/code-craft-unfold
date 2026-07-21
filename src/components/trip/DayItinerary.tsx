@@ -43,6 +43,9 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   const [editingEndPoint, setEditingEndPoint] = useState(false);
 
   const dailyInfo = trip.dailyInfo?.[date] || {};
+  const isFirstDay = date === trip.start_date;
+  const isLastDay = date === trip.end_date;
+  const locOpts = { isFirstDay, isLastDay };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -88,7 +91,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     const rawLocations: string[] = [];
     if (dailyInfo.startPoint) rawLocations.push(dailyInfo.startPoint);
     dailyEvents.forEach(e => {
-      const loc = getLocationFromEvent(e);
+      const loc = getLocationFromEvent(e, locOpts);
       if (loc) rawLocations.push(loc);
     });
     if (dailyInfo.endPoint) rawLocations.push(dailyInfo.endPoint);
@@ -121,7 +124,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     dailyEvents.forEach((event) => {
       const config = CATEGORY_DISPLAY_CONFIG[event.category];
       const amountStr = `${CURRENCY_SYMBOLS[event.currency] || ''}${event.amount.toLocaleString()}`;
-      const loc = getLocationFromEvent(event);
+      const loc = getLocationFromEvent(event, locOpts);
       let detailLine = '';
       if (loc) detailLine += loc;
       if (event.notes) detailLine += (detailLine ? '  |  ' : '') + event.notes;
@@ -270,7 +273,7 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
 
       {showDayMap && (
         <Suspense fallback={<div className="flex justify-center py-6 text-muted-foreground text-sm">{t('trip.loadingMap')}</div>}>
-          <DayMap events={dailyEvents} dailyInfo={dailyInfo} destination={trip.destination} />
+          <DayMap events={dailyEvents} dailyInfo={dailyInfo} destination={trip.destination} isFirstDay={isFirstDay} isLastDay={isLastDay} />
         </Suspense>
       )}
 

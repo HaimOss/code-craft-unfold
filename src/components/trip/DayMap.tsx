@@ -73,6 +73,8 @@ interface DayMapProps {
   events: Event[];
   dailyInfo: DailyInfo;
   destination?: string | null;
+  isFirstDay?: boolean;
+  isLastDay?: boolean;
 }
 
 interface GeocodedItem {
@@ -83,7 +85,7 @@ interface GeocodedItem {
   event?: Event;
 }
 
-const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
+const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination, isFirstDay, isLastDay }) => {
   const { t } = useLanguage();
   const [items, setItems] = useState<GeocodedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,7 +103,7 @@ const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
 
       // Events
       for (const event of events) {
-        const loc = getLocationFromEvent(event);
+        const loc = getLocationFromEvent(event, { isFirstDay, isLastDay });
         if (!loc) continue;
         const coords = await geocodeLocation(loc);
         if (coords) results.push({ label: loc, ...coords, type: 'event', event });
@@ -118,7 +120,7 @@ const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination }) => {
       setLoading(false);
     };
     geocodeAll();
-  }, [events, dailyInfo]);
+  }, [events, dailyInfo, isFirstDay, isLastDay]);
 
   const positions = useMemo(() => items.map(i => [i.lat, i.lng] as [number, number]), [items]);
 
