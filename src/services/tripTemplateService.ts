@@ -400,7 +400,7 @@ export const parseTripExcel = async (file: File): Promise<ParsedTripResult> => {
           existing.startPoint = loc;
           warnings.push(`${key}: נקודת התחלה הוסקה מתגית "תחילת-יום" (${loc})`);
         } else {
-          const first = dayEvents.map(getLocationFromEvent).find(Boolean);
+          const first = dayEvents.map(ev => getLocationFromEvent(ev)).find(Boolean);
           if (first) {
             existing.startPoint = first;
             warnings.push(`${key}: נקודת התחלה הוסקה מהאירוע הראשון של היום (${first})`);
@@ -415,7 +415,7 @@ export const parseTripExcel = async (file: File): Promise<ParsedTripResult> => {
           existing.endPoint = loc;
           warnings.push(`${key}: נקודת סיום הוסקה מתגית "סוף-יום" (${loc})`);
         } else {
-          const last = [...dayEvents].reverse().map(getLocationFromEvent).find(Boolean);
+          const last = [...dayEvents].reverse().map(ev => getLocationFromEvent(ev)).find(Boolean);
           if (last) {
             existing.endPoint = last;
             warnings.push(`${key}: נקודת סיום הוסקה מהאירוע האחרון של היום (${last})`);
