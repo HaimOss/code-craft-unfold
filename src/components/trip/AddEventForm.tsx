@@ -239,6 +239,19 @@ const AddEventForm: React.FC<AddEventFormProps> = ({ trip, onAddEvent, onUpdateE
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{renderCategoryFields()}</div>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={(formData.details as any)?.exclude_from_map === true}
+            onChange={(e) => setFormData(prev => ({
+              ...prev,
+              details: { ...(prev.details || {}), exclude_from_map: e.target.checked },
+            }))}
+            className="h-4 w-4 rounded border-border"
+          />
+          <MapPin className="h-4 w-4" />
+          אל תציג במפה (למשל טיסה שבה שדה התעופה לא רלוונטי למסלול)
+        </label>
         <textarea name="notes" placeholder={t('eventForm.notes')} value={formData.notes || ''} onChange={handleInputChange} className="input-field" rows={2} />
         <div className="flex justify-end space-x-3">
           <button type="button" onClick={onCancel} className="btn-secondary">{t('actions.cancel')}</button>
