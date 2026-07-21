@@ -8,12 +8,29 @@ const firstNonEmpty = (d: Record<string, unknown>, keys: string[]): string | nul
   return null;
 };
 
-export const getLocationFromEvent = (event: Event): string | null => {
+export interface LocationOpts {
+  isFirstDay?: boolean;
+  isLastDay?: boolean;
+}
+
+export const getLocationFromEvent = (event: Event, opts?: LocationOpts): string | null => {
   if (!event.details) return null;
   const d = event.details as Record<string, unknown>;
+  // Per-event manual override: hide from maps entirely
+  if (d.exclude_from_map === true) return null;
   switch (event.category) {
-    case EventCategory.Flights:
+    case EventCategory.Flights: {
+      // On the first day of the trip, we've just landed — ignore the departure
+      // airport (usually the home airport) and only map the arrival airport.
+      // On the last day, we're flying out — only map the departure airport.
+      if (opts?.isFirstDay) {
+        return firstNonEmpty(d, ['arr_airport']);
+      }
+      if (opts?.isLastDay) {
+        return firstNonEmpty(d, ['dept_airport', 'address', 'location']);
+      }
       return firstNonEmpty(d, ['arr_airport', 'dept_airport', 'address', 'location']);
+    }
     case EventCategory.Accommodation:
       return firstNonEmpty(d, ['address', 'location']);
     case EventCategory.Transport:
