@@ -156,12 +156,14 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
 
       // Geocode events
       for (const event of trip.events) {
-        const location = getLocationFromEvent(event);
+        const dayIndex = tripDays.indexOf(event.date);
+        const isFirstDay = event.date === trip.start_date;
+        const isLastDay = event.date === trip.end_date;
+        const location = getLocationFromEvent(event, { isFirstDay, isLastDay });
         if (!location) continue;
 
         const coords = await geocodeLocation(location);
         if (coords) {
-          const dayIndex = tripDays.indexOf(event.date);
           results.push({ event, ...coords, dayIndex });
         }
         await new Promise(r => setTimeout(r, 300));
