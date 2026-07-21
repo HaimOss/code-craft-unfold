@@ -85,13 +85,20 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
   };
 
   const getGoogleMapsUrl = () => {
-    const locations: string[] = [];
-    if (dailyInfo.startPoint) locations.push(dailyInfo.startPoint);
+    const rawLocations: string[] = [];
+    if (dailyInfo.startPoint) rawLocations.push(dailyInfo.startPoint);
     dailyEvents.forEach(e => {
       const loc = getLocationFromEvent(e);
-      if (loc) locations.push(loc);
+      if (loc) rawLocations.push(loc);
     });
-    if (dailyInfo.endPoint) locations.push(dailyInfo.endPoint);
+    if (dailyInfo.endPoint) rawLocations.push(dailyInfo.endPoint);
+
+    // Collapse consecutive duplicates (same place appearing back-to-back)
+    const locations = rawLocations.filter(
+      (location, index, array) =>
+        index === 0 ||
+        location.trim().toLowerCase() !== array[index - 1].trim().toLowerCase()
+    );
 
     if (locations.length === 0) {
       if (trip.destination) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(trip.destination)}`;
@@ -102,7 +109,8 @@ const DayItinerary: React.FC<DayItineraryProps> = ({
     }
     const origin = locations[0];
     const destination = locations[locations.length - 1];
-    const waypoints = locations.slice(1, -1);
+    // Google Maps dir URL supports up to 9 waypoints between origin & destination
+    const waypoints = locations.slice(1, -1).slice(0, 9);
     return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}${waypoints.length > 0 ? `&waypoints=${encodeURIComponent(waypoints.join('|'))}` : ''}`;
   };
 
