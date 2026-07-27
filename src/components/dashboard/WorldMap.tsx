@@ -3,9 +3,9 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Trip } from '@/types';
-import { geocodeLocation } from '@/services/geocodingService';
+import { geocodeLocation, clearGeocodeCache } from '@/services/geocodingService';
 import { CURRENCY_SYMBOLS } from '@/constants';
-import { X, MapPin, Calendar, ArrowLeft, ArrowRight } from 'lucide-react';
+import { X, MapPin, Calendar, ArrowLeft, ArrowRight, RefreshCw } from 'lucide-react';
 import { differenceInDays, parseISO } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -65,6 +65,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ trips, onSelectTrip, onClose }) => 
   const { t, dir, isRTL } = useLanguage();
   const [geocodedTrips, setGeocodedTrips] = useState<GeocodedTrip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const getGeocodableLocation = (trip: Trip): string | null => {
@@ -102,7 +103,14 @@ const WorldMap: React.FC<WorldMapProps> = ({ trips, onSelectTrip, onClose }) => 
       setLoading(false);
     };
     geocodeAll();
-  }, [trips]);
+  }, [trips, refreshKey]);
+
+  const handleRefresh = () => {
+    if (loading) return;
+    clearGeocodeCache();
+    setGeocodedTrips([]);
+    setRefreshKey(k => k + 1);
+  };
 
   const positions = useMemo(() => geocodedTrips.map(g => [g.lat, g.lng] as [number, number]), [geocodedTrips]);
   const DetailArrow = isRTL ? ArrowLeft : ArrowRight;
@@ -120,9 +128,20 @@ const WorldMap: React.FC<WorldMapProps> = ({ trips, onSelectTrip, onClose }) => 
             <MapPin className="h-5 w-5 text-primary" />
             {t('dashboard.destinations')}
           </h2>
-          <button onClick={onClose} className="btn-ghost p-2 rounded-lg">
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              title={t('dashboard.refreshMap')}
+              aria-label={t('dashboard.refreshMap')}
+              className="btn-ghost p-2 rounded-lg disabled:opacity-50"
+            >
+              <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} />
+            </button>
+            <button onClick={onClose} className="btn-ghost p-2 rounded-lg">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Map */}
