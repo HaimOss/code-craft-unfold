@@ -160,6 +160,21 @@ export async function geocodeLocation(location: string): Promise<LatLng | null> 
 }
 
 /** Geocode many locations, de-duplicating identical strings. */
+export function clearGeocodeCache(locations?: string[]) {
+  if (locations && locations.length) {
+    for (const loc of locations) {
+      if (!loc) continue;
+      for (const variant of buildQueryVariants(loc)) {
+        memoryCache.delete(normalize(variant));
+      }
+      memoryCache.delete(normalize(loc));
+    }
+  } else {
+    memoryCache.clear();
+  }
+  persistCache();
+}
+
 export async function geocodeMany(locations: string[]): Promise<Map<string, LatLng | null>> {
   const unique = Array.from(new Set(locations.filter(Boolean)));
   const results = await Promise.all(unique.map(l => geocodeLocation(l)));
