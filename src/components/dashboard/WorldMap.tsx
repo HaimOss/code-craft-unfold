@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Trip } from '@/types';
+import { geocodeLocation } from '@/services/geocodingService';
 import { CURRENCY_SYMBOLS } from '@/constants';
 import { X, MapPin, Calendar, ArrowLeft, ArrowRight } from 'lucide-react';
 import { differenceInDays, parseISO } from 'date-fns';
@@ -15,28 +16,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
-
-const geocodeCache = new Map<string, { lat: number; lng: number } | null>();
-
-async function geocodeLocation(location: string): Promise<{ lat: number; lng: number } | null> {
-  if (geocodeCache.has(location)) return geocodeCache.get(location)!;
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`,
-      { headers: { 'Accept-Language': 'en' } }
-    );
-    const data = await res.json();
-    if (data.length > 0) {
-      const result = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-      geocodeCache.set(location, result);
-      return result;
-    }
-  } catch (e) {
-    console.error('Geocode error:', e);
-  }
-  geocodeCache.set(location, null);
-  return null;
-}
 
 function createTripIcon(color: string) {
   return L.divIcon({
@@ -118,7 +97,6 @@ const WorldMap: React.FC<WorldMapProps> = ({ trips, onSelectTrip, onClose }) => 
         if (!location) continue;
         const coords = await geocodeLocation(location);
         if (coords) results.push({ trip, ...coords });
-        await new Promise(r => setTimeout(r, 250));
       }
       setGeocodedTrips(results);
       setLoading(false);
