@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Event, EventCategory, DailyInfo } from '@/types';
 import { getLocationFromEvent } from '@/utils/helpers';
+import { geocodeLocation } from '@/services/geocodingService';
 import { CATEGORY_ICONS } from '@/constants';
 import { Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -17,28 +18,6 @@ const CATEGORY_COLORS: Record<string, string> = {
   [EventCategory.Shopping]: '#ec4899',
   [EventCategory.General]: '#6b7280',
 };
-
-const geocodeCache = new Map<string, { lat: number; lng: number } | null>();
-
-async function geocodeLocation(location: string): Promise<{ lat: number; lng: number } | null> {
-  if (geocodeCache.has(location)) return geocodeCache.get(location)!;
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`,
-      { headers: { 'Accept-Language': 'en' } }
-    );
-    const data = await res.json();
-    if (data.length > 0) {
-      const result = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-      geocodeCache.set(location, result);
-      return result;
-    }
-  } catch (e) {
-    console.error('Geocode error:', e);
-  }
-  geocodeCache.set(location, null);
-  return null;
-}
 
 function createCategoryIcon(category: EventCategory, color: string) {
   return L.divIcon({
@@ -107,7 +86,6 @@ const DayMap: React.FC<DayMapProps> = ({ events, dailyInfo, destination, isFirst
         if (!loc) continue;
         const coords = await geocodeLocation(loc);
         if (coords) results.push({ label: loc, ...coords, type: 'event', event });
-        await new Promise(r => setTimeout(r, 200));
       }
 
       // End point
