@@ -121,14 +121,12 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
           if (coords) {
             pointResults.push({ label: dayInfo.startPoint, type: 'start', ...coords, dayIndex });
           }
-          await new Promise(r => setTimeout(r, 300));
         }
         if (dayInfo?.endPoint) {
           const coords = await geocodeLocation(dayInfo.endPoint);
           if (coords) {
             pointResults.push({ label: dayInfo.endPoint, type: 'end', ...coords, dayIndex });
           }
-          await new Promise(r => setTimeout(r, 300));
         }
       }
 
@@ -144,7 +142,6 @@ const TripMap: React.FC<TripMapProps> = ({ trip }) => {
         if (coords) {
           results.push({ event, ...coords, dayIndex });
         }
-        await new Promise(r => setTimeout(r, 300));
       }
 
       setGeocodedEvents(results);
