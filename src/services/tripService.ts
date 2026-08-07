@@ -14,6 +14,7 @@ const dbRowToTrip = (row: any, events: any[]): Trip => ({
   album_link: row.album_link || undefined,
   dailyInfo: row.daily_info || {},
   budget: row.budget ? Number(row.budget) : undefined,
+  travelers_count: row.travelers_count ? Number(row.travelers_count) : 1,
   events: events.map(dbRowToEvent),
 });
 
@@ -72,6 +73,7 @@ export const createTrip = async (userId: string, trip: Omit<Trip, 'events'>): Pr
       album_link: trip.album_link || null,
       daily_info: (trip.dailyInfo || {}) as any,
       budget: trip.budget || null,
+      travelers_count: trip.travelers_count || 1,
     }])
     .select('id')
     .single();
@@ -95,6 +97,7 @@ export const updateTrip = async (trip: Trip) => {
       album_link: trip.album_link || null,
       daily_info: (trip.dailyInfo || {}) as any,
       budget: trip.budget || null,
+      travelers_count: trip.travelers_count || 1,
       updated_at: new Date().toISOString(),
     })
     .eq('id', trip.id);
