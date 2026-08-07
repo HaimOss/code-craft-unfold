@@ -120,6 +120,7 @@ export interface Trip {
   album_link?: string;
   dailyInfo?: { [date: string]: DailyInfo };
   budget?: number;
+  travelers_count?: number;
 }
 
 export interface TripCollaborator {
