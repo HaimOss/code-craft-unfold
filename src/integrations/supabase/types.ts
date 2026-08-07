@@ -397,6 +397,65 @@ export type Database = {
           },
         ]
       }
+      trip_expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          currency: string
+          description: string
+          expense_date: string | null
+          id: string
+          notes: string | null
+          payment_method: string
+          scope: string
+          subcategory: string | null
+          trip_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category: string
+          created_at?: string
+          currency?: string
+          description?: string
+          expense_date?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          scope?: string
+          subcategory?: string | null
+          trip_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string
+          expense_date?: string | null
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          scope?: string
+          subcategory?: string | null
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_expenses_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_participants: {
         Row: {
           created_at: string
@@ -447,6 +506,7 @@ export type Database = {
           name: string
           start_date: string
           status: string
+          travelers_count: number
           updated_at: string
           user_id: string
         }
@@ -463,6 +523,7 @@ export type Database = {
           name: string
           start_date: string
           status?: string
+          travelers_count?: number
           updated_at?: string
           user_id: string
         }
@@ -479,6 +540,7 @@ export type Database = {
           name?: string
           start_date?: string
           status?: string
+          travelers_count?: number
           updated_at?: string
           user_id?: string
         }
