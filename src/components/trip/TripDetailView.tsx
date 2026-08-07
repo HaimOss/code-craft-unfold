@@ -7,11 +7,12 @@ import ShareModal from '../modals/ShareModal';
 import CollaboratorManager from '../modals/CollaboratorManager';
 import BudgetBar from './BudgetBar';
 import { CURRENCY_SYMBOLS, CATEGORY_DISPLAY_CONFIG } from '@/constants';
-import { ArrowRight, ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare, FileText, Compass, Plus, ChevronLeft, ChevronRight, FileSpreadsheet } from 'lucide-react';
+import { ArrowRight, ArrowLeft, MapPin, Calendar, DollarSign, Pencil, Trash2, Share2, Image, Download, Upload, Users, Map, List, CheckSquare, FileText, Compass, Plus, ChevronLeft, ChevronRight, FileSpreadsheet, Wallet } from 'lucide-react';
 import BulkTripUploadModal from '../modals/BulkTripUploadModal';
 
 const TripMap = lazy(() => import('./TripMap'));
 const TripChecklist = lazy(() => import('./TripChecklist'));
+const ExpensesView = lazy(() => import('./ExpensesView'));
 import { exportTripToJSON, parseImportFile, importSharedEvent } from '@/services/shareService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -45,7 +46,7 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCollabModalOpen, setIsCollabModalOpen] = useState(false);
   const [isBulkReplaceOpen, setIsBulkReplaceOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'itinerary' | 'map' | 'checklist'>('itinerary');
+  const [activeTab, setActiveTab] = useState<'itinerary' | 'map' | 'checklist' | 'expenses'>('itinerary');
 
   const handleExportJSON = () => exportTripToJSON(trip);
 
@@ -293,6 +294,14 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
                 >
                   <CheckSquare className="h-4 w-4" /> {t('trip.checklist')}
                 </button>
+                <button
+                  onClick={() => setActiveTab('expenses')}
+                  className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'expenses' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Wallet className="h-4 w-4" /> הוצאות
+                </button>
               </div>
 
               <div className="flex items-center gap-1 flex-wrap">
@@ -318,6 +327,10 @@ const TripDetailView: React.FC<TripDetailViewProps> = ({ trip, onBack, onUpdateT
             ) : activeTab === 'checklist' ? (
               <Suspense fallback={<div className="card-surface p-12 flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
                 <TripChecklist tripId={trip.id} />
+              </Suspense>
+            ) : activeTab === 'expenses' ? (
+              <Suspense fallback={<div className="card-surface p-12 flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+                <ExpensesView trip={trip} />
               </Suspense>
             ) : (
               <Suspense fallback={<div className="card-surface p-12 flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
