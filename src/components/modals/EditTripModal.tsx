@@ -17,14 +17,14 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
   const [startDate, setStartDate] = useState(trip.start_date); const [endDate, setEndDate] = useState(trip.end_date);
   const [baseCurrency, setBaseCurrency] = useState(trip.base_currency); const [status, setStatus] = useState(trip.status);
   const [coverImage, setCoverImage] = useState(trip.cover_image || ''); const [albumLink, setAlbumLink] = useState(trip.album_link || '');
-  const [budget, setBudget] = useState(trip.budget?.toString() || ''); const [error, setError] = useState('');
-  useEffect(() => { if (isOpen) { setName(trip.name); setDestination(trip.destination || ''); setStartDate(trip.start_date); setEndDate(trip.end_date); setBaseCurrency(trip.base_currency); setStatus(trip.status); setCoverImage(trip.cover_image || ''); setAlbumLink(trip.album_link || ''); setBudget(trip.budget?.toString() || ''); setError(''); } }, [isOpen, trip]);
+  const [budget, setBudget] = useState(trip.budget?.toString() || ''); const [travelers, setTravelers] = useState((trip.travelers_count || 1).toString()); const [error, setError] = useState('');
+  useEffect(() => { if (isOpen) { setName(trip.name); setDestination(trip.destination || ''); setStartDate(trip.start_date); setEndDate(trip.end_date); setBaseCurrency(trip.base_currency); setStatus(trip.status); setCoverImage(trip.cover_image || ''); setAlbumLink(trip.album_link || ''); setBudget(trip.budget?.toString() || ''); setTravelers((trip.travelers_count || 1).toString()); setError(''); } }, [isOpen, trip]);
   if (!isOpen) return null;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) { setError(t('modals.tripNameRequired')); return; }
     await saveParticipants(trip.id, participantIds);
-    onUpdateTrip({ ...trip, name: name.trim(), destination: destination.trim(), start_date: startDate, end_date: endDate, base_currency: baseCurrency, status, cover_image: coverImage || undefined, album_link: albumLink || undefined, budget: budget ? Number(budget) : undefined }); onClose();
+    onUpdateTrip({ ...trip, name: name.trim(), destination: destination.trim(), start_date: startDate, end_date: endDate, base_currency: baseCurrency, status, cover_image: coverImage || undefined, album_link: albumLink || undefined, budget: budget ? Number(budget) : undefined, travelers_count: Number(travelers) || 1 }); onClose();
   };
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -48,7 +48,10 @@ const EditTripModal: React.FC<EditTripModalProps> = ({ isOpen, trip, onClose, on
           <TripParticipantsPicker selectedIds={participantIds} onChange={setParticipantIds} />
           <CoverImagePicker value={coverImage} onChange={setCoverImage} />
           <input placeholder={t('modals.albumLink')} value={albumLink} onChange={e => setAlbumLink(e.target.value)} className="input-field" />
-          <input type="number" placeholder={t('modals.budget')} value={budget} onChange={e => setBudget(e.target.value)} className="input-field" min="0" />
+          <div className="grid grid-cols-2 gap-3">
+            <input type="number" placeholder={t('modals.budget')} value={budget} onChange={e => setBudget(e.target.value)} className="input-field" min="0" />
+            <input type="number" placeholder="מספר משתתפים" value={travelers} onChange={e => setTravelers(e.target.value)} className="input-field" min="1" />
+          </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary">{t('actions.cancel')}</button>
             <button type="submit" className="btn-primary">{t('modals.saveChanges')}</button>
